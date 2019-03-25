@@ -12,20 +12,16 @@
  *    listeners(type): 获取所有订阅者
  * 
  * create by destiny on 2018-09-04
- * update by destiny on 2019-03-21
+ * update by destiny on 2019-03-25
  */
-function EventEmitter() {
+class EventEmitter {
   //=> []创建一个容器，管理需要执行的方法
   //=> {} 实现多个不同类型容器
-  this.ponds = {};
-}
-
-EventEmitter.prototype = {
-
-  constructor: EventEmitter,
-
+  constructor() {
+    this.ponds = {};
+  }
   //=> 订阅
-  on: function (type, listener) {
+  on (type, listener) {
     // listener 必须是函数
     if (typeof listener !== "function") throw new error("the second param of 'on' must be a function");
     this.ponds[type] = this.ponds[type] || [];
@@ -37,14 +33,13 @@ EventEmitter.prototype = {
     }
 
     return this;
-  },
+  }
 
   //=> 订阅一次
-  once: function (type, listener) {
+  once (type, listener) {
     if (typeof listener !== "function") throw new error("the second param of 'once' must be a function");
 
-    var _this = this
-    var fn = function () {
+    let fn = () => {
       // this 为 window
       _this.off(type, listener);
       listener.apply(_this, arguments);
@@ -53,18 +48,14 @@ EventEmitter.prototype = {
     fn.source = listener; // 将源函数挂载到 fn 上
 
     return this.on(type, fn);
-  },
+  }
 
   //=> 执行容器中所有的方法
   // 参数为 type, ...args
-  emit: function () {
-    var args = []; // 保留第一个参数
-    Array.prototype.forEach.call(arguments, function (item) {
-      args.push(item);
-    })
-    var type = args[0];
+  emit (...args) {
+    let type = args[0];
 
-    var listeners = this.ponds[type];
+    let listeners = this.ponds[type];
     if (!listeners) return;
 
     // 锁死队列，防止事件池中的函数不断向事件池添加订阅，出现死循环
@@ -72,15 +63,15 @@ EventEmitter.prototype = {
 
     // 进行逐个发布
     listeners.forEach(function (item) {
-      item.apply(this, args);
+      item(...args);
     })
 
     return this;
-  },
+  }
 
   //=> 取消订阅
-  off: function (type, listener) {
-    var listeners = this.ponds[type]
+  off (type, listener) {
+    let listeners = this.ponds[type];
     if (!listeners) return this;
     for (let i = 0; i < listeners.length; i++) {
       // 判断是否是源函数，这里考虑了 once 的特殊情况
@@ -93,10 +84,10 @@ EventEmitter.prototype = {
       delete this.ponds[type]; // 防止空的时候还进行遍历判断
     }
     return this;
-  },
+  }
 
   //=> 获取所有的订阅者
-  listeners: function (type) {
+  listeners (type) {
     // 返回克隆数组
     return (this.ponds[type] || []).slice();
   }
