@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>GraphDemo</title>
+</head>
+<body>
+  <div id="container"></div>
+  <script src="./js/lib/d3.v5.js"></script>
+  <script src="./js/BaseGraph.js"></script>
+  <script src="./js/Force.js"></script>
+  <script>
+    var el = document.getElementById('container');
+    var el2 = document.querySelector('#container');
+    var force = new Force('container', {
+      width: '1000',
+      height: '800',
+      data: {
+        vertexes: [{
+          _id: 'Company/aa',
+          name: '北京海致星图科技有限公司',
+          type: 'Company'
+        }, {
+          _id: 'Company/bb',
+          name: '海致网络技术（北京）有限公司',
+          type: 'Company'
+        }, {
+          _id: 'Person/cc',
+          name: '杨再飞',
+          type: 'Person'
+        }],
+        edges: [{
+          _id: 'invest/aa',
+          _from: 'Company/aa',
+          _to: 'Company/bb',
+          label: '投资 1 元'
+        }, {
+          _id: 'invest/bb',
+          _from: 'Company/bb',
+          _to: 'Company/aa',
+          label: '投资 2 元'
+        }, {
+          _id: 'officer/cc',
+          _from: 'Person/cc',
+          _to: 'Company/aa',
+          label: '董事长'
+        }]
+      }
+    });
+    force.render();
+  </script>
+</body>
+</html>
