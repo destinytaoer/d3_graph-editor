@@ -355,6 +355,7 @@ class BaseGraph {
       .style('text-align', 'center')
       .style('line-height', '12px')
       .style('cursor', 'pointer')
+      .style('user-select', 'none')
 
     chartScale.select('#scale')
       .style('vertical-align', 'middle')
@@ -666,7 +667,7 @@ class BaseGraph {
       this.svg.call(this.zoom.scaleTo, value);
     })
     // 鼠标操作相关事件处理
-    range.addEventListener("mousedown",function(){
+    range.addEventListener("mousedown", () => {
       document.addEventListener("mouseup", mouseup);
       range.addEventListener("mousemove", mousemove);
     });
@@ -680,13 +681,13 @@ class BaseGraph {
       e.initEvent("change", false, true);
       range.dispatchEvent(e);
     }
-    reduce.addEventListener('click', () => {
+    reduce.addEventListener('click', (ev) => {
       range.value -= step;
       let e = document.createEvent("Event");
       e.initEvent("change", false, true);
       range.dispatchEvent(e);
     })
-    enlarge.addEventListener('click', () => {
+    enlarge.addEventListener('click', (ev) => {
       range.value = +range.value + step;
       let e = document.createEvent("Event");
       e.initEvent("change", false, true);
