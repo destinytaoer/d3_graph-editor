@@ -12,7 +12,7 @@
  *   delete(index): 删除某个缓存，index 为索引 +1
  *   clear(): 清空缓存
  *
- * by destiny on 2019-03-21
+ * create by destiny on 2019-03-21
  */
 function Cache() {
   this.caches = []
