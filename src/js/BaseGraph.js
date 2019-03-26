@@ -230,6 +230,7 @@ class BaseGraph {
     this.nodeEnter.append('image').each((d, i, g) => {
       let r = this.getRadius(d);
       d3.select(g[i]).attr('xlink:href', this.getIcon(d))
+        .classed('icon', true)
         .attr('width', r * 2)
         .attr('height', r * 2)
         .attr('x', - r)
@@ -647,6 +648,14 @@ class BaseGraph {
   onZoom() {
     this.chartGroup
       .attr('transform', d3.event.transform);
+    
+    if (d3.event.transform.k < 0.8) {
+      this.nodeEnter.selectAll('.vertex-name').style('display', 'none');
+      this.linkEnter.selectAll('.edge-label').style('display', 'none');
+    } else {
+      this.nodeEnter.selectAll('.vertex-name').style('display', 'block');
+      this.linkEnter.selectAll('.edge-label').style('display', 'block');
+    }
 
     let range = document.getElementById('scale');
     if (range) {
