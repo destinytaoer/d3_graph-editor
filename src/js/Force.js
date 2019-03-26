@@ -39,7 +39,7 @@ class Force extends BaseGraph {
       let to = this.vertexesMap.indexOf(e._to);
       e.source = e._from;
       e.target = e._to;
-      e._type = e._type || e._id.split('/')[0];
+      e.type = e.type;
       e.state = e.state || 'normal';
       this.adjList[from] = this.adjList[from] || {};
       this.adjList[from][to] = this.adjList[from][to] || [];

@@ -442,7 +442,7 @@ class BaseGraph {
     // }
   }
   getIcon(d) {
-    return this.options.iconPath ? `${this.options.iconPath}/${d._type.toLowerCase()}.png ` : '';
+    return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}.png ` : '';
   }
   // 边样式
   getArrowConfig(d) {
