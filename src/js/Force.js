@@ -108,6 +108,7 @@ class Force extends BaseGraph {
       .attr('transform', (d) => `translate(${d.x}, ${d.y})`);
 
     // 移动边的位置
+    var selfMap = {};
     this.chartGroup.selectAll('.edge-path')
       .attr('d', (d) => {
         var dx = d.target.x - d.source.x;
@@ -117,7 +118,7 @@ class Force extends BaseGraph {
         var middleIdx = (d.siblingNum + 1) / 2;
 
         if (d.siblingNum > 1) {
-          dr = d.edgeIndex === middleIdx ? 0 : dr / (Math.log((Math.abs(d.edgeIndex - middleIdx) * 0.6) + 1) +
+          dr = d.edgeIndex === middleIdx ? 0 : dr / (Math.log((Math.abs(d.edgeIndex - middleIdx) * 2) + 1) +
             (1 / (10 * Math.pow(d.edgeIndex, 2))))  // 弧度绘制
         }
         let sweepFlag = d.edgeIndex > middleIdx ? 1 : 0
@@ -126,7 +127,20 @@ class Force extends BaseGraph {
         }
         let path = 'M' + d.source.x + ',' + d.source.y +
           'A' + dr + ',' + dr + ' 0 0 ' + sweepFlag + ',' + d.target.x + ',' + d.target.y
+        
+        // 自己指向自己
+        if (d.source.name === d.target.name) {
+          selfMap[d.source.name] = selfMap[d.source.name] ? selfMap[d.source.name] + 1 : 1;
+          let h = selfMap[d.source.name] * 100;
+          let w = selfMap[d.source.name] * 10;
+          // 使用三次贝塞尔曲线绘制
+          path = 'M' + d.source.x + ' ' + d.source.y + 
+              ' C ' + (d.source.x - w) + ' ' + (d.source.y - h) + ', ' +
+              (d.source.x + h) + ' ' + (d.source.y + w) + ', ' + 
+                      d.source.x + ' ' + d.source.y;
+        }
 
+        // 增加反向路径，用于旋转 label
         this.chartGroup.select('#' + d._id.replace('/', '_') + '_reverse')
           .attr('d', 'M' + d.target.x + ',' + d.target.y +
             'A' + dr + ',' + dr + ' 0 0 ' + (1 - sweepFlag) + ',' + d.source.x + ',' + d.source.y)
