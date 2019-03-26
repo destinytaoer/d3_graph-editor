@@ -1,8 +1,8 @@
 class Force extends BaseGraph {
   constructor(el, options) {
     let defaultOptions = {
-      r: 20,                      // radius of vertex
-      distance: 250,              // length of edge
+      r: 10,                      // radius of vertex
+      distance: 100,              // length of edge
       shape: 'circle',
       width: window.innerWidth,
       height: window.innerHeight,

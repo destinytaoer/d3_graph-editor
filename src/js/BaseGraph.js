@@ -101,6 +101,7 @@ class BaseGraph {
       .data(this.vertexes)
       .enter()
       .append('g')
+      .attr('data-id', (d) => d._id)
       .classed('vertex', true)
       .attr('type', (d) => d.type);
 
@@ -245,6 +246,7 @@ class BaseGraph {
       .enter()
       .append('g')
       .classed('edge', true)
+      .attr('data-id', (d) => d._id)
       .attr('type', (d) => d.type)
 
     this.addPath()    // 增加边路径
