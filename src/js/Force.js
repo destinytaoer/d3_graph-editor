@@ -15,7 +15,7 @@
  *   nodeEnter: 所有的节点, d3 Selection 元素数组
  *   linkEnter: 所有边, d3 Selection 元素数组
  *
- * @function
+ * @methods
  *   render(): 渲染画布
  *   preprocessChart(): 初始化画布布局
  *   processData(): 数据处理, 需要在具体类中进行复写
@@ -31,8 +31,8 @@
 class Force extends BaseGraph {
   constructor(el, options) {
     let defaultOptions = {
-      r: 10,                      // radius of vertex
-      distance: 150,              // length of edge
+      r: 20,                      // radius of vertex
+      distance: 100,              // length of edge
       shape: 'circle',
       width: window.innerWidth,
       height: window.innerHeight,
@@ -40,8 +40,8 @@ class Force extends BaseGraph {
       alphaDecay: 0.07,
       vertexColor: '#e3e3e3',
       edgeColor: '#e3e3e3',
-      vertexFontSize: 12,
-      edgeFontSize: 12,
+      vertexFontSize: 10,
+      edgeFontSize: 10,
       scalable: true,
       scaleExtent: [0.5, 2],
       scaleBar: true,

@@ -11,7 +11,7 @@
  *   nodeEnter: 所有的节点, d3 Selection 元素数组
  *   linkEnter: 所有边, d3 Selection 元素数组
  *
- * @function
+ * @methods
  *   render(): 渲染画布
  *   preprocessChart(): 初始化画布布局
  *   processData(): 数据处理, 需要在具体类中进行复写
@@ -308,23 +308,6 @@ class BaseGraph {
 
     return this;
   }
-  setArrowStyle() {
-    this.chartGroup.selectAll('.arrow-marker')
-      .each((d, i, g) => {
-        let thisArrow = d3.select(g[i]);
-        const { path = 'M0,0 L10,5 L0,10 z', arrowWidth = 10, arrowHeight = 10, refx = 0, color = '#e3e3e3' } = this.getArrowConfig(d);
-
-        thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx)
-          .attr('refY', arrowHeight / 2)
-          .attr('markerUnits', 'userSpaceOnUse')
-          .attr('markerWidth', arrowWidth)
-          .attr('markerHeight', arrowHeight)
-          .attr('orient', 'auto')
-          .select('path')
-          .attr('d', path)
-          .attr("fill", color)
-      })
-  }
   // 缩放控件
   addScaleBar() {
     const { scaleExtent } = this.options;
@@ -377,7 +360,7 @@ class BaseGraph {
     this.bindRangeEvent();
   }
 
-  /* 关于样式的处理 */
+  /* 关于样式的获取 */
   // 顶点样式
   getShape(d) {
     // 返回形状字符串
@@ -447,7 +430,7 @@ class BaseGraph {
     // }
   }
   getIcon(d) {
-    return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}.png ` : '';
+    return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}.svg ` : '';
   }
   // 边样式
   getArrowConfig(d) {
@@ -489,7 +472,6 @@ class BaseGraph {
   getArrowUrl(d) {
     return `url("#arrow_${d._id.replace('/', '_')}")`;
   }
-
   getEdgeColor(d) {
     return '#D9D9D9';
     // switch (this.theme + '-' + d.state) {
@@ -535,6 +517,92 @@ class BaseGraph {
     // }
     return 1;
   }
+
+  // 背景颜色
+  getBgColor() {
+    switch (this.theme) {
+      case 'light':
+        return '#fff'
+      case 'dark':
+        return '#252A39'
+      default:
+        return '#fff'
+    }
+  }
+
+  /* 关于样式的改变 */
+  resetStyle() {
+    this.setVertexStyle()
+      .setEdgeStyle()
+      .setBgColor()
+  }
+  setVertexStyle() {
+    this.nodeEnter.selectAll('.circle')
+      // .attr('d', (d) => {
+      //   let type = this.getShape(d)
+      //   type = 'symbol' + type[0].toUpperCase() + type.slice(1)
+      //   let size = this.getRadius(d) * this.getRadius(d) * Math.PI
+
+      //   let _d3 = d3 // 直接使用 d3[type] 报错
+      //   return this.symbol.size(size).type(_d3[type])()
+      // })
+      .attr('fill', (d) => this.getVertexColor(d))
+      .attr('stroke', (d) => this.getVertexStrokeColor(d))
+      .attr('stroke-width', (d) => this.getVertexStrokeWidth(d))
+    
+    this.nodeEnter.selectAll('image')
+      .attr('xlink:href', (d) => this.getIcon(d))
+
+    this.nodeEnter.selectAll('text.vertex-name')
+      .attr('y', (d) => this.getRadius(d) + 5)
+      .style('fill', (d) => this.getVertexNameColor(d))
+      // .each(this.setVertexNamePos.bind(this))
+    
+    return this;
+  }
+  setEdgeStyle() {
+    // 边
+    this.linkEnter.selectAll('.edge-path')
+      .attr('stroke', (d) => this.getEdgeColor(d))
+      .attr('stroke-width', (d) => this.getEdgeWidth(d));
+
+    // 箭头
+    this.setArrowStyle();
+
+    // 边文字
+    this.linkEnter.selectAll('.edge-label')
+      .style('fill', (d) => this.getEdgeLableColor(d));
+    
+    return this;
+  }
+  setArrowStyle() {
+    this.chartGroup.selectAll('.arrow-marker')
+      .each((d, i, g) => {
+        let thisArrow = d3.select(g[i]);
+        const { path = 'M0,0 L10,5 L0,10 z', arrowWidth = 10, arrowHeight = 10, refx = 0, color = '#e3e3e3' } = this.getArrowConfig(d);
+
+        thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx)
+          .attr('refY', arrowHeight / 2)
+          .attr('markerUnits', 'userSpaceOnUse')
+          .attr('markerWidth', arrowWidth)
+          .attr('markerHeight', arrowHeight)
+          .attr('orient', 'auto')
+          .select('path')
+          .attr('d', path)
+          .attr("fill", color)
+      })
+  }
+  setBgColor() {
+    this.svg.style('background', this.getBgColor());
+    return this;
+  }
+  // 改变主题
+  changeTheme(theme) {
+    this.theme = theme
+    this.resetStyle()
+    return this
+  }
+  
   
   /* 关于数据的处理 */
   preprocessData () {
@@ -615,6 +683,7 @@ class BaseGraph {
 
     return this;
   }
+
   /* 关于事件的绑定 */
   bindEvents () {
     const { scalable, scaleExtent, draggable } = this.options;
