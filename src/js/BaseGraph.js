@@ -24,6 +24,7 @@
  * 依赖于 d3 EventEmitter Cache 模块
  *
  * create by destiny on 2019-03-25
+ * update by destiny on 2019-03-26
  */
 class BaseGraph {
   constructor(el, options) {

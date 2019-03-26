@@ -1,3 +1,33 @@
+/**
+ * Force: 力导向图类
+ *
+ * @extends
+ *   BaseGraph
+ * 
+ * @parameter
+ *   el [ HTMLElement | String ] 容器元素或者 ID
+ *   options [ Object ] 配置选项
+ *
+ * @constructor
+ *   el: 容器, d3 Selection 元素
+ *   svg: SVG 画布, d3 Selection 元素
+ *   chartGroup: 绘图容器, d3 Selection 元素
+ *   nodeEnter: 所有的节点, d3 Selection 元素数组
+ *   linkEnter: 所有边, d3 Selection 元素数组
+ *
+ * @function
+ *   render(): 渲染画布
+ *   preprocessChart(): 初始化画布布局
+ *   processData(): 数据处理, 需要在具体类中进行复写
+ *   draw(): 绘图
+ *   addVertexes(): 绘制节点 
+ *   addEdges(): 绘制边
+ *   filterVertex(filter, isRaw): 过滤顶点，需要另外调用 render 方法进行重绘
+ *   filterEdge(filter, isRaw): 过滤边，需要另外调用 render 方法进行重绘
+ *
+ * create by destiny on 2019-03-25
+ * update by destiny on 2019-03-26
+ */
 class Force extends BaseGraph {
   constructor(el, options) {
     let defaultOptions = {
