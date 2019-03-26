@@ -102,7 +102,7 @@ class BaseGraph {
       .enter()
       .append('g')
       .attr('data-id', (d) => d._id)
-      .classed('vertex', true)
+      // .classed('vertex', true)
       .attr('type', (d) => d.type);
 
     this.addVertex()    // 增加节点 circle
@@ -112,7 +112,9 @@ class BaseGraph {
     return this;
   }
   addVertex() {
-    this.nodeEnter.append('path')
+    this.nodeEnter.append('g')
+      .classed('vertex', 'true')
+      .append('path')
       .attr('d', (d) => {
         let type = this.getShape(d);
         type = 'symbol' + type[0].toUpperCase() + type.slice(1);
@@ -228,7 +230,7 @@ class BaseGraph {
     return textStack;
   }
   addIcon() {
-    this.nodeEnter.append('image').each((d, i, g) => {
+    this.nodeEnter.selectAll('.vertex').append('image').each((d, i, g) => {
       let r = this.getRadius(d);
       d3.select(g[i]).attr('xlink:href', this.getIcon(d))
         .classed('icon', true)
@@ -624,11 +626,11 @@ class BaseGraph {
     return this;
   }
   bindRightClick() {
-    this.nodeEnter.on('contextmenu', () => {
+    this.nodeEnter.selectAll('.vertex').on('contextmenu', () => {
       d3.event.preventDefault();
     });
 
-    this.nodeEnter.on('mouseup', (...args) => {
+    this.nodeEnter.selectAll('.vertex').on('mouseup', (...args) => {
       console.log(args);
       if (d3.event.button === 2) {
         // eventProxy.emit('menu.vertex');
@@ -711,7 +713,7 @@ class BaseGraph {
       .on('start', this.onDragStart.bind(this))
       .on('drag', this.onDrag.bind(this))
       .on('end', this.onDragEnd.bind(this))
-    this.nodeEnter.call(dragHandler)
+    this.nodeEnter.selectAll('.vertex').call(dragHandler)
 
     return this
   }
@@ -731,7 +733,7 @@ class BaseGraph {
   }
   // click
   addClick() {
-    this.nodeEnter.on('click', this.onVertexClick.bind(this))
+    this.nodeEnter.selectAll('.vertex').on('click', this.onVertexClick.bind(this))
     this.linkEnter.selectAll('edge-path').on('click', this.onEdgeClick.bind(this))
   }
   onVertexClick(d) {

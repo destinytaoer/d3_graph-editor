@@ -2,7 +2,7 @@ class Force extends BaseGraph {
   constructor(el, options) {
     let defaultOptions = {
       r: 10,                      // radius of vertex
-      distance: 100,              // length of edge
+      distance: 150,              // length of edge
       shape: 'circle',
       width: window.innerWidth,
       height: window.innerHeight,
@@ -107,6 +107,9 @@ class Force extends BaseGraph {
     this.chartGroup.selectAll('g.vertex')
       .attr('transform', (d) => `translate(${d.x}, ${d.y})`);
 
+    this.chartGroup.selectAll('.vertex-name')
+      .attr('transform', (d) => `translate(${d.x}, ${d.y})`);
+    
     // 移动边的位置
     var selfMap = {};
     this.chartGroup.selectAll('.edge-path')
@@ -185,7 +188,7 @@ class Force extends BaseGraph {
       .on('start', this.onDragStart.bind(this))
       .on('drag', this.onDrag.bind(this))
       .on('end', this.onDragEnd.bind(this))
-    this.nodeEnter.call(dragHandler)
+    this.nodeEnter.selectAll('.vertex').call(dragHandler)
 
     return this
   }
