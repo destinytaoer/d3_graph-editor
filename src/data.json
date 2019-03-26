@@ -1,0 +1,249 @@
+{
+  "vertexes": [
+    {
+      "_id": "aa",
+      "name": "深圳市钱爸爸电子商务有限公司",
+      "type": "company",
+      "level": 2
+    },
+    {
+      "_id": "bb",
+      "name": "深圳市钱爸爸财智教育咨询你有限公司",
+      "type": "company",
+      "level": 2
+    },
+    {
+      "_id": "cc",
+      "name": "深圳市益鑫澜山投资企业（有限合伙）",
+      "type": "company",
+      "level": 2
+    },
+    {
+      "_id": "dd",
+      "name": "深圳市钱虎三期优选投资企业（有限合伙）",
+      "type": "company",
+      "level": 4
+    },
+    {
+      "_id": "ee",
+      "name": "深圳市众人行投资企业（有限合伙）",
+      "type": "company",
+      "level": 4
+    },
+    {
+      "_id": "ff",
+      "name": "深圳市钱爸爸金融控股有限公司",
+      "type": "company",
+      "level": 4
+    },
+    {
+      "_id": "gg",
+      "name": "深圳市三河投资控股有限公司",
+      "type": "company",
+      "level": 1
+    },
+    {
+      "_id": "hh",
+      "name": "深圳市百川文化发展有限公司",
+      "type": "company",
+      "level": 4
+    },
+    {
+      "_id": "ii",
+      "name": "深圳市前海建安保险代理有限公司",
+      "type": "company",
+      "level": 4
+    },
+    {
+      "_id": "jj",
+      "name": "程涛",
+      "type": "person",
+      "level": 3
+    },
+    {
+      "_id": "kk",
+      "name": "张凯",
+      "type": "person",
+      "level": 3
+    },
+    {
+      "_id": "ll",
+      "name": "深圳市钱爸爸财富管理有限公司",
+      "type": "company",
+      "level": 2
+    },
+    {
+      "_id": "mm",
+      "name": "深圳市钱爸爸梧桐股权投资管理有限公司",
+      "type": "company",
+      "level": 2
+    },
+    {
+      "_id": "nn",
+      "name": "方炳涛",
+      "type": "person",
+      "level": 3
+    },
+    {
+      "_id": "oo",
+      "name": "深圳市钱爸爸基金投资管理有限公司",
+      "type": "company",
+      "level": 2
+    },
+    {
+      "_id": "pp",
+      "name": "袁涛",
+      "type": "person",
+      "level": 3
+    }
+  ],
+  "edges": [
+    {
+      "_id": "laa",
+      "_from": "gg",
+      "_to": "ii",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lbb",
+      "_from": "gg",
+      "_to": "aa",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lcc",
+      "_from": "gg",
+      "_to": "bb",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "ldd",
+      "_from": "gg",
+      "_to": "cc",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lee",
+      "_from": "gg",
+      "_to": "ll",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lff",
+      "_from": "gg",
+      "_to": "mm",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lgg",
+      "_from": "gg",
+      "_to": "oo",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lhh",
+      "_from": "pp",
+      "_to": "gg",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lii",
+      "_from": "aa",
+      "_to": "aa",
+      "label": "",
+      "type": ""
+    },
+    {
+      "_id": "ljj",
+      "_from": "gg",
+      "_to": "mm",
+      "label": "投资100万",
+      "type": "invest"
+    },
+    {
+      "_id": "lkk",
+      "_from": "aa",
+      "_to": "jj",
+      "label": "监事",
+      "type": "member"
+    },
+    {
+      "_id": "lll",
+      "_from": "aa",
+      "_to": "kk",
+      "label": "总经理",
+      "type": "member"
+    },
+    {
+      "_id": "lmm",
+      "_from": "aa",
+      "_to": "nn",
+      "label": "监事",
+      "type": "member"
+    },
+    {
+      "_id": "loo",
+      "_from": "aa",
+      "_to": "pp",
+      "label": "总经理、执行董事",
+      "type": "member"
+    },
+    {
+      "_id": "lpp",
+      "_from": "pp",
+      "_to": "cc",
+      "label": "投资",
+      "type": "member"
+    },
+    {
+      "_id": "lqq",
+      "_from": "pp",
+      "_to": "ii",
+      "label": "投资",
+      "type": "invest"
+    },
+    {
+      "_id": "lrr",
+      "_from": "kk",
+      "_to": "ff",
+      "label": "投资",
+      "type": "invest"
+    },
+    {
+      "_id": "lss",
+      "_from": "kk",
+      "_to": "hh",
+      "label": "投资",
+      "type": "invest"
+    },
+    {
+      "_id": "luu",
+      "_from": "pp",
+      "_to": "dd",
+      "label": "投资",
+      "type": "invest"
+    },
+    {
+      "_id": "lvv",
+      "_from": "pp",
+      "_to": "ee",
+      "label": "投资",
+      "type": "invest"
+    },
+    {
+      "_id": "lww",
+      "_from": "pp",
+      "_to": "ff",
+      "label": "投资",
+      "type": "invest"
+    }
+  ]
+}
