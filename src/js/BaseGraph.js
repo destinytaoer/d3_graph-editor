@@ -5,7 +5,8 @@
  *   el [ HTMLElement | String ] 容器元素或者 ID
  * 
  * @constructor
- *   el: 容器, d3 Selection 元素
+ *   el: 容器, HTML 元素
+ *   $el: 容器, d3 Selection 元素
  *   svg: SVG 画布, d3 Selection 元素
  *   chartGroup: 绘图容器, d3 Selection 元素
  *   nodeEnter: 所有的节点, d3 Selection 元素数组
@@ -34,14 +35,14 @@ class BaseGraph {
     }
 
     if (typeof el === 'string') {
-      this.$el = document.getElementById(el);
-      if (!this.$el) {
+      this.el = document.getElementById(el);
+      if (!this.el) {
         throw new Error('this page has not such id');
       }
-      this.el = d3.select(this.$el);
     } else {
-      this.el = d3.select(el);
+      this.el = el;
     }
+    this.$el = d3.select(this.$el);
 
     this.options = options;
 
@@ -68,8 +69,8 @@ class BaseGraph {
 
   /* 关于绘图 */
   preprocessChart () {
-    this.el.selectAll('*').remove();
-    this.svg = this.el.append('svg');
+    this.$el.selectAll('*').remove();
+    this.svg = this.$el.append('svg');
 
     this.svg.attr('width', this.options.width)
       .attr('height', this.options.height);
@@ -325,7 +326,7 @@ class BaseGraph {
                       min="${scaleExtent[0]}" max="${scaleExtent[1]}" value="1" step="any">
               <span id="enlarge">+</span>`;
     
-    let chartScale = this.el.style('position', 'relative')
+    let chartScale = this.$el.style('position', 'relative')
       .append('div')
       .html(str)
       .style('position', 'absolute')
