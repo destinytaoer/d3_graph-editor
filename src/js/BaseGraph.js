@@ -42,7 +42,7 @@ class BaseGraph {
     } else {
       this.el = el;
     }
-    this.$el = d3.select(this.$el);
+    this.$el = d3.select(this.el);
 
     this.options = options;
 
@@ -69,7 +69,7 @@ class BaseGraph {
 
   /* 关于绘图 */
   preprocessChart () {
-    this.$el.selectAll('*').remove();
+    this.$el.selectAll('svg').remove();
     this.svg = this.$el.append('svg');
 
     this.svg.attr('width', this.options.width)
@@ -693,18 +693,33 @@ class BaseGraph {
     draggable ? this.addDrag() : null;
     this.addClick();
     // this.addHover();
+    // this.bindRightClick();
 
     return this;
   }
-  bindRightClick() {
-    this.nodeEnter.selectAll('.vertex').on('contextmenu', () => {
+  bindRightClick(cb) {
+    this.$el.on('contextmenu', () => {
       d3.event.preventDefault();
     });
 
     this.nodeEnter.selectAll('.vertex').on('mouseup', (...args) => {
+      d3.event.stopPropagation();
       console.log(args);
       if (d3.event.button === 2) {
-        // eventProxy.emit('menu.vertex');
+        cb && cb(...args);
+      }
+    });
+    this.linkEnter.on('mouseup', (...args) => {
+      d3.event.stopPropagation();
+      console.log(args);
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
+    this.svg.on('mouseup', (...args) => {
+      console.log(args);
+      if (d3.event.button === 2) {
+        cb && cb(...args);
       }
     });
   }
