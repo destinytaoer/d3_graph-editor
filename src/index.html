@@ -4,13 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./css/graph-editor-app.css">
   <title>GraphDemo</title>
 </head>
 <body>
-  <div id="container"></div>
+  <div id="container" class="graph-editor"></div>
   <script src="./js/lib/d3.v5.js"></script>
+  <script src="./js/EventEmitter.js"></script>
+  <script src="./js/Cache.js"></script>
   <script src="./js/BaseGraph.js"></script>
   <script src="./js/Force.js"></script>
+  <script src="./js/Menu.js"></script>
+  <script src="./js/GraphEditor.js"></script>
   <script>
     var data = `
       {
@@ -287,14 +292,20 @@
 
     data = JSON.parse(data);
     var el = document.getElementById('container');
-    var el2 = document.querySelector('#container');
-    var force = new Force('container', {
-      width: '1000',
-      height: '600',
-      iconPath: '../demos/assets',
-      data:data
+    var graphEditor = new GraphEditor('container', {
+      graph: {
+        width: '1000',
+        height: '600',
+        iconPath: '../demos/assets',
+        data:data
+      }
     });
-    force.render();
+    graphEditor.init();
+    // let menu = document.createElement('div');
+    // menu.classList.add('graph-menu');
+    // menu.style.width = '100px';
+    // menu.style.height = '100px';
+    // el.appendChild(menu)
   </script>
 </body>
 </html>

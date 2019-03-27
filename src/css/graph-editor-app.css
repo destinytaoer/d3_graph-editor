@@ -1,0 +1,1115 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.link {
+    fill: none;
+}
+
+.gradient-link {
+    fill: none;
+    stroke-opacity: .5;
+}
+
+.solid {
+    stroke-dasharray: none;
+}
+
+.dash {
+    stroke-dasharray: 0,2,1;
+}
+
+.text-transparent {
+    fill: transparent;
+}
+
+.link-text,
+.node-text {
+    font-size: 12px;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.link.mouseenter,
+.link.selected-link {
+    stroke: #1F8FE0;
+}
+
+.link-text.unselected-text,
+.node-text.unselected-text {
+    font-weight: 500;
+}
+
+.node-text.selected-text,
+.node-text.mouseenter-text,
+.link-text.selected-text,
+.link-text.mouseenter-text {
+    fill: #1F8FE0;
+    font-weight: 700;
+}
+
+.graph-editor-app, .graph-editor {
+    height: 100%;
+}
+
+.graph-editor-app {
+    position: relative;
+    overflow: hidden;
+}
+
+.graph-editor .graph-topbar {
+    height: 50px;
+    background-color: #3967fa;
+}
+
+.graph-editor .graph-toolbar {
+    padding: 5px 0;
+    height: calc(100% - 10px);
+}
+
+.graph-editor .graph-toolbar span {
+    display: inline-block;
+    cursor: pointer;
+    margin: 0 5px;
+    width: 40px;
+    height: 40px;
+}
+
+.graph-editor .graph-toolbar span:hover,
+.graph-editor .graph-toolbar span.checked {
+    background-color: #2C4FC0;
+}
+
+.graph-editor .graph-toolbar span.disabled {
+    cursor: not-allowed;
+}
+
+.graph-editor .graph-toolbar .undo {
+    background: url(../graph-editor/undo_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .undo.disabled {
+    background: url(../graph-editor/undoh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .redo {
+    position: relative;
+    background: url(../graph-editor/redo_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .redo.disabled {
+    background: url(../graph-editor/redoh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .redo::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    margin: 7px 0;
+    left: 44px;
+    width: 1px;
+    height: 26px;
+    background: #8897EC;
+}
+
+.graph-editor .graph-toolbar .copy {
+    background: url(../graph-editor/copy_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .copy.disabled {
+    background: url(../graph-editor/copyh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .paste {
+    background: url(../graph-editor/paste_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .paste.disabled {
+    background: url(../graph-editor/pasteh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .delete {
+    position: relative;
+    background: url(../graph-editor/delete_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .delete.disabled {
+    background: url(../graph-editor/deleteh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .delete::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    margin: 7px 0;
+    left: 44px;
+    width: 1px;
+    height: 26px;
+    background: #8897EC;
+}
+
+.graph-editor .graph-toolbar .multi {
+    background: url(../graph-editor/multi_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .multi.disabled {
+    background: url(../graph-editor/multih_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .drag {
+    position: relative;
+    background: url(../graph-editor/drag_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .drag.disabled {
+    background: url(../graph-editor/dragh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .drag::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    margin: 7px 0;
+    left: 44px;
+    width: 1px;
+    height: 26px;
+    background: #8897EC;
+}
+
+.graph-editor .graph-toolbar .up {
+    background: url(../graph-editor/top_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .up.disabled {
+    background: url(../graph-editor/toph_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .down {
+    background: url(../graph-editor/bot_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .down.disabled {
+    background: url(../graph-editor/both_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .left {
+    background: url(../graph-editor/left_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .left.disabled {
+    background: url(../graph-editor/lefth_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .right {
+    background: url(../graph-editor/right_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .right.disabled {
+    background: url(../graph-editor/righth_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .force {
+    background: url(../graph-editor/force_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .force.disabled {
+    background: url(../graph-editor/forceh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .circle {
+    background: url(../graph-editor/circle_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .circle.disabled {
+    background: url(../graph-editor/circleh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .sankey {
+    position: relative;
+    background: url(../graph-editor/sankey_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .sankey.disabled {
+    background: url(../graph-editor/sankeyh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .sankey::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    margin: 7px 0;
+    left: 44px;
+    width: 1px;
+    height: 26px;
+    background: #8897EC;
+}
+
+.graph-editor .graph-toolbar .zoom-in {
+    background: url(../graph-editor/fad_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .zoom-in.disabled {
+    background: url(../graph-editor/fadh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .zoom-out {
+    background: url(../graph-editor/sux_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .zoom-out.disabled {
+    background: url(../graph-editor/suxh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .fit {
+    background: url(../graph-editor/fit_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .fit.disabled {
+    background: url(../graph-editor/fith_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .actual-size {
+    position: relative;
+    background: url(../graph-editor/actual_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .actual-size.disabled {
+    background: url(../graph-editor/actualh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .actual-size::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    margin: 7px 0;
+    left: 44px;
+    width: 1px;
+    height: 26px;
+    background: #8897EC;
+}
+
+.graph-editor .graph-toolbar .statistic {
+    position: relative;
+    width: 150px;
+    background: url(../graph-editor/statistic_icon.png) no-repeat 10px center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .statistic:hover,
+.graph-editor .graph-toolbar .statistic.checked {
+    background-color: #4d76fb;
+}
+
+.graph-editor .graph-toolbar .statistic.disabled {
+    background: url(../graph-editor/statistich_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .statistic::after {
+    content: '信息统计面板';
+    position: absolute;
+    left: 40px;
+    color: #fff;
+    line-height: 40px;
+}
+
+.graph-editor .graph-toolbar .shrink {
+    position: relative;
+    float: right;
+    background: url(../graph-editor/shrink_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .shrink.disabled {
+    background: url(../graph-editor/shrinkh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .full {
+    background: url(../graph-editor/full_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-toolbar .full.disabled {
+    background: url(../graph-editor/fullh_icon.png) no-repeat center center/26px 26px;
+}
+
+.graph-editor .graph-content {
+    position: relative;
+    margin-top: 1px;
+    height: calc(100% - 51px);
+}
+
+.graph-editor .graph-show {
+    /*margin-right: 240px;*/
+    height: 100%;
+}
+
+.graph-editor .graph-search {
+    position: absolute;
+    top: 20px;
+    left: 50px;
+    width: 406px;
+    height: 40px;
+    transition: .2s cubic-bezier(.4,0,.2,1);
+    transition-property: transform, left, width;
+    box-shadow: 1px 2px 100px rgba(0, 0, 0, .15);
+}
+
+.graph-editor .graph-search.graph-search-open {
+    width: 406px;
+}
+
+.graph-editor .graph-search.graph-search-shrink {
+    left: -406px;
+}
+
+.graph-editor .graph-search .graph-search-input {
+    float: left;
+    padding: 9px 10px 9px 15px;
+    width: 300px;
+    height: 40px;
+    color: #333;
+    font-size: 14px;
+    line-height: 20px;
+    border: 0;
+    outline: 0;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+
+.graph-editor .graph-search .graph-search-type {
+    position: relative;
+    float: left;
+    width: 49px;
+    height: 40px;
+    color: #ccc;
+    line-height: 40px;
+    text-align: center;
+    background: #fff;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.graph-editor .graph-search .graph-search-type::before {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    margin: 7px 0;
+    left: 0;
+    width: 1px;
+    height: 26px;
+    background: #e6e9ed;
+}
+
+.graph-editor .graph-search .graph-search-button {
+    width: 57px;
+    height: 40px;
+    padding: 0;
+    color: #fff;
+    /*float: left;*/
+    /*line-height: 40px;*/
+    /*text-align: center;*/
+    border: 0;
+    border-radius: 0 3px 3px 0;
+    background-color: #3967fa;
+    cursor: pointer;
+}
+
+.graph-editor .graph-search .graph-search-filter {
+    margin-top: 5px;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-button {
+    position: relative;
+    padding: 0 15px;
+    display: inline-block;
+    height: 32px;
+    outline: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: #fff;
+    user-select: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .015);
+    transition: all .3s cubic-bezier(.645, .045, .355, 1);
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group {
+    display: block;
+    margin-top: 5px;
+    padding: 4px 0;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, .65);
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-search-filter-group-item {
+    margin-left: 10px;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group label {
+    display: inline-block;
+    width: 33%;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-search-filter-checkbox-wrapper {
+    font-size: 14px;
+    color: rgba(0, 0, 0, .65);
+    cursor: pointer;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox {
+    position: relative;
+    top: -0.09em;
+    display: inline-block;
+    font-size: 14px;
+    color: rgba(0, 0, 0, .65);
+    cursor: pointer;
+    outline: none;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox-checked::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 2px;
+    border: 1px solid #3967fa;
+    content: '';
+    animation: antCheckboxEffect .36s ease-in-out;
+    animation-fill-mode: both;
+    visibility: hidden;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox-checked .graph-checkbox-inner {
+    background: #3967fa;
+    border-color: #3967fa;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox-checked .graph-checkbox-inner::after {
+    position: absolute;
+    display: table;
+    border: 2px solid #fff;
+    border-top: 0;
+    border-left: 0;
+    content: ' ';
+    transform: rotate(45deg) scale(1) translate(-50%, -50%);
+    -webkit-transition: all .2s cubic-bezier(.12, .4, .29, 1.46) .1s;
+    transition: all .2s cubic-bezier(.12, .4, .29, 1.46) .1s;
+    opacity: 1;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox + span {
+    padding: 0 8px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox-input {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox-inner {
+    position: relative;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    box-sizing: border-box;
+    background: #fff;
+    transition: all .3s;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-checkbox-inner::after {
+    position: absolute;
+    top: 50%;
+    left: 21%;
+    display: table;
+    width: 6px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: 0;
+    border-left: 0;
+    content: ' ';
+    -webkit-transform: rotate(45deg) scale(0) translate(-50%, -50%);
+    transform: rotate(45deg) scale(0) translate(-50%, -50%);
+    -webkit-transition: all .1s cubic-bezier(.71, -.46, .88, .6), opacity .1s;
+    transition: all .1s cubic-bezier(.71, -.46, .88, .6), opacity .1s;
+    opacity: 0;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-search-filter-group-item:last-child {
+    text-align: center;
+}
+
+.graph-editor .graph-search .graph-search-filter .graph-search-filter-group .graph-button {
+    margin-right: 10px;
+    padding: 1px 4px;
+    color: #fff;
+    border: 0;
+    font-size: 12px;
+    line-height: 2;
+    border-radius: 2px;
+    background-color: #3967fa;
+    cursor: pointer;
+}
+
+.graph-editor .graph-statistic {
+    position: absolute;
+    top: 30px;
+    right: 280px;
+    width: 302px;
+    box-sizing: border-box;
+    border: 1px solid #3967fa;
+}
+
+.graph-editor .graph-statistic .graph-statistic-title {
+    padding-left: 10px;
+    line-height: 14px;
+    color: #fff;
+    font-weight: 700;
+    background: #3967fa;
+}
+
+.graph-editor .graph-statistic .graph-statistic-content {
+    min-height: 110px;
+    background: #f7f9fb;
+}
+
+.graph-editor .graph-statistic .graph-statistic-icon {
+    position: relative;
+    display: inline-block;
+    width: 260px;
+    height: 40px;
+    background: url(../graph-editor/statistic_icon.png) no-repeat 0 center/26px 26px;;
+}
+
+.graph-editor .graph-statistic .graph-statistic-icon::after {
+    content: '信息统计面板';
+    position: absolute;
+    left: 30px;
+    color: #fff;
+    line-height: 40px;
+}
+
+.graph-editor .graph-statistic .graph-statistic-close {
+    vertical-align: 14px;
+    cursor: pointer;
+}
+
+.graph-editor .graph-statistic .graph-statistic-item {
+    position: relative;
+    display: inline-block;
+    margin: 15px 0;
+    width: 150px;
+    height: 80px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.graph-editor .graph-statistic .graph-statistic-item:nth-child(2n + 1) {
+    border-right: 1px solid #3967fa;
+}
+
+.graph-editor .graph-statistic .graph-statistic-item:nth-child(n + 3)::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    width: 100px;
+    height: 1px;
+    background: #3967fa;
+    -webkit-transform: translateX(25%);
+    -moz-transform: translateX(25%);
+    -ms-transform: translateX(25%);
+    -o-transform: translateX(25%);
+    transform: translateX(25%);
+}
+
+.graph-editor .graph-statistic .statistic-item-type,
+.graph-editor .graph-statistic .statistic-item-content {
+    text-align: center;
+}
+
+.graph-editor .graph-statistic .statistic-item-type {
+    line-height: 1.5;
+}
+
+.graph-editor .graph-statistic .statistic-item-content {
+    font-size: 28px;
+    color: #3967fa;
+    line-height: 2;
+}
+
+.graph-editor .graph-itempanel {
+    position: absolute;
+    right: 0;
+    width: 240px;
+    height: 100%;
+    border-left: 1px solid #e6e9ed;
+    background-color: #f7f9fb;
+    transition: .2s cubic-bezier(.4,0,.2,1);
+    transition-property: transform, right;
+    z-index: 2;
+}
+
+.graph-editor .graph-itempanel.graph-itempanel-shrink {
+    right: -240px;
+}
+
+.graph-editor .graph-itempanel .graph-itempanel-content {
+    padding: 10px 20px;
+}
+
+.graph-editor .graph-itempanel .graph-itempanel-list {
+    padding: 15px 0;
+    height: 60px;
+    border-bottom: 1px solid #e6e9ed;
+}
+
+.graph-editor .graph-itempanel .itempanel-list-item {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.graph-editor .graph-itempanel-list .itempanel-list-item:last-child {
+    margin: 0;
+}
+
+.graph-editor .graph-itempanel .itempanel-item-image {
+    cursor: pointer;
+}
+
+.graph-editor .graph-itempanel .itempanel-item-image.itempanel-item-image-move {
+    cursor: move;
+}
+
+.graph-editor .graph-itempanel .itempanel-item-name {
+    font-size: 12px;
+    line-height: 2;
+    text-align: center;
+}
+
+.graph-editor .graph-snapshoot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 240px;
+    height: 300px;
+    z-index: 3;
+}
+
+.graph-editor .graph-snapshoot .graph-snapshoot-content {
+    padding: 10px 20px;
+}
+
+.graph-editor .graph-snapshoot .graph-snapshoot-item {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border: 1px solid #e6e9ed;
+    background: #fff;
+    color: #3967fa;
+    line-height: 38px;
+}
+
+.graph-editor .graph-snapshoot .snapshoot-item-header {
+    font-size: 14px;
+}
+
+.graph-editor .graph-itempanel-title,
+.graph-editor .graph-snapshoot-title {
+    padding-left: 12px;
+    height: 32px;
+    color: #000;
+    font-weight: 700;
+    line-height: 32px;
+    border-top: 1px solid #dce3e8;
+    border-bottom: 1px solid #dce3e8;
+    background: #ebeef2;
+}
+
+.graph-editor .graph-menu {
+    position: absolute;
+    width: 150px;
+    background: #fff;
+    color: #000;
+    z-index: 2;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+
+.graph-editor .graph-menu .command {
+    padding: 8px;
+    height: 12px;
+    font-size: 12px;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+}
+
+.graph-editor .graph-menu .command:hover {
+    cursor: pointer;
+    background: #e5f7ff;
+}
+
+.graph-editor .graph-tooltip {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    max-width: 300px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, .65);
+    opacity: 0;
+    box-sizing: border-box;
+}
+
+.graph-editor .graph-tooltip.graph-tooltip-placement-top  {
+    padding-bottom: 8px;
+}
+
+.graph-editor .graph-tooltip .graph-tooltip-arrow {
+    position: absolute;
+    left: 50%;
+    bottom: 3px;
+    margin-left: -5px;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px 5px 0;
+    border-top-color: rgba(0, 0, 0, .75);
+}
+
+.graph-editor .graph-tooltip .graph-tooltip-inner {
+    padding: 6px 8px;
+    min-height: 32px;
+    color: #fff;
+    text-align: left;
+    text-decoration: none;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, .75);
+    -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+    -moz-box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+    -ms-word-wrap: break-word;
+    word-wrap: break-word;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.zoom-big-enter,.zoom-big-appear {
+    -webkit-animation-duration: .2s;
+    animation-duration: .2s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused
+}
+
+.zoom-big-leave {
+    -webkit-animation-duration: .2s;
+    animation-duration: .2s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused
+}
+
+.zoom-big-enter.zoom-big-enter-active,.zoom-big-appear.zoom-big-appear-active {
+    -webkit-animation-name: antZoomBigIn;
+    animation-name: antZoomBigIn;
+    -webkit-animation-play-state: running;
+    animation-play-state: running
+}
+
+.zoom-big-leave.zoom-big-leave-active {
+    -webkit-animation-name: antZoomBigOut;
+    animation-name: antZoomBigOut;
+    -webkit-animation-play-state: running;
+    animation-play-state: running;
+    pointer-events: none
+}
+
+.zoom-big-enter,.zoom-big-appear {
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    transform: scale(0);
+    -webkit-animation-timing-function: cubic-bezier(.08, .82, .17, 1);
+    animation-timing-function: cubic-bezier(.08, .82, .17, 1)
+}
+
+.zoom-big-leave {
+    -webkit-animation-timing-function: cubic-bezier(.78, .14, .15, .86);
+    animation-timing-function: cubic-bezier(.78, .14, .15, .86)
+}
+
+.zoom-big-fast-enter,.zoom-big-fast-appear {
+    -webkit-animation-duration: .1s;
+    animation-duration: .1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused
+}
+
+.zoom-big-fast-leave {
+    -webkit-animation-duration: .1s;
+    animation-duration: .1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused
+}
+
+.zoom-big-fast-enter.zoom-big-fast-enter-active,.zoom-big-fast-appear.zoom-big-fast-appear-active {
+    -webkit-animation-name: antZoomBigIn;
+    animation-name: antZoomBigIn;
+    -webkit-animation-play-state: running;
+    animation-play-state: running
+}
+
+.zoom-big-fast-leave.zoom-big-fast-leave-active {
+    -webkit-animation-name: antZoomBigOut;
+    animation-name: antZoomBigOut;
+    -webkit-animation-play-state: running;
+    animation-play-state: running;
+    pointer-events: none
+}
+
+.zoom-big-fast-enter,.zoom-big-fast-appear {
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    transform: scale(0);
+    -webkit-animation-timing-function: cubic-bezier(.08, .82, .17, 1);
+    animation-timing-function: cubic-bezier(.08, .82, .17, 1)
+}
+
+.zoom-big-fast-leave {
+    -webkit-animation-timing-function: cubic-bezier(.78, .14, .15, .86);
+    animation-timing-function: cubic-bezier(.78, .14, .15, .86)
+}
+
+.slide-up-enter,
+.slide-up-leave {
+    -webkit-animation-duration: .2s;
+    animation-duration: .2s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused;
+}
+
+.slide-up-enter.slide-up-enter-active {
+    -webkit-animation-name: antSlideUpIn;
+    animation-name: antSlideUpIn;
+    -webkit-animation-play-state: running;
+    animation-play-state: running;
+}
+
+.slide-up-leave.slide-up-leave-active {
+    -webkit-animation-name: antSlideUpOut;
+    animation-name: antSlideUpOut;
+    -webkit-animation-play-state: running;
+    animation-play-state: running;
+}
+
+.slide-up-enter {
+    opacity: 0;
+    -webkit-animation-timing-function: cubic-bezier(.23, 1, .32, 1);
+    animation-timing-function: cubic-bezier(.23, 1, .32, 1);
+}
+
+.slide-up-leave {
+    -webkit-animation-timing-function: cubic-bezier(.755, .05, .855, .06);
+    animation-timing-function: cubic-bezier(.755, .05, .855, .06);
+}
+
+@-webkit-keyframes antSlideUpIn {
+    0% {
+        opacity: 0;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(.8);
+        transform: scaleY(.8);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+}
+
+@keyframes antSlideUpIn {
+    0% {
+        opacity: 0;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(.8);
+        transform: scaleY(.8);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+}
+
+@-webkit-keyframes antSlideUpOut {
+    0% {
+        opacity: 1;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(.8);
+        transform: scaleY(.8);
+    }
+}
+
+@keyframes antSlideUpOut {
+    0% {
+        opacity: 1;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+        -webkit-transform: scaleY(.8);
+        transform: scaleY(.8);
+    }
+}
+
+@-webkit-keyframes antCheckboxEffect {
+    0% {
+        transform: scale(1);
+        opacity: .5;
+    }
+
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+@keyframes antCheckboxEffect {
+    0% {
+        transform: scale(1);
+        opacity: .5;
+    }
+
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+@-webkit-keyframes antZoomBigIn {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale(.8);
+        transform: scale(.8)
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+}
+
+@keyframes antZoomBigIn {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale(.8);
+        transform: scale(.8)
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+}
+
+@-webkit-keyframes antZoomBigOut {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(.8);
+        transform: scale(.8)
+    }
+}
+
+@keyframes antZoomBigOut {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(.8);
+        transform: scale(.8)
+    }
+}
+
+.graph-full-screen {
+    padding: 0 20px;
+}
