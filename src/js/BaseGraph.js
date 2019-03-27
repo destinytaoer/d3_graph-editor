@@ -684,6 +684,17 @@ class BaseGraph {
 
     return this;
   }
+  getNodeNum() {
+    let result = {};
+    this.vertexes.forEach((item) => {
+      if (!result[item.type]) {
+        result[item.type] = 1;
+      } else {
+        result[item.type]++;
+      }
+    })
+    return result;
+  }
 
   /* 关于事件的绑定 */
   bindEvents () {
