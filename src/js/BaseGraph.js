@@ -264,7 +264,7 @@ class BaseGraph {
       .classed('edge-path', true)
       .attr('fill', 'none')
       .attr('stroke', (d) => this.getEdgeColor(d))
-      .attr('id', (d) => d._id.replace('/', '_'))
+      .attr('id', (d) => d._id)
 
     // 增加反向路径, 用于旋转 label
     this.chartGroup.select('defs').selectAll('.reverse-path')
@@ -272,7 +272,7 @@ class BaseGraph {
       .enter()
       .append('path')
       .attr('id', function (d) {
-        return d._id.replace('/', '_') + '_reverse'
+        return d._id + '_reverse'
       })
 
     return this;
@@ -299,7 +299,7 @@ class BaseGraph {
       .data(this.edges)
       .enter()
       .append('marker')
-      .attr('id', (d) => 'arrow_' + d._id.replace('/', '_'))
+      .attr('id', (d) => 'arrow_' + d._id)
       .classed('arrow-marker', true)
       .append('path')
 
@@ -471,7 +471,7 @@ class BaseGraph {
     // }
   }
   getArrowUrl(d) {
-    return `url("#arrow_${d._id.replace('/', '_')}")`;
+    return `url("#arrow_${d._id}")`;
   }
   getEdgeColor(d) {
     return '#D9D9D9';

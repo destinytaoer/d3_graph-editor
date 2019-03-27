@@ -174,7 +174,7 @@ class Force extends BaseGraph {
         }
 
         // 增加反向路径，用于旋转 label
-        this.chartGroup.select('#' + d._id.replace('/', '_') + '_reverse')
+        this.chartGroup.select('#' + d._id + '_reverse')
           .attr('d', 'M' + d.target.x + ',' + d.target.y +
             'A' + dr + ',' + dr + ' 0 0 ' + (1 - sweepFlag) + ',' + d.source.x + ',' + d.source.y)
 
@@ -186,9 +186,9 @@ class Force extends BaseGraph {
       .attr('xlink:href', (d) => {
         // 通过旋转 label, 使文字始终处于 edge 上方
         if (d.source.x > d.target.x) {
-          return '#' + d._id.replace('/', '_') + '_reverse';
+          return '#' + d._id + '_reverse';
         } else {
-          return '#' + d._id.replace('/', '_');
+          return '#' + d._id;
         }
       })
     this.chartGroup.selectAll('.edge-label')
