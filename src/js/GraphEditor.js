@@ -42,16 +42,16 @@ class GraphEditor {
   init() {
     // Search
 
-    // graph
-    this.render('Force')
-      .bindEvents();
-    
     // menu
     this.menu = new Menu(this.el, this.menuOptions);
     this.menu.init();
     // toolbar
     this.toolbar = new Toolbar(this.el, this.toolbarOptions);
     this.toolbar.init();
+
+    // graph
+    this.render('Force')
+      .bindEvents();
   }
   render(type) {
     let typeMap = {
@@ -64,6 +64,7 @@ class GraphEditor {
   }
   bindEvents() {
     this.bindMenuEvent()
+      .bindToolbarEvent()
   }
   bindMenuEvent() {
     // 隐藏 menu
@@ -87,6 +88,49 @@ class GraphEditor {
       this.menu.renderInnerHTML('default');
       this.menu.show();
     })
+    return this;
   }
-
+  bindToolbarEvent() {
+    this.toolbar.bindClickEvents((e) => {
+      let el = e.target;
+      if (el.classList.contains('operation')) {
+        this.eventProxy.emit(el.dataset.type, el);
+      }
+    })
+    this.eventProxy.on('undo', (el) => {
+      console.log('undo');
+    })
+    this.eventProxy.on('redo', (el) => {
+      console.log('redo');
+    })
+    this.eventProxy.on('multi', (el) => {
+      console.log('multi');
+    })
+    this.eventProxy.on('select', (el) => {
+      console.log('select');
+    })
+    this.eventProxy.on('tree', (el) => {
+      console.log('tree');
+    })
+    this.eventProxy.on('force', (el) => {
+      console.log('force');
+    })
+    this.eventProxy.on('zoom_in', (el) => {
+      console.log('zoom_in');
+    })
+    this.eventProxy.on('zoom_in', (el) => {
+      console.log('zoom_out');
+    })
+    this.eventProxy.on('fit', (el) => {
+      console.log('fit');
+    })
+    this.eventProxy.on('actual_size', (el) => {
+      console.log('actual_size');
+    })
+    this.eventProxy.on('info', (el) => {
+      console.log('info');
+    })
+    
+    return this;
+  }
 }

@@ -69,12 +69,6 @@ html, body {
 .graph-toolbar .operations .operation.active {
   background: #2c4fc0;
 }
-.graph-toolbar .operations .operation span {
-  vertical-align: top;
-  font-size: 20px;
-  line-height: 40px;
-  padding-right: 5px;
-}
 
 .graph-toolbar .operations .operation + .operation {
   margin-left: 5px;

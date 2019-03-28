@@ -198,6 +198,11 @@ class Toolbar {
     }
   }
 
+  bindClickEvents(cb) {
+    this.el.addEventListener('click', (e) => {
+      cb && cb(e);
+    })
+  }
   // // 根据用户操作修改 toolbar 的 state 和 class
   // _changeStatesAndToolbar (type, state, boolean) {
   //   var $el = this.$el;
@@ -230,18 +235,11 @@ class Toolbar {
       let oLi = document.createElement('div');
       oLi.classList.add('operations');
       this.options[key].forEach((item) => {
-        if (key === 'info') {
-          let text = document.createElement('span');
-          text.classList.add('operation');
-          text.setAttribute('title', item.cnname)
-          text.innerHTML = '<i class="iconfont icon-info"></i><span>信息统计面板</span>';
-          oLi.appendChild(text);
-        } else {
-          let icon = document.createElement('i');
-          icon.classList.add('operation', 'iconfont', 'icon-' + item.name);
-          icon.setAttribute('title', item.cnname)
-          oLi.appendChild(icon);
-        }
+        let icon = document.createElement('i');
+        icon.classList.add('operation', 'iconfont', 'icon-' + item.name);
+        icon.setAttribute('title', item.cnname);
+        icon.dataset.type = item.name;
+        oLi.appendChild(icon);
       })
       toolbar.appendChild(oLi);
     })
