@@ -34,24 +34,31 @@ class GraphEditor {
     }
     this.$el = d3.select(this.el);
     this.options = options;
+    this.toolbarOptions = options.toolbar || {};
     this.menuOptions = options.menu || {};
     this.graphOptions = options.graph || {};
     this.eventProxy = new EventEmitter();
   }
   init() {
-    // toolbar
-   
     // Search
 
     // graph
     this.render('Force')
-      .bindEvents()
+      .bindEvents();
+    
     // menu
     this.menu = new Menu(this.el, this.menuOptions);
     this.menu.init();
+    // toolbar
+    this.toolbar = new Toolbar(this.el, this.toolbarOptions);
+    this.toolbar.init();
   }
   render(type) {
-    this.graph = new Force(this.el, this.options.graph);
+    let typeMap = {
+      'Force': Force,
+      // 'Tree': Tree
+    }
+    this.graph = new typeMap[type](this.el, this.options.graph);
     this.graph.render();
     return this;
   }
