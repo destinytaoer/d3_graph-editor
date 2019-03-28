@@ -32,54 +32,65 @@ class Toolbar {
       cache: [
         {
           name: 'undo',
+          cnname: '撤销',
           cb: null
         },
         {
           name: 'redo',
+          cnname: '重做',
           action: null
         }
       ],
       select: [
         {
           name: 'multi',
+          cnname: '框选',
           action: null
         },
         {
           name: 'select',
+          cnname: '单选',
           action: null
         }
       ],
       layout: [
         {
           name: 'tree',
+          cnname: '树状图',
           action: null
         },
         {
           name: 'force',
+          cnname: '力导向图',
           action: null
         }
       ],
       zoom: [
         {
           name: 'zoom_in',
+          cnname: '放大',
           action: null
         },
         {
           name: 'zoom_out',
+          cnname: '缩小',
           action: null
         },
         {
           name: 'fit',
+          cnname: '适应屏幕',
           action: null
         },
         {
           name: 'actual_size',
+          cnname: '原始大小',
           action: null
         }
       ],
       info: [
         {
-          name: 'info_statistic',
+          name: 'info',
+          cnname: '信息统计面板',
           action: null
         }
       ]
@@ -222,11 +233,13 @@ class Toolbar {
         if (key === 'info') {
           let text = document.createElement('span');
           text.classList.add('operation');
+          text.setAttribute('title', item.cnname)
           text.innerHTML = '<i class="iconfont icon-info"></i><span>信息统计面板</span>';
           oLi.appendChild(text);
         } else {
           let icon = document.createElement('i');
           icon.classList.add('operation', 'iconfont', 'icon-' + item.name);
+          icon.setAttribute('title', item.cnname)
           oLi.appendChild(icon);
         }
       })
