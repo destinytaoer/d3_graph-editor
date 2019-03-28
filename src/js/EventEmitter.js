@@ -2,7 +2,7 @@
  * EventEmitter: 订阅发布模式类
  *
  * @constructor
- *    ponds: 订阅池 {type: [...]}
+ *    ponds: 订阅池 {type: [ ... ]}
  * 
  * @function
  *    on(type, listener): 订阅
@@ -53,7 +53,7 @@ class EventEmitter {
   //=> 执行容器中所有的方法
   // 参数为 type, ...args
   emit (...args) {
-    let type = args[0];
+    let type = args.shift();
 
     let listeners = this.ponds[type];
     if (!listeners) return;
