@@ -35,13 +35,15 @@ class GraphEditor {
     this.$el = d3.select(this.el);
     this.options = options;
     this.toolbarOptions = options.toolbar || {};
+    this.searchOptions = options.search || {};
     this.menuOptions = options.menu || {};
     this.graphOptions = options.graph || {};
     this.eventProxy = new EventEmitter();
   }
   init() {
     // Search
-
+    this.search = new Search(this.el, this.searchOptions);
+    this.search.init();
     // menu
     this.menu = new Menu(this.el, this.menuOptions);
     this.menu.init();
@@ -66,6 +68,7 @@ class GraphEditor {
     this.bindEventListeners()
       .bindMenuEvent()
       .bindToolbarEvent()
+      .bindSearchEvent()
   }
   bindMenuEvent() {
     // 显示 menu
@@ -85,6 +88,19 @@ class GraphEditor {
       this.eventProxy.emit(el.dataset.operation, el);
     })
     
+    return this;
+  }
+  bindSearchEvent() {
+    // 搜索
+    this.search.bindClickEvents((type, data) => {
+      console.log(type)
+      if (type === 'search') {
+        let search = data.search;
+        let relation = data.relation;
+      } else {
+        
+      }
+    })
     return this;
   }
   bindEventListeners() {
