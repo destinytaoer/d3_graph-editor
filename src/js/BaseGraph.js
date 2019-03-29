@@ -441,7 +441,7 @@ class BaseGraph {
     return textStack;
   }
   getIcon(d) {
-    return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}.svg ` : '';
+    return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}_${d.state}.svg ` : '';
   }
   // 边样式
   getArrowConfig(d) {
