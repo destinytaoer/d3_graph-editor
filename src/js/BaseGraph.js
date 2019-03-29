@@ -44,6 +44,12 @@ class BaseGraph {
     }
     this.$el = d3.select(this.el);
 
+    let containerInfo = this.el.getBoundingClientRect();
+
+    options.width = containerInfo.width;
+    options.height = containerInfo.height;
+    console.log(options.width, options.height);
+
     this.options = options;
 
     // data 必须包含 vertexes 以及 edges 字段
@@ -153,83 +159,23 @@ class BaseGraph {
         .attr('y', v.dy)
         .style('font-size', this.options.vertexFontSize)
     });
+    this.addType(thisText);
+  }
+  addType(text) {
     // add type
-    // this.typeNameMap = {
-    //   'Person': '人',
-    //   'Company': '公司'
-    // }
-    // this.typeColorMap = {
-    //   'Person': 'red',
-    //   'Company': 'blue'
-    // }
-    // thisText.append('tspan')
-    //   .text(d => `[${this.typeNameMap[d._type]}]`)
-    //   .attr('fill', d => this.typeColorMap[d._type])
-    //   .style('font-size', this.options.vertexFontSize);
-  }
-  getTextStack(d) {
-    return this.textUnderVertex(d, 8);
-  }
-  textUnderVertex(d, lineNum) {
-    let textStack = [];
-    let name = d.name;
-    let y = this.getRadius(d) + this.options.vertexFontSize + 5;
-    let lineHeight = this.options.vertexFontSize + 2;
-    let j = 0;
-
-    while (name.slice(0, lineNum).length === lineNum) {
-      textStack.push({
-        name: name.slice(0, lineNum),
-        dx: 0,
-        dy: (j++ * lineHeight) + y
-      });
-      name = name.slice(lineNum);
+    this.typeNameMap = {
+      'person': '人',
+      'company': '公司'
     }
-    textStack.push({
-      name: name.slice(0),
-      dx: 0,
-      dy: (j++ * lineHeight) + y
-    });
-
-    return textStack;
-  }
-  textInVertex(d) {
-    let radius = this.getRadius(d);
-    let name = d.name;
-    let fontSize = this.options.vertexFontSize;
-    let lineHeight = fontSize + 2;
-
-    let lineNum = Math.floor(Math.sqrt(2) * radius / fontSize); // 每一行的字数
-    let maxLine = Math.floor(Math.sqrt(2) * radius / lineHeight); // 最大多少行
-    let rowNum = Math.ceil(name.length / lineNum); // 有多少行
-    rowNum = rowNum > maxLine ? maxLine : rowNum;
-
-    if (lineNum < 2) throw new Error('你的顶点太小了，不适合放置那么大的文字');
-
-    let dY = -lineHeight * (rowNum - 2) / 2;
-    let textStack = [];
-
-    while (name.slice(0, lineNum).length === lineNum) {
-      // 到最后一行之前，如果还有还多于一行字数，那么就使用省略号取代 3 个位
-      if (textStack.length === maxLine - 1 && name.slice(lineNum).length > 0) {
-        name = name.slice(0, lineNum - 1) + '...';
-        break;
-      }
-      textStack.push({
-        name: name.slice(0, lineNum),
-        dx: 0,
-        dy: dY
-      });
-      dY += lineHeight;
-      name = name.slice(lineNum);
+    this.typeColorMap = {
+      'person': 'red',
+      'company': 'blue'
     }
-    textStack.push({
-      name: name,
-      dx: 0,
-      dy: dY
-    });
-
-    return textStack;
+    
+    text.append('tspan')
+      .text(d => `[${this.typeNameMap[d.type]}]`)
+      .attr('fill', d => this.typeColorMap[d.type])
+      .style('font-size', this.options.vertexFontSize);
   }
   addIcon() {
     this.nodeEnter.selectAll('.vertex').append('image').each((d, i, g) => {
@@ -429,6 +375,70 @@ class BaseGraph {
     //   default:
     //     return '#000'
     // }
+  }
+  getTextStack(d) {
+    return this.textUnderVertex(d, 8);
+  }
+  textUnderVertex(d, lineNum) {
+    let textStack = [];
+    let name = d.name;
+    let y = this.getRadius(d) + this.options.vertexFontSize + 5;
+    let lineHeight = this.options.vertexFontSize + 2;
+    let j = 0;
+
+    while (name.slice(0, lineNum).length === lineNum) {
+      textStack.push({
+        name: name.slice(0, lineNum),
+        dx: 0,
+        dy: (j++ * lineHeight) + y
+      });
+      name = name.slice(lineNum);
+    }
+    textStack.push({
+      name: name.slice(0),
+      dx: 0,
+      dy: (j++ * lineHeight) + y
+    });
+
+    return textStack;
+  }
+  textInVertex(d) {
+    let radius = this.getRadius(d);
+    let name = d.name;
+    let fontSize = this.options.vertexFontSize;
+    let lineHeight = fontSize + 2;
+
+    let lineNum = Math.floor(Math.sqrt(2) * radius / fontSize); // 每一行的字数
+    let maxLine = Math.floor(Math.sqrt(2) * radius / lineHeight); // 最大多少行
+    let rowNum = Math.ceil(name.length / lineNum); // 有多少行
+    rowNum = rowNum > maxLine ? maxLine : rowNum;
+
+    if (lineNum < 2) throw new Error('你的顶点太小了，不适合放置那么大的文字');
+
+    let dY = -lineHeight * (rowNum - 2) / 2;
+    let textStack = [];
+
+    while (name.slice(0, lineNum).length === lineNum) {
+      // 到最后一行之前，如果还有还多于一行字数，那么就使用省略号取代 3 个位
+      if (textStack.length === maxLine - 1 && name.slice(lineNum).length > 0) {
+        name = name.slice(0, lineNum - 1) + '...';
+        break;
+      }
+      textStack.push({
+        name: name.slice(0, lineNum),
+        dx: 0,
+        dy: dY
+      });
+      dY += lineHeight;
+      name = name.slice(lineNum);
+    }
+    textStack.push({
+      name: name,
+      dx: 0,
+      dy: dY
+    });
+
+    return textStack;
   }
   getIcon(d) {
     return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}.svg ` : '';
