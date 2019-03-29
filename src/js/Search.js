@@ -60,7 +60,6 @@ class Search {
   init() {
     this.create();
   }
-
   bindClickEvents(cb) {
     this.el.addEventListener('click', (e) => {
       let el = e.target;
@@ -74,7 +73,6 @@ class Search {
       }
     })
   }
-
   create () {
     var search = document.createElement('div')
     search.classList.add('graph-search');
@@ -84,7 +82,7 @@ class Search {
     let html = '<form id="search_form">';
 
     // 节点筛选输入框
-    html += '<h3 class="search-title">节点筛选</h3>';
+    html += '<h3 class="search-title"><i class="iconfont icon-filter"></i> 节点筛选</h3>';
     html += '<div class="search-section">';
     this.options.search.forEach(item => {
       html += `
@@ -94,7 +92,7 @@ class Search {
     })
     html += '</div>';
     // 关系多选按钮
-    html += '<h3 class="search-title">关系过滤</h3>';
+    html += '<h3 class="search-title"><i class="iconfont icon-filter"></i> 关系过滤</h3>';
     html += '<div class="search-section">';
     this.options.relation.forEach(item => {
       html += `
@@ -136,5 +134,8 @@ class Search {
     })
 
     return data;
+  }
+  toggle() {
+    this.el.classList.toggle('active');
   }
 }

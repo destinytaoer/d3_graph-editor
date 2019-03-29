@@ -81,6 +81,10 @@ class Toolbar {
         {
           name: 'info',
           content: '信息统计面板'
+        },
+        {
+          name: 'filter',
+          content: '数据过滤面板'
         }
       ]
     }

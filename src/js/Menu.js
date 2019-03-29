@@ -158,7 +158,6 @@ class Menu {
   bindClickEvents(cb) {
     this.container.addEventListener('click', (e) => {
       let el = e.target;
-      console.log(e.target)
       if (el.classList.contains('command')) {
         cb && cb(el);
       } else {

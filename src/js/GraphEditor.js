@@ -168,6 +168,12 @@ class GraphEditor {
     })
     this.eventProxy.on('info', (el) => {
       console.log('info');
+      el.classList.toggle('active');
+    })
+    this.eventProxy.on('filter', (el) => {
+      console.log('filter');
+      el.classList.toggle('active');
+      this.search.toggle();
     })
     this.eventProxy.on('copy', (el) => {
       console.log('copy');

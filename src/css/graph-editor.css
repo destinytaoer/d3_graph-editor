@@ -4,7 +4,7 @@ html, body {
     height: 100%;
 }
 * {
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
 }
 .graph-editor {
   position: relative;
@@ -90,8 +90,16 @@ html, body {
   left: 0;
   width: 250px;
   border: 1px solid #3967fa;
+  background: #fff;
+  transition: all .5s ease-out;
+  transform: translate3d(-300px, 0, 0);
+  overflow: hidden;
+}
+.graph-editor .graph-search.active {
+  transform: translate3d(0, 0, 0);
 }
 .graph-search .search-title {
+  box-sizing: border-box;
   width: 100%;
   margin: 0;
   padding: 5px 10px;
@@ -100,6 +108,7 @@ html, body {
   color: #fff;
 }
 .graph-search .search-section {
+  box-sizing: border-box;
   width: 100%;
   padding: 20px;
 }
@@ -108,7 +117,7 @@ html, body {
 }
 .search-section .search-input-box .search-input {
   height: 40px;
-  width: 200px;
+  width: 180px;
   font-size: 14px;
 }
 .search-section .search-input-box .input {
@@ -161,9 +170,9 @@ input[type=checkbox]:checked::after{
   color: #fff;
   text-align: center; 
 }
-
 .graph-search .btns {
   text-align: right;
+  padding: 10px;
 }
 .graph-search .btns .btn {
   margin: 0 10px;
