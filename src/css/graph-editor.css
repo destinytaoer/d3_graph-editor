@@ -4,6 +4,13 @@ html, body {
     height: 100%;
 }
 
+.graph-editor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .graph-editor .graph-menu {
   position: absolute;
   width: 150px;

@@ -66,7 +66,7 @@ class Menu {
         },
         {
           name: "copy",
-          content: "粘贴",
+          content: "复制",
         },
         {
           name: "del",
@@ -84,7 +84,7 @@ class Menu {
         },
         {
           name: "copy",
-          content: "粘贴",
+          content: "复制",
         },
         {
           name: "del",

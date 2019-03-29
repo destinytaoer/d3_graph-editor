@@ -32,11 +32,11 @@ class Force extends BaseGraph {
   constructor(el, options) {
     let defaultOptions = {
       r: 20,                      // radius of vertex
-      distance: 100,              // length of edge
+      distance: 150,              // length of edge
       shape: 'circle',
       width: window.innerWidth,
       height: window.innerHeight,
-      chargeStrength: -2500,
+      chargeStrength: -500,
       alphaDecay: 0.07,
       vertexColor: '#e3e3e3',
       edgeColor: '#e3e3e3',
@@ -44,7 +44,7 @@ class Force extends BaseGraph {
       edgeFontSize: 10,
       scalable: true,
       scaleExtent: [0.5, 2],
-      scaleBar: true,
+      scaleBar: false,
       draggable: true
     }
     options = Object.assign({}, defaultOptions, options);
@@ -151,7 +151,7 @@ class Force extends BaseGraph {
         var middleIdx = (d.siblingNum + 1) / 2;
 
         if (d.siblingNum > 1) {
-          dr = d.edgeIndex === middleIdx ? 0 : dr / (Math.log((Math.abs(d.edgeIndex - middleIdx) * 2) + 1) +
+          dr = d.edgeIndex === middleIdx ? 0 : dr / (Math.log((Math.abs(d.edgeIndex - middleIdx) * 0.7) + 1) +
             (1 / (10 * Math.pow(d.edgeIndex, 2))))  // 弧度绘制
         }
         let sweepFlag = d.edgeIndex > middleIdx ? 1 : 0

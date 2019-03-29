@@ -105,20 +105,37 @@ class GraphEditor {
     })
     this.eventProxy.on('multi', (el) => {
       console.log('multi');
+      
+      let siblings = el.parentNode.childNodes;
+      Array.from(siblings).forEach(item => {
+        item === el ? item.classList.add('active') : item.classList.remove('active');
+      })
     })
     this.eventProxy.on('select', (el) => {
       console.log('select');
+      let siblings = el.parentNode.childNodes;
+      Array.from(siblings).forEach(item => {
+        item === el ? item.classList.add('active') : item.classList.remove('active');
+      })
     })
     this.eventProxy.on('tree', (el) => {
       console.log('tree');
+      let siblings = el.parentNode.childNodes;
+      Array.from(siblings).forEach(item => {
+        item === el ? item.classList.add('active') : item.classList.remove('active');
+      })
     })
     this.eventProxy.on('force', (el) => {
       console.log('force');
+      let siblings = el.parentNode.childNodes;
+      Array.from(siblings).forEach(item => {
+        item === el ? item.classList.add('active') : item.classList.remove('active');
+      })
     })
     this.eventProxy.on('zoom_in', (el) => {
       console.log('zoom_in');
     })
-    this.eventProxy.on('zoom_in', (el) => {
+    this.eventProxy.on('zoom_out', (el) => {
       console.log('zoom_out');
     })
     this.eventProxy.on('fit', (el) => {

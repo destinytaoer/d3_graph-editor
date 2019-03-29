@@ -235,16 +235,22 @@ class Toolbar {
       let oLi = document.createElement('div');
       oLi.classList.add('operations');
       this.options[key].forEach((item) => {
+        let type = item.name;
+        let name = item.cnname;
+        let activeMap = ['force', 'select'];
         let icon = document.createElement('i');
-        icon.classList.add('operation', 'iconfont', 'icon-' + item.name);
-        icon.setAttribute('title', item.cnname);
-        icon.dataset.type = item.name;
+        icon.classList.add('operation', 'iconfont', 'icon-' + type);
+        if (activeMap.includes(type)) {
+          icon.classList.add('active');
+        }
+        icon.setAttribute('title', name);
+        icon.dataset.type = type;
         oLi.appendChild(icon);
       })
       toolbar.appendChild(oLi);
     })
 
-    this.container.appendChild(toolbar);
+    this.container.insertBefore(toolbar, this.container.firstChild);
 
     return this;
   }
