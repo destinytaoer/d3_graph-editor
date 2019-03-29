@@ -38,10 +38,11 @@ class GraphEditor {
     this.searchOptions = options.search || {};
     this.menuOptions = options.menu || {};
     this.graphOptions = options.graph || {};
+    this.infoOptions = options.info || {};
     this.eventProxy = new EventEmitter();
   }
   init() {
-    // Search
+    // search
     this.search = new Search(this.el, this.searchOptions);
     this.search.init();
     // menu
@@ -54,6 +55,10 @@ class GraphEditor {
     // graph
     this.render('Force')
       .bindEvents();
+    
+    // info
+    this.info = new Info(this.el, this.infoOptions);
+    this.info.init(this.graph.getCount());
   }
   render(type) {
     let typeMap = {
@@ -169,6 +174,7 @@ class GraphEditor {
     this.eventProxy.on('info', (el) => {
       console.log('info');
       el.classList.toggle('active');
+      this.info.toggle();
     })
     this.eventProxy.on('filter', (el) => {
       console.log('filter');

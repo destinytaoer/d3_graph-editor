@@ -694,9 +694,26 @@ class BaseGraph {
 
     return this;
   }
-  getNodeNum() {
+  getCount() {
+    let result = {};
+    result.vertex = this.getVertexCount();
+    result.edge = this.getEdgeCount();
+    return result;
+  }
+  getVertexCount() {
     let result = {};
     this.vertexes.forEach((item) => {
+      if (!result[item.type]) {
+        result[item.type] = 1;
+      } else {
+        result[item.type]++;
+      }
+    })
+    return result;
+  }
+  getEdgeCount() {
+    let result = {};
+    this.edges.forEach((item) => {
       if (!result[item.type]) {
         result[item.type] = 1;
       } else {

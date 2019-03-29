@@ -83,14 +83,14 @@ html, body {
   cursor: not-allowed;
 }
 
-/* 搜索 */
+/* 过滤面板 */
 .graph-editor .graph-search {
   position: absolute;
   top: 50px;
   left: 0;
   width: 250px;
   border: 1px solid #3967fa;
-  background: #fff;
+  background: #f7f9fb;
   transition: all .5s ease-out;
   transform: translate3d(-300px, 0, 0);
   overflow: hidden;
@@ -203,6 +203,63 @@ input[type=checkbox]:checked::after{
   border-color: #adadad;
 }
 
+/* 信息面板 */
+.graph-editor .graph-info {
+  position: absolute;
+  right: 0;
+  top: 50px;
+  width: 300px;
+  border: 1px solid #3967fa;
+  background: #fff;
+  transition: all .5s ease-out;
+  transform: translate3d(300px, 0, 0);
+  overflow: hidden;
+}
+.graph-editor .graph-info.active {
+  transform: translate3d(0, 0, 0);
+}
+.graph-info .info-title {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 18px;
+  background: #3967fa;
+  color: #fff;
+}
+.graph-info .info-content {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  background: #f7f9fb;
+}
+.info-content .info-item {
+  box-sizing: border-box;
+  width: 50%;
+  padding: 0 20px;
+  margin: 15px 0;
+  text-align: center;
+}
+.info-content .info-item:nth-child(2n+1) {
+  border-right: 1px solid #3967fa;
+}
+.info-content .info-item:nth-child(n-1) .info-item-num:after {
+  content: '';
+  position: relative;
+  display: block;
+  width: 100%;
+  border-top: 1px solid #3967fa;
+  bottom: -16px;
+}
+
+.info-content .info-item .info-item-type {
+  line-height: 1.5;
+}
+.info-content .info-item .info-item-num {
+  font-size: 28px;
+  color: #3967fa;
+  line-height: 2;
+}
 
 .zoom-big-enter,.zoom-big-appear {
     -webkit-animation-duration: .2s;

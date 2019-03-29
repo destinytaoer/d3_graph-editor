@@ -8,7 +8,8 @@
  * @methods
  *   bindClickEvents(cb): 在点击搜索时触发的事件，在 GraphEditor 中调用时传入 cb，回传筛选条件数据
  *
- * by destiny on date
+ * create by destiny on 2019-03-28
+ * update by destiny on 2019-03-29
  */
 
 class Search {
