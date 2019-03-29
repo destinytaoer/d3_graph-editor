@@ -66,10 +66,15 @@ class BaseGraph {
     this.symbol = d3.symbol();
   }
 
-  render () {
+  init() {
     this.preprocessChart()
       .preprocessData()
       .draw()
+      .bindEvents();
+  }
+
+  reRender () {
+    this.draw()
       .bindEvents();
   }
 
@@ -609,11 +614,10 @@ class BaseGraph {
   }
   // 改变主题
   changeTheme(theme) {
-    this.theme = theme
-    this.resetStyle()
-    return this
+    this.theme = theme;
+    this.resetStyle();
+    return this;
   }
-  
   
   /* 关于数据的处理 */
   preprocessData () {
@@ -626,7 +630,7 @@ class BaseGraph {
     this.edges = data.edges;
     return this;
   }
-  changeRawData (data) {
+  changeRawData(data) {
     if (!data.vertexes || !data.edges) throw new error('data must have vertexes and edges properties');
 
     this.rawData = JSON.parse(JSON.stringify(data));
@@ -634,36 +638,48 @@ class BaseGraph {
 
     return this;
   }
-  filterVertex (filter, isRaw) {
+  filterVertex(filter, isRaw) {
     if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
     let vertexIds = [];
+    let filterIds = [];
 
     let vertexes = isRaw ? this.data.vertexes : this.vertexes;
     let edges = isRaw ? this.data.edges : this.edges;
 
     // 筛选掉 filter 返回为 false 的顶点
-    this.vertexes = vertexes.filter((...args) => {
-      console.log(...args);
+    vertexes.forEach((d, i, g) => {
       // 如果 filter 执行返回为 true，则保留
-      if (filter(...args)) {
-        vertexIds.push(d._id);
+      if (filter(d, i, g)) {
+        console.log(true);
+        filterIds.push(d._id);
+      }
+    });
+
+    // 保留 filter 返回 true 相连的所有边
+    this.edges = edges.filter((d) => {
+      if (filterIds.includes(d._from) || filterIds.includes(d._to)) {
+        vertexIds.push(d._to);
+        vertexIds.push(d._from);
         return true;
       }
       return false;
     });
 
-    // 筛选掉被筛选节点的所有关系边
-    this.edges = edges.filter((d) => {
-      if (vertexIds.includes(d._from) || vertexIds.includes(d._to)) {
+    // 去重
+    vertexIds = Array.from(new Set(vertexIds));
+
+    // 筛选掉没有边连接的顶点
+    this.vertexes = vertexes.filter((d) => {
+      if (vertexIds.includes(d._id)) {
         return true;
       }
       return false;
-    });
+    })
 
     return this;
   }
-  filterEdge (filter, isRaw) {
+  filterEdge(filter, isRaw) {
     if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
     let vertexIds = [];
@@ -671,9 +687,9 @@ class BaseGraph {
     let vertexes = isRaw ? this.data.vertexes : this.vertexes;
     let edges = isRaw ? this.data.edges : this.edges;
 
-    // 筛选掉 filter 返回为 false 的 边
-    this.edges = edges.filter((...args) => {
-      if (filter(...args)) {
+    // 筛选掉 filter 返回为 false 的边
+    this.edges = edges.filter((d, i, g) => {
+      if (filter(d, i, g)) {
         vertexIds.push(d._from);
         vertexIds.push(d._to);
         return true;
@@ -692,6 +708,13 @@ class BaseGraph {
       return false;
     })
 
+    return this;
+  }
+  resetData() {
+    this.vertexes = this.data.vertexes;
+    this.edges = this.data.edges;
+
+    this.reRender();
     return this;
   }
   getCount() {

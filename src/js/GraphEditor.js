@@ -66,7 +66,7 @@ class GraphEditor {
       // 'Tree': Tree
     }
     this.graph = new typeMap[type](this.el, this.options.graph);
-    this.graph.render();
+    this.graph.init();
     return this;
   }
   bindEvents() {
@@ -98,12 +98,18 @@ class GraphEditor {
   bindSearchEvent() {
     // 搜索
     this.search.bindClickEvents((type, data) => {
-      console.log(type)
       if (type === 'search') {
         let search = data.search;
         let relation = data.relation;
+        this.graph.filterVertex(d => {
+          return d.name === search.name;
+        }, true);
+        this.graph.filterEdge(d => {
+          return relation.includes(d.type);
+        });
+        this.graph.reRender();
       } else {
-        
+        this.graph.resetData();
       }
     })
     return this;

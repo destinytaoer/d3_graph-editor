@@ -98,7 +98,7 @@ class Search {
     this.options.relation.forEach(item => {
       html += `
       <div class="search-input-box">
-        <input class="input" type="checkbox" id="${item.name}" value="${item.name}" name="relation">
+        <input class="input" checked type="checkbox" id="${item.name}" value="${item.name}" name="relation">
         <label class="label" for="${item.name}">${item.content}</label>
       </div>`
     })
@@ -131,7 +131,9 @@ class Search {
     })
 
     this.options.relation.forEach(item => {
-      data.relation.push(form[item.name].value);
+      if (form[item.name].checked) {
+        data.relation.push(form[item.name].value);
+      }
     })
 
     return data;
