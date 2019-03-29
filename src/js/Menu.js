@@ -33,7 +33,7 @@ class Menu {
     }
 
     let defalutOptions = {
-      'default': [
+      default: [
         {
           name: 'undo',
           content: '撤销'
@@ -47,15 +47,15 @@ class Menu {
           content: '粘贴'
         },
         {
-          name: 'save-as-json',
+          name: 'export_json',
           content: '导出 - 存为 json 数据'
         },
         {
-          name: 'save-as-png',
+          name: 'export_png',
           content: '导出 - 存为 png 图片'
         }
       ],
-      "vertex": [
+      vertex: [
         {
           name: "edit",
           content: "编辑"
@@ -73,7 +73,7 @@ class Menu {
           content: "删除"
         }
       ],
-      "edge": [
+      edge: [
         {
           name: "edit",
           content: "编辑"
@@ -155,11 +155,15 @@ class Menu {
     return this;
   }
 
-  bindEvents () {
-    var configType, eventType = '';
-    
+  bindClickEvents(cb) {
     this.container.addEventListener('click', (e) => {
+      let el = e.target;
+      console.log(e.target)
+      if (el.classList.contains('command')) {
+        cb && cb(el);
+      } else {
         this.hide();
+      }
     })
   }
 }

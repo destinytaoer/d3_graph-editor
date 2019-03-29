@@ -32,66 +32,55 @@ class Toolbar {
       cache: [
         {
           name: 'undo',
-          cnname: '撤销',
-          cb: null
+          content: '撤销'
         },
         {
           name: 'redo',
-          cnname: '重做',
-          action: null
+          content: '重做'
         }
       ],
       select: [
         {
           name: 'multi',
-          cnname: '框选',
-          action: null
+          content: '框选'
         },
         {
           name: 'select',
-          cnname: '单选',
-          action: null
+          content: '单选'
         }
       ],
       layout: [
         {
           name: 'tree',
-          cnname: '树状图',
-          action: null
+          content: '树状图'
         },
         {
           name: 'force',
-          cnname: '力导向图',
-          action: null
+          content: '力导向图'
         }
       ],
       zoom: [
         {
           name: 'zoom_in',
-          cnname: '放大',
-          action: null
+          content: '放大'
         },
         {
           name: 'zoom_out',
-          cnname: '缩小',
-          action: null
+          content: '缩小'
         },
         {
           name: 'fit',
-          cnname: '适应屏幕',
-          action: null
+          content: '适应屏幕'
         },
         {
           name: 'actual_size',
-          cnname: '原始大小',
-          action: null
+          content: '原始大小'
         }
       ],
       info: [
         {
           name: 'info',
-          cnname: '信息统计面板',
-          action: null
+          content: '信息统计面板'
         }
       ]
     }
@@ -100,130 +89,16 @@ class Toolbar {
   }
   init() {
     this.create();
-    // this._bindEvent();
-  }
-
-  eventListener (e, type) {
-    var id = this._id;
-    switch (type) {
-        case 'undo': {
-            eventProxy[id].emit('undo');
-            break;
-        }
-
-        case 'redo': {
-            eventProxy[id].emit('redo');
-            break;
-        }
-
-        case 'copy': {
-            console.log('copy');
-            break;
-        }
-
-        case 'paste': {
-            console.log('paste');
-            break;
-        }
-
-        case 'delete': {
-            console.log('delete');
-            break;
-        }
-
-        case 'multi':
-        case 'drag': {
-            this._changeStatesAndToolbar('operation', type);
-            break;
-        }
-
-        case 'down':
-        case 'up':
-        case 'right':
-        case 'left':
-        case 'force':
-        case 'circle':
-        case 'sankey': {
-            this._changeStatesAndToolbar('layout', type);
-            eventProxy[id].emit('layout', type);
-            break;
-        }
-
-        case 'zoom-in':
-        case 'zoom-out': {
-            eventProxy[id].emit('zoom.io', type);
-            break;
-        }
-
-        case 'fit': {
-            eventProxy[id].emit('zoom.f');
-            break;
-        }
-
-        case 'actual-size': {
-            eventProxy[id].emit('zoom.as');
-            break;
-        }
-
-        case 'statistic': {
-            if (this.states[type]) {
-                this._changeStatesAndToolbar('statistic', type, false);
-                eventProxy[id].emit('statistic.hide', type);
-            } else {
-                this._changeStatesAndToolbar('statistic', type);
-                eventProxy[id].emit('statistic.show', type);
-            }
-            break;
-        }
-
-        case 'shrink': {
-            if (this.states[type]) {
-                this._changeStatesAndToolbar('shrink', type, false);
-                eventProxy[id].emit('shrink.false', type);
-            } else {
-                this._changeStatesAndToolbar('shrink', type);
-                eventProxy[id].emit('shrink.true', type);
-            }
-            break;
-        }
-
-        case 'full': {
-            console.log('full');
-            break;
-        }
-
-        default: {
-            console.log('this event is not exist');
-        }
-    }
   }
 
   bindClickEvents(cb) {
     this.el.addEventListener('click', (e) => {
-      cb && cb(e);
+      let el = e.target;
+      if (el.classList.contains('operation')) {
+        cb && cb(el);
+      }
     })
   }
-  // // 根据用户操作修改 toolbar 的 state 和 class
-  // _changeStatesAndToolbar (type, state, boolean) {
-  //   var $el = this.$el;
-  //   var states = this.states;
-  //   var statesKey = Object.keys(states);
-  //   var noRenderItems = this._getNoRenderItemsByConfig();
-  //   this._getTypeOfStates(type).forEach(function (value) {
-  //       states[value] = false;
-  //   });
-  //   states[state] = typeof boolean === 'boolean' ? boolean : true;
-  //   statesKey.forEach(function (value) {
-  //       if (!~noRenderItems.indexOf(value)) {
-  //           var $temp = DOM.getDOMByClass($el, value);
-  //           if (states[value]) {
-  //               DOM.addClass($temp, 'checked');
-  //           } else if (!states[value]) {
-  //               DOM.removeClass($temp, 'checked');
-  //           }
-  //       }
-  //   });
-  // }
 
   create () {
     var toolbar = document.createElement('div')
@@ -235,16 +110,16 @@ class Toolbar {
       let oLi = document.createElement('div');
       oLi.classList.add('operations');
       this.options[key].forEach((item) => {
-        let type = item.name;
-        let name = item.cnname;
+        let operation = item.name;
+        let name = item.content;
         let activeMap = ['force', 'select'];
         let icon = document.createElement('i');
-        icon.classList.add('operation', 'iconfont', 'icon-' + type);
-        if (activeMap.includes(type)) {
+        icon.classList.add('operation', 'iconfont', 'icon-' + operation);
+        if (activeMap.includes(operation)) {
           icon.classList.add('active');
         }
         icon.setAttribute('title', name);
-        icon.dataset.type = type;
+        icon.dataset.operation = operation;
         oLi.appendChild(icon);
       })
       toolbar.appendChild(oLi);
@@ -253,13 +128,5 @@ class Toolbar {
     this.container.insertBefore(toolbar, this.container.firstChild);
 
     return this;
-  }
-
-  _bindEvent () {
-    var self = this;
-    var $el = this.$el;
-    DOM.addEventListener($el, 'click', function (e) {
-        self.eventListener.call(self, e, e.target.className.split(' ')[0]);
-    })
   }
 }

@@ -63,19 +63,32 @@ class GraphEditor {
     return this;
   }
   bindEvents() {
-    this.bindMenuEvent()
+    this.bindEventListeners()
+      .bindMenuEvent()
       .bindToolbarEvent()
   }
   bindMenuEvent() {
-    // 隐藏 menu
-    this.$el.on('click', () => {
-      this.menu.hide();
-    })
     // 显示 menu
     this.graph.bindRightClick((d) => {
       let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
       this.eventProxy.emit('menu.' + type);
     })
+    // 绑定菜单点击
+    this.menu.bindClickEvents((el) => {
+      this.eventProxy.emit(el.dataset.operation, el);
+    })
+    return this;
+  }
+  bindToolbarEvent() {
+    // 工具栏点击
+    this.toolbar.bindClickEvents((el) => {
+      this.eventProxy.emit(el.dataset.operation, el);
+    })
+    
+    return this;
+  }
+  bindEventListeners() {
+    // 菜单的显示
     this.eventProxy.on('menu.vertex', () => {
       this.menu.renderInnerHTML('vertex');
       this.menu.show();
@@ -88,15 +101,8 @@ class GraphEditor {
       this.menu.renderInnerHTML('default');
       this.menu.show();
     })
-    return this;
-  }
-  bindToolbarEvent() {
-    this.toolbar.bindClickEvents((e) => {
-      let el = e.target;
-      if (el.classList.contains('operation')) {
-        this.eventProxy.emit(el.dataset.type, el);
-      }
-    })
+
+    // 功能
     this.eventProxy.on('undo', (el) => {
       console.log('undo');
     })
@@ -147,7 +153,19 @@ class GraphEditor {
     this.eventProxy.on('info', (el) => {
       console.log('info');
     })
-    
+    this.eventProxy.on('copy', (el) => {
+      console.log('copy');
+    })
+    this.eventProxy.on('paste', (el) => {
+      console.log('paste');
+    })
+    this.eventProxy.on('export_json', (el) => {
+      console.log('export_json');
+    })
+    this.eventProxy.on('export_png', (el) => {
+      console.log('export_png');
+    })
+
     return this;
   }
 }
