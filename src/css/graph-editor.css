@@ -212,7 +212,7 @@ input[type=checkbox]:checked::after{
   border: 1px solid #3967fa;
   background: #fff;
   transition: all .5s ease-out;
-  transform: translate3d(300px, 0, 0);
+  transform: translate3d(350px, 0, 0);
   overflow: hidden;
 }
 .graph-editor .graph-info.active {
@@ -251,7 +251,6 @@ input[type=checkbox]:checked::after{
   border-top: 1px solid #3967fa;
   bottom: -16px;
 }
-
 .info-content .info-item .info-item-type {
   line-height: 1.5;
 }

@@ -87,7 +87,7 @@ class BaseGraph {
       .attr('height', this.options.height);
 
     this.chartGroup = this.svg.append('g')
-      .classed('force', true);
+      .classed('chart', true);
     
     this.chartGroup.append('g')
       .classed('edges', true);
@@ -799,13 +799,13 @@ class BaseGraph {
   onZoom() {
     this.chartGroup
       .attr('transform', d3.event.transform);
-    
+
     if (d3.event.transform.k < 0.8) {
-      this.nodeEnter.selectAll('.vertex-name').style('display', 'none');
-      this.linkEnter.selectAll('.edge-label').style('display', 'none');
+      this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
+      this.linkEnter.selectAll('.edge-label').style('opacity', '0');
     } else {
-      this.nodeEnter.selectAll('.vertex-name').style('display', 'block');
-      this.linkEnter.selectAll('.edge-label').style('display', 'block');
+      this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
+      this.linkEnter.selectAll('.edge-label').style('opacity', '1');
     }
 
     let range = document.getElementById('scale');
@@ -894,5 +894,45 @@ class BaseGraph {
   onEdgeClick(d) {
     console.log('edge clicked')
     // eventProxy.emit('click.vertex', d);
+  }
+
+  /* 辅助函数 */
+  getTransform() {
+    return d3.zoomTransform(this.svg.node());
+  }
+  transformTo(transform) {
+    this.svg.transition().duration(300).call(this.zoom.transform, transform);
+  }
+  zoomTo(scale) {
+    // 由于 zoom 事件是绑定在 svg 上的，所以要从 svg 上获取
+    let transform = this.getTransform();
+    let curK = transform.k;
+    let scaleExtent = this.zoom.scaleExtent();
+
+    // 达到最大时再增加，或者达到最小时再缩小，则直接返回
+    if ((scale - curK) > 0 && curK === scaleExtent[1] || (scale - curK) < 0 && curK === scaleExtent[0]) return;
+
+    let nextK = scale;
+    
+    // 如果当前缩放处于最大或最小，那么直接返回
+    // 对下一个缩放进行范围限制
+    nextK = nextK < scaleExtent[0] ? scaleExtent[0] : (nextK > scaleExtent[1] ? scaleExtent[1] : nextK);
+
+    // 中心位置
+    let containerRect = this.el.getBoundingClientRect();
+    let centerX = containerRect.width / 2;
+    let centerY = containerRect.height / 2;
+    let curX = transform.x;
+    let curY = transform.y;
+
+    // 计算缩放后的位移：(centerX - nextX) / nextK = (centerX - curX) / curK
+    // 使得缩放始终以当前位移为中心进行
+    let nextX = centerX - (centerX - curX) / curK * nextK;
+    let nextY = centerY - (centerY - curY) / curK * nextK;
+
+    // 仍然要挂载到 svg 上
+    this.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
+    
+    return this;
   }
 }

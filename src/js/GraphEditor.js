@@ -102,6 +102,7 @@ class GraphEditor {
         let search = data.search;
         let relation = data.relation;
         this.graph.filterVertex(d => {
+          if (!search.name) return true;
           return d.name === search.name;
         }, true);
         this.graph.filterEdge(d => {
@@ -111,6 +112,7 @@ class GraphEditor {
       } else {
         this.graph.resetData();
       }
+      this.info.bindData(this.graph.getCount());
     })
     return this;
   }
@@ -167,15 +169,43 @@ class GraphEditor {
     })
     this.eventProxy.on('zoom_in', (el) => {
       console.log('zoom_in');
+      const step = 0.3;
+      this.graph.zoomTo(step + d3.zoomTransform(this.graph.svg.node()).k);
     })
     this.eventProxy.on('zoom_out', (el) => {
       console.log('zoom_out');
+      const step = -0.3;
+      this.graph.zoomTo(step + d3.zoomTransform(this.graph.svg.node()).k);
     })
     this.eventProxy.on('fit', (el) => {
       console.log('fit');
+      let chart = this.el.querySelector('.chart').getBoundingClientRect();
+      let container = this.el.getBoundingClientRect();
+      let chartX = chart.width / 2;
+      let chartY = chart.height / 2;
+      let centerX = container.width / 2;
+      let centerY = container.height / 2;
+
+      let transform = this.graph.getTransform();
+      let curScale = transform.k;
+      let curX = transform.x;
+      let curY = transform.y;
+      console.log(chart)
+
+      let scale = Math.min(container.width / chart.width, (container.height - 50) / chart.height) * curScale;
+
+      // let flag = scale > 1 ? -1 : 1;
+
+      // 计算公式：以 (0,50) 缩放为 1 的状态下，进行对比计算
+      let x = (centerX - chartX);
+      let y = (centerY - chartY + 50);
+
+      this.graph.transformTo(d3.zoomIdentity.translate(x, y).scale(scale));
     })
     this.eventProxy.on('actual_size', (el) => {
       console.log('actual_size');
+      // 通过计算使得最终缩放值为 1
+      this.graph.zoomTo(1);
     })
     this.eventProxy.on('info', (el) => {
       console.log('info');

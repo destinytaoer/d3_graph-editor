@@ -88,7 +88,7 @@ class Info {
       html += `
         <div class="info-item">
           <div class="info-item-type">${content}</div>
-          <div class="info-item-num">${data[key]}</div>
+          <div class="info-item-num">${data[key] || 0}</div>
         </div>`;
     })
     this.$el.select('.info-content').html(html);
