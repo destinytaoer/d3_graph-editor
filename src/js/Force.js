@@ -214,11 +214,11 @@ class Force extends BaseGraph {
   }
 
   addDrag() {
-    let dragHandler = d3.drag()
+    this.drag = d3.drag()
       .on('start', this.onDragStart.bind(this))
       .on('drag', this.onDrag.bind(this))
       .on('end', this.onDragEnd.bind(this))
-    this.nodeEnter.selectAll('.vertex').call(dragHandler)
+    this.nodeEnter.selectAll('.vertex').call(this.drag)
 
     return this
   }

@@ -81,6 +81,14 @@ class GraphEditor {
       let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
       this.eventProxy.emit('menu.' + type);
     })
+    this.graph.drag.on('start', (...arg) => {
+      this.menu.hide();
+      this.graph.onDragStart.apply(this.graph, arg);
+    })
+    this.graph.zoom.on('zoom', () => {
+      this.menu.hide();
+      this.graph.onZoom.call(this.graph);
+    })
     // 绑定菜单点击
     this.menu.bindClickEvents((el) => {
       this.eventProxy.emit(el.dataset.operation, el);
