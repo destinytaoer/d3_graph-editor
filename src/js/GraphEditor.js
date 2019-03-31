@@ -181,26 +181,28 @@ class GraphEditor {
       console.log('fit');
       let chart = this.el.querySelector('.chart').getBoundingClientRect();
       let container = this.el.getBoundingClientRect();
-      let chartX = chart.width / 2;
-      let chartY = chart.height / 2;
+      let toolbarH = this.toolbar.el.getBoundingClientRect().height;
+
+      // 当前图的中心坐标
+      let chartX = chart.left + chart.width / 2;
+      let chartY = chart.top + chart.height / 2;
+      // 图展示区域的中心坐标
       let centerX = container.width / 2;
-      let centerY = container.height / 2;
+      let centerY = container.height / 2 + toolbarH / 2;
 
       let transform = this.graph.getTransform();
-      let curScale = transform.k;
+      let curK = transform.k;
       let curX = transform.x;
       let curY = transform.y;
-      console.log(chart)
 
-      let scale = Math.min(container.width / chart.width, (container.height - 50) / chart.height) * curScale;
+      // 容器高度要减去 toolbar 的高度，防止 toolbar 盖住图谱
+      let nextK = Math.min(container.width / chart.width, (container.height - toolbarH) / chart.height) * curK;
 
-      // let flag = scale > 1 ? -1 : 1;
+      // 计算移位：(centerX - nextX) * nextK = (chartX - curX) * curK
+      let nextX = centerX - (chartX - curX) / curK * nextK;
+      let nextY = centerY - (chartY - curY) / curK * nextK;
 
-      // 计算公式：以 (0,50) 缩放为 1 的状态下，进行对比计算
-      let x = (centerX - chartX);
-      let y = (centerY - chartY + 50);
-
-      this.graph.transformTo(d3.zoomIdentity.translate(x, y).scale(scale));
+      this.graph.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
     })
     this.eventProxy.on('actual_size', (el) => {
       console.log('actual_size');
