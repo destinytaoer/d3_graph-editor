@@ -26,7 +26,7 @@
  *   filterEdge(filter, isRaw): 过滤边，需要另外调用 render 方法进行重绘
  *
  * create by destiny on 2019-03-25
- * update by destiny on 2019-03-26
+ * update by destiny on 2019-04-01
  */
 class Force extends BaseGraph {
   constructor(el, options) {

@@ -15,7 +15,7 @@
  *   
  *
  * create by destiny on 2019-03-26
- * update by destiny on 2019-03-26
+ * update by destiny on 2019-04-01
  */
 class GraphEditor {
   constructor (el, options) {
@@ -123,11 +123,11 @@ class GraphEditor {
       })
       // 右键菜单的隐藏
       this.graph.drag.on('start', (...arg) => {
-        this.menu.hide();
+        this.eventProxy.emit('menu.hide');
         this.graph.onDragStart.apply(this.graph, arg);
       })
       this.graph.zoom.on('zoom', () => {
-        this.menu.hide();
+        this.eventProxy.emit('menu.hide');
         this.refreshToolbar();
         this.graph.onZoom.call(this.graph);
       })
@@ -145,8 +145,18 @@ class GraphEditor {
       this.menu.renderInnerHTML('default');
       this.menu.show();
     })
+    this.eventProxy.on('menu.hide', () => {
+      this.menu.hide();
+    })
 
     // 功能
+    this.eventProxy.on('create.vertex', (el) => {
+      let x = parseInt(el.parentNode.style.left);
+      let y = parseInt(el.parentNode.style.top);
+      this.graph.addVertex(x, y);
+      this.eventProxy.emit('menu.hide');
+      this.graphRender();
+    })
     // 撤销重做
     this.eventProxy.on('undo', (el) => {
       console.log('undo');

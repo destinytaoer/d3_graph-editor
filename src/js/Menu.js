@@ -15,6 +15,7 @@
  *   hide(): 隐藏 menu
  * 
  * create by destiny on 2019-03-26
+ * update by destiny on 2019-04-01
  */
 class Menu {
   constructor(container, options) {
@@ -34,6 +35,10 @@ class Menu {
 
     let defalutOptions = {
       default: [
+        {
+          name: 'create.vertex',
+          content: '新增节点'
+        },
         {
           name: 'undo',
           content: '撤销'

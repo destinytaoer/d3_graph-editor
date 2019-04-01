@@ -886,6 +886,8 @@ class BaseGraph {
       _from: '',
       _to: ''
     }
+    edge._from = from;
+    edge._to = to;
 
     this.data.edges.push(edge);
     this.changeRawData(this.data);
@@ -899,7 +901,7 @@ class BaseGraph {
     const { scalable, scaleExtent, draggable } = this.options;
 
     scalable ? this.addZoom(scaleExtent) : null;
-    // draggable ? this.addDrag() : null;
+    draggable ? this.addDrag() : null;
     this.addClick();
     this.addHover();
     // this.bindRightClick();
@@ -1044,7 +1046,6 @@ class BaseGraph {
     // eventProxy.emit('click.vertex', d);
   }
   onSvgClick(d) {
-    let [x, y] = d3.mouse(this.el);
     let { x: curX, y: curY, k: curK } = this.getTransform();
     // 抵消偏移和缩放的影响
     x = (x - curX) / curK;
