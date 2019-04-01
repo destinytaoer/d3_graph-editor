@@ -51,58 +51,6 @@ class Force extends BaseGraph {
     super(el, options);
     this.options = options;
   }
-
-  preprocessData() {
-    // 当前绘图数据，用于过滤时不影响原始数据
-    this.data = JSON.parse(JSON.stringify(this.rawData));
-    // 顶点和边的数据
-    this.vertexes = this.data.vertexes;
-    this.edges = this.data.edges;
-
-    this.vertexes.forEach((v) => {
-      v.type = v.type || v._id.split('/')[0];
-      v.state = v.state || 'normal';
-      this.vertexesMap.push(v._id);
-    })
-    this.edges.forEach((e) => {
-      let from = this.vertexesMap.indexOf(e._from);
-      let to = this.vertexesMap.indexOf(e._to);
-      e.source = e._from;
-      e.target = e._to;
-      e.type = e.type;
-      e.state = e.state || 'normal';
-      this.adjList[from] = this.adjList[from] || {};
-      this.adjList[from][to] = this.adjList[from][to] || [];
-      this.adjList[from][to].push(e._id);
-    })
-
-    this.setEdgeIndex();
-
-    return this;
-  }
-
-  setEdgeIndex() {
-    let edgeNumMap = {};
-    let vertexNumMap = {};
-    let edgeDirection = {};
-    this.edges.forEach((e) => {
-      if (!edgeNumMap[e._from + e._to]) {
-        edgeNumMap[e._from + e._to] = edgeNumMap[e._to + e._from] = 1;
-        edgeDirection[e._from + e._to] = edgeDirection[e._to + e._from] = e._from;
-      } else {
-        edgeNumMap[e._from + e._to]++;
-        edgeNumMap[e._to + e._from]++;
-      }
-
-      vertexNumMap[e._from] = vertexNumMap[e._from] ? vertexNumMap[e._from] + 1 : 1;
-      vertexNumMap[e._to] = vertexNumMap[e._to] ? vertexNumMap[e._to] + 1 : 1;
-      e.edgeIndex = edgeNumMap[e._from + e._to];   // 节点 A、B 之间可能有多条边，这条边所在的 index
-    })
-    this.edges.forEach((e) => {
-      e.siblingNum = edgeNumMap[e._from + e._to]; // 节点 A、B 之间边的条数
-      e.labelDirection = edgeDirection[e._from + e._to] === e._from ? 1 : 0; // 用于控制 label 从左到右还是从右到左渲染
-    })
-  }
   
   layout() {
     const { options } = this;
