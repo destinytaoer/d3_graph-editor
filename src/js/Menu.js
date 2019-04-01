@@ -69,7 +69,7 @@ class Menu {
           content: "复制",
         },
         {
-          name: "del",
+          name: "remove",
           content: "删除"
         }
       ],
@@ -83,11 +83,7 @@ class Menu {
           content: "查看"
         },
         {
-          name: "copy",
-          content: "复制",
-        },
-        {
-          name: "del",
+          name: "remove",
           content: "删除"
         }
       ]
@@ -148,7 +144,7 @@ class Menu {
       let oDiv = document.createElement('div')
       oDiv.classList.add('command');
       oDiv.innerHTML = item.content;
-      oDiv.dataset.operation = item.name;
+      oDiv.dataset.operation = `${item.name}${type === 'default' ? '' : '.' + type}`;
       this.el.appendChild(oDiv);
     });
 

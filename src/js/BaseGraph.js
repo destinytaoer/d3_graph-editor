@@ -17,8 +17,8 @@
  *   preprocessChart(): 初始化画布布局
  *   processData(): 数据处理, 需要在具体类中进行复写
  *   draw(): 绘图
- *   addVertexes(): 绘制节点 
- *   addEdges(): 绘制边
+ *   drawVertexes(): 绘制节点 
+ *   drawEdges(): 绘制边
  *   filterVertex(filter, isRaw): 过滤顶点，需要另外调用 render 方法进行重绘
  *   filterEdge(filter, isRaw): 过滤边，需要另外调用 render 方法进行重绘
  * 
@@ -101,13 +101,13 @@ class BaseGraph {
     return this;
   }
   draw() {
-    this.addVertexes()
-      .addEdges();
+    this.drawVertexes()
+      .drawEdges();
     
     return this;
   }
   // 顶点
-  addVertexes() {
+  drawVertexes() {
     this.chartGroup.select('.vertexes').selectAll('*').remove();
 
     // 增加节点 group
@@ -119,13 +119,13 @@ class BaseGraph {
       // .classed('vertex', true)
       .attr('type', (d) => d.type);
 
-    this.addVertex()    // 增加节点 circle
-      .addVertexName()  // 增加节点名称
-      .addIcon()        // 增加节点 icon
+    this.drawVertex()    // 增加节点 circle
+      .drawVertexName()  // 增加节点名称
+      .drawIcon()        // 增加节点 icon
 
     return this;
   }
-  addVertex() {
+  drawVertex() {
     this.nodeEnter.append('g')
       .classed('vertex', 'true')
       .append('path')
@@ -143,13 +143,17 @@ class BaseGraph {
 
     return this;
   }
-  addVertexName() {
+  drawVertexName() {
     this.nodeEnter.append('text')
       .attr('class', 'vertex-name')
       .style('text-anchor', 'middle')
       .style('dominant-baseline', 'baseline')
       .each(this.setVertexNamePos.bind(this))
-
+    if (this.getTransform().k < 0.8) {
+      this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
+    } else {
+      this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
+    }
     return this
   }
   setVertexNamePos(d, i, g) {
@@ -165,9 +169,9 @@ class BaseGraph {
         .attr('y', v.dy)
         .style('font-size', this.options.vertexFontSize)
     });
-    this.addType(thisText);
+    this.drawType(thisText);
   }
-  addType(text) {
+  drawType(text) {
     // add type
     this.typeNameMap = {
       'person': '人',
@@ -183,7 +187,7 @@ class BaseGraph {
       .attr('fill', d => this.typeColorMap[d.type])
       .style('font-size', this.options.vertexFontSize);
   }
-  addIcon() {
+  drawIcon() {
     this.nodeEnter.selectAll('.vertex').append('image').each((d, i, g) => {
       let r = this.getRadius(d);
       d3.select(g[i]).attr('xlink:href', this.getIcon(d))
@@ -195,7 +199,7 @@ class BaseGraph {
     })
   }
   // 边
-  addEdges() {
+  drawEdges() {
     this.chartGroup.select('.edges').selectAll('*').remove();
     this.linkEnter = this.chartGroup.select('.edges').selectAll('g')
       .data(this.edges)
@@ -205,13 +209,13 @@ class BaseGraph {
       .attr('data-id', (d) => d._id)
       .attr('type', (d) => d.type)
 
-    this.addPath()    // 增加边路径
-      .addEdgeLabel() // 增加边 label
-      .addArrow()
+    this.drawPath()    // 增加边路径
+      .drawEdgeLabel() // 增加边 label
+      .drawArrow()
 
     return this;
   }
-  addPath() {
+  drawPath() {
     this.linkEnter.append('path')
       .classed('edge-path', true)
       .attr('fill', 'none')
@@ -229,7 +233,7 @@ class BaseGraph {
 
     return this;
   }
-  addEdgeLabel() {
+  drawEdgeLabel() {
     this.linkEnter.append('text')
       .classed('edge-label', true)
       .append('textPath')
@@ -243,9 +247,14 @@ class BaseGraph {
       })
       .style('font-size', this.options.edgeFontSize)
     
+    if (this.getTransform().k < 0.8) {
+      this.linkEnter.selectAll('.edge-label').style('opacity', '0');
+    } else {
+      this.linkEnter.selectAll('.edge-label').style('opacity', '1');
+    }
     return this;
   }
-  addArrow() {
+  drawArrow() {
     this.chartGroup.select('defs')
       .selectAll('.arrow-marker')
       .data(this.edges)
@@ -262,7 +271,7 @@ class BaseGraph {
     return this;
   }
   // 缩放控件
-  addScaleBar() {
+  drawScaleBar() {
     const { scaleExtent } = this.options;
     let scaleBar = Object.assign({}, {
       right: '5%',
@@ -447,7 +456,7 @@ class BaseGraph {
     return textStack;
   }
   getIcon(d) {
-    return this.options.iconPath ? `${this.options.iconPath}/${d.type.toLowerCase()}_${d.state}.svg ` : '';
+    return this.options.iconPath && d.type ? `${this.options.iconPath}/${d.type.toLowerCase()}_${d.state}.svg ` : '';
   }
   // 边样式
   getArrowConfig(d) {
@@ -619,11 +628,7 @@ class BaseGraph {
     this.resetStyle();
     return this;
   }
-
-  getHighlightIds(d) {
-    return this.radiationVertex(d);
-  }
-
+  // 高亮顶点和边
   highlightVertex(ids) {
     this.nodeEnter.selectAll('.vertex .circle')
       .each((d, i, g) => {
@@ -701,6 +706,7 @@ class BaseGraph {
       e.labelDirection = edgeDirection[e._from + e._to] === e._from ? 1 : 0; // 用于控制 label 从左到右还是从右到左渲染
     })
   }
+  // 改变原始数据
   changeRawData(data) {
     if (!data.vertexes || !data.edges) throw new error('data must have vertexes and edges properties');
 
@@ -709,6 +715,7 @@ class BaseGraph {
 
     return this;
   }
+  // 过滤与重置
   filterVertex(filter, isRaw) {
     if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
@@ -785,9 +792,9 @@ class BaseGraph {
     this.vertexes = this.data.vertexes;
     this.edges = this.data.edges;
 
-    this.reRender();
     return this;
   }
+  // 获取统计信息
   getCount() {
     let result = {};
     result.vertex = this.getVertexCount();
@@ -816,6 +823,7 @@ class BaseGraph {
     })
     return result;
   }
+  // 改变节点和边的数据
   changeVertexData(data, cb) {
     let defaultData = {
       type: '',
@@ -829,8 +837,8 @@ class BaseGraph {
           item[key] = data[key];
         })
       }
-    })
-    this.reRender();
+    });
+    this.changeRawData(this.data);
     cb && cb();
   }
   changeEdgeData(data, cb) {
@@ -846,8 +854,44 @@ class BaseGraph {
         })
       }
     })
-    this.reRender();
+    this.changeRawData(this.data);
     cb && cb();
+  }
+  // 增加节点和边数据
+  addVertex(x, y, cb) {
+    let vertex = {
+      _id: '',
+      type: '',
+      name: '',
+      level: ''
+    }
+    // 抵消偏移和缩放的影响
+    let { x: curX, y: curY, k: curK } = this.getTransform();
+    x = (x - curX) / curK;
+    y = (y - curY) / curK;
+
+    vertex.x = x;
+    vertex.y = y;
+    this.data.vertexes.push(vertex);
+    this.changeRawData(this.data);
+    cb && cb();
+
+    return this;
+  }
+  addEdge(from, to, cb) {
+    let edge = {
+      _id: '',
+      type: '',
+      label: '',
+      _from: '',
+      _to: ''
+    }
+
+    this.data.edges.push(edge);
+    this.changeRawData(this.data);
+    cb && cb();
+
+    return this;
   }
 
   /* 关于事件的绑定 */
@@ -855,7 +899,7 @@ class BaseGraph {
     const { scalable, scaleExtent, draggable } = this.options;
 
     scalable ? this.addZoom(scaleExtent) : null;
-    draggable ? this.addDrag() : null;
+    // draggable ? this.addDrag() : null;
     this.addClick();
     this.addHover();
     // this.bindRightClick();
@@ -984,8 +1028,8 @@ class BaseGraph {
   }
   // click
   addClick() {
-    this.nodeEnter.selectAll('.vertex').on('click', this.onVertexClick.bind(this))
-    this.linkEnter.on('click', this.onEdgeClick.bind(this))
+    this.nodeEnter.selectAll('.vertex').on('click', this.onVertexClick.bind(this));
+    this.linkEnter.on('click', this.onEdgeClick.bind(this));
   }
   onVertexClick(d) {
     console.log('vertex clicked')
@@ -998,6 +1042,16 @@ class BaseGraph {
   onEdgeClick(d) {
     console.log('edge clicked')
     // eventProxy.emit('click.vertex', d);
+  }
+  onSvgClick(d) {
+    let [x, y] = d3.mouse(this.el);
+    let { x: curX, y: curY, k: curK } = this.getTransform();
+    // 抵消偏移和缩放的影响
+    x = (x - curX) / curK;
+    y = (y - curY) / curK;
+    this.addVertex(x, y, () => {
+      this.reRender();
+    })
   }
 
   // hover
@@ -1129,6 +1183,9 @@ class BaseGraph {
     }
     path.push(from);
     return path;
+  }
+  getHighlightIds(d) {
+    return this.radiationVertex(d);
   }
   // 获取当前顶点呈放射状的顶点和边
   // 以当前顶点为起点的边和边连接的所有顶点，包含当前顶点

@@ -69,48 +69,14 @@ class GraphEditor {
     this.graph.init();
     return this;
   }
-  refreshToolbar() {
-    let scale = this.graph.getTransform().k;
-    let scaleExtent = this.graph.zoom.scaleExtent();
-
-    if (scale === scaleExtent[0]) {
-      // 达到最小
-      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
-      zoom_out.classList.add('not-allow');
-    }
-    else if (scale === scaleExtent[1]) {
-      // 达到最大
-      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
-      zoom_in.classList.add('not-allow');
-    } else {
-      // 其他情况
-      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
-      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
-      zoom_out.classList.remove('not-allow');
-      zoom_in.classList.remove('not-allow');
-    }
-  }
   bindEvents() {
     this.bindEventListeners()
       .bindMenuEvent()
       .bindToolbarEvent()
-      .bindSearchEvent()
+      .bindSearchEvent();
+    this.eventProxy.emit('render');
   }
-  bindMenuEvent() {
-    // 显示 menu
-    this.graph.bindRightClick((d) => {
-      let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
-      this.eventProxy.emit('menu.' + type);
-    })
-    this.graph.drag.on('start', (...arg) => {
-      this.menu.hide();
-      this.graph.onDragStart.apply(this.graph, arg);
-    })
-    this.graph.zoom.on('zoom', () => {
-      this.menu.hide();
-      this.refreshToolbar();
-      this.graph.onZoom.call(this.graph);
-    })
+  bindMenuEvent() {    
     // 绑定菜单点击
     this.menu.bindClickEvents((el) => {
       this.eventProxy.emit(el.dataset.operation, el);
@@ -138,15 +104,34 @@ class GraphEditor {
         this.graph.filterEdge(d => {
           return relation.includes(d.type);
         });
-        this.graph.reRender();
+        this.graphRender();
       } else {
         this.graph.resetData();
+        this.graphRender();
       }
       this.info.bindData(this.graph.getCount());
     })
     return this;
   }
   bindEventListeners() {
+    // 图谱的渲染
+    this.eventProxy.on('render', () => {
+      // 绑定右键
+      this.graph.bindRightClick((d) => {
+        let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
+        this.eventProxy.emit('menu.' + type);
+      })
+      // 右键菜单的隐藏
+      this.graph.drag.on('start', (...arg) => {
+        this.menu.hide();
+        this.graph.onDragStart.apply(this.graph, arg);
+      })
+      this.graph.zoom.on('zoom', () => {
+        this.menu.hide();
+        this.refreshToolbar();
+        this.graph.onZoom.call(this.graph);
+      })
+    })
     // 菜单的显示
     this.eventProxy.on('menu.vertex', () => {
       this.menu.renderInnerHTML('vertex');
@@ -162,12 +147,14 @@ class GraphEditor {
     })
 
     // 功能
+    // 撤销重做
     this.eventProxy.on('undo', (el) => {
       console.log('undo');
     })
     this.eventProxy.on('redo', (el) => {
       console.log('redo');
     })
+    // 选择和框选
     this.eventProxy.on('multi', (el) => {
       console.log('multi');
       
@@ -183,6 +170,7 @@ class GraphEditor {
         item === el ? item.classList.add('active') : item.classList.remove('active');
       })
     })
+    // 图谱切换
     this.eventProxy.on('tree', (el) => {
       console.log('tree');
       let siblings = el.parentNode.childNodes;
@@ -197,6 +185,7 @@ class GraphEditor {
         item === el ? item.classList.add('active') : item.classList.remove('active');
       })
     })
+    // 缩放
     this.eventProxy.on('zoom_in', (el) => {
       console.log('zoom_in');
       if (el.classList.contains('not-allow')) {
@@ -228,17 +217,10 @@ class GraphEditor {
       let centerX = container.width / 2;
       let centerY = container.height / 2 + toolbarH / 2;
 
-      let transform = this.graph.getTransform();
-      let curK = transform.k;
-      let curX = transform.x;
-      let curY = transform.y;
+      let {k:curK,x:curX, y:curY} = this.graph.getTransform();
 
       // 容器高度要减去 toolbar 的高度，防止 toolbar 盖住图谱
       let nextK = Math.min(container.width / chart.width, (container.height - toolbarH) / chart.height) * curK;
-
-      // 做边界判断
-      let scaleExtent = this.graph.zoom.scaleExtent();
-      nextK > scaleExtent[1] ? scaleExtent[1] : (nextK < scaleExtent[0] ? scaleExtent[0] : nextK);
 
       // 计算移位：(centerX - nextX) * nextK = (chartX - curX) * curK
       let nextX = centerX - (chartX - curX) / curK * nextK;
@@ -253,6 +235,7 @@ class GraphEditor {
       this.graph.zoomTo(1);
       this.refreshToolbar();
     })
+    // 信息和数据过滤
     this.eventProxy.on('info', (el) => {
       console.log('info');
       el.classList.toggle('active');
@@ -263,12 +246,27 @@ class GraphEditor {
       el.classList.toggle('active');
       this.search.toggle();
     })
+    // 节点和边的操作
+    this.eventProxy.on('edit.vertex', (el) => {
+      console.log('edit vertex');
+    })
+    this.eventProxy.on('edit.edge', (el) => {
+      console.log('edit edge');
+    })
+    this.eventProxy.on('remove.vertex', (el) => {
+      console.log('remove vertex');
+    })
+    this.eventProxy.on('remove.edge', (el) => {
+      console.log('remove edge');
+    })
     this.eventProxy.on('copy', (el) => {
-      console.log('copy');
+      console.log('copy vertex');
     })
     this.eventProxy.on('paste', (el) => {
       console.log('paste');
     })
+
+    // 导出
     this.eventProxy.on('export_json', (el) => {
       console.log('export_json');
     })
@@ -277,5 +275,32 @@ class GraphEditor {
     })
 
     return this;
+  }
+
+  /* 辅助方法 */
+  refreshToolbar() {
+    let scale = this.graph.getTransform().k;
+    let scaleExtent = this.graph.zoom.scaleExtent();
+
+    if (scale === scaleExtent[0]) {
+      // 达到最小
+      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+      zoom_out.classList.add('not-allow');
+    }
+    else if (scale === scaleExtent[1]) {
+      // 达到最大
+      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
+      zoom_in.classList.add('not-allow');
+    } else {
+      // 其他情况
+      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
+      zoom_out.classList.remove('not-allow');
+      zoom_in.classList.remove('not-allow');
+    }
+  }
+  graphRender() {
+    this.graph.reRender();
+    this.eventProxy.emit('render');
   }
 }

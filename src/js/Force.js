@@ -73,8 +73,8 @@ class Force extends BaseGraph {
 
   draw() {
     this.layout()
-      .addVertexes()
-      .addEdges()
+      .drawVertexes()
+      .drawEdges()
     
     return this;
   }
