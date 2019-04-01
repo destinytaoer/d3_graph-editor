@@ -70,7 +70,7 @@ class GraphEditor {
     return this;
   }
   refreshToolbar() {
-    let scale = d3.zoomTransform(this.graph.svg.node()).k;
+    let scale = this.graph.getTransform().k;
     let scaleExtent = this.graph.zoom.scaleExtent();
 
     if (scale === scaleExtent[0]) {
@@ -203,7 +203,7 @@ class GraphEditor {
         return;
       } 
       const step = 0.3;
-      this.graph.zoomTo(step + d3.zoomTransform(this.graph.svg.node()).k);
+      this.graph.zoomTo(step + this.graph.getTransform().k);
       this.refreshToolbar();
     })
     this.eventProxy.on('zoom_out', (el) => {
@@ -212,7 +212,7 @@ class GraphEditor {
         return;
       } 
       const step = -0.3;
-      this.graph.zoomTo(step + d3.zoomTransform(this.graph.svg.node()).k);
+      this.graph.zoomTo(step + this.graph.getTransform().k);
       this.refreshToolbar();
     })
     this.eventProxy.on('fit', (el) => {
