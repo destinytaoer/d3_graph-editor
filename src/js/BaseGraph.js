@@ -64,6 +64,7 @@ class BaseGraph {
     this.edgeTo = [];
     this.marker = [];
     this.symbol = d3.symbol();
+    this.theme = 'light'
   }
 
   init() {
@@ -618,6 +619,35 @@ class BaseGraph {
     this.resetStyle();
     return this;
   }
+
+  getHighlightIds(d) {
+    return this.radiationVertex(d);
+  }
+
+  highlightVertex(ids) {
+    this.nodeEnter.selectAll('.vertex .circle')
+      .each((d, i, g) => {
+        if (ids.includes(d._id)) {
+          d.state = 'highlight'
+        } else {
+          d.state = 'grey'
+        }
+      })
+    
+    return this;
+  }
+  highlightEdge(ids) {
+    this.linkEnter.selectAll('.edge-path')
+      .each((d, i, g) => {
+        if (ids.includes(d._id)) {
+          d.state = 'highlight'
+        } else {
+          d.state = 'grey'
+        }
+      })
+    
+    return this;
+  }
   
   /* 关于数据的处理 */
   preprocessData () {
@@ -745,6 +775,39 @@ class BaseGraph {
     })
     return result;
   }
+  changeVertexData(data, cb) {
+    let defaultData = {
+      type: '',
+      name: '',
+      level: ''
+    };
+    data = Object.assign({}, defaultData, data);
+    this.vertexes.forEach(item => {
+      if (item._id === data._id) {
+        Object.keys(data).forEach(key => {
+          item[key] = data[key];
+        })
+      }
+    })
+    this.reRender();
+    cb && cb();
+  }
+  changeEdgeData(data, cb) {
+    let defaultData = {
+      type: '',
+      label: ''
+    };
+    data = Object.assign({}, defaultData, data);
+    this.edges.forEach(item => {
+      if (item._id === data._id) {
+        Object.keys(data).forEach(key => {
+          item[key] = data[key];
+        })
+      }
+    })
+    this.reRender();
+    cb && cb();
+  }
 
   /* 关于事件的绑定 */
   bindEvents () {
@@ -753,7 +816,7 @@ class BaseGraph {
     scalable ? this.addZoom(scaleExtent) : null;
     draggable ? this.addDrag() : null;
     this.addClick();
-    // this.addHover();
+    this.addHover();
     // this.bindRightClick();
 
     return this;
@@ -881,7 +944,7 @@ class BaseGraph {
   // click
   addClick() {
     this.nodeEnter.selectAll('.vertex').on('click', this.onVertexClick.bind(this))
-    this.linkEnter.selectAll('edge-path').on('click', this.onEdgeClick.bind(this))
+    this.linkEnter.on('click', this.onEdgeClick.bind(this))
   }
   onVertexClick(d) {
     console.log('vertex clicked')
@@ -896,13 +959,37 @@ class BaseGraph {
     // eventProxy.emit('click.vertex', d);
   }
 
+  // hover
+  addHover() {
+    this.nodeEnter.selectAll('.vertex').on('mouseenter', this.onVertexHover.bind(this))
+    this.nodeEnter.selectAll('.vertex').on('mouseleave', this.onVertexHoverout.bind(this))
+
+    this.linkEnter.on('mouseenter', this.onEdgeHover.bind(this))
+    this.linkEnter.on('mouseleave', this.onEdgeHoverout.bind(this))
+  }
+  onVertexHover(d) {
+    console.log('vertex hover');
+  }
+  onVertexHoverout(d) {
+    console.log('vertex hoverout');
+  }
+  onEdgeHover(d) {
+    console.log('edge hover');
+  }
+  onEdgeHoverout(d) {
+    console.log('edge hoverout');
+  }
+
   /* 辅助函数 */
+  // 获取当前 svg 的 transform
   getTransform() {
     return d3.zoomTransform(this.svg.node());
   }
+  // 变形至传递的 transform
   transformTo(transform) {
     this.svg.transition().duration(300).call(this.zoom.transform, transform);
   }
+  // 缩放至某个值
   zoomTo(scale) {
     // 由于 zoom 事件是绑定在 svg 上的，所以要从 svg 上获取
     let transform = this.getTransform();
@@ -934,5 +1021,108 @@ class BaseGraph {
     this.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
     
     return this;
+  }
+  // 获取最短路径上的所有顶点和边
+  shortestPath(source, target) {
+    const { adjList, vertexesMap } = this;
+    let from = vertexesMap.indexOf(source._id);
+    let to = vertexesMap.indexOf(target._id);
+    let vertexIds = [];
+    let edgeIds = [];
+    this.bfs(from);
+    let path = this.pathTo(from, to);
+
+    if (path.length <= 1) {
+      return {
+        vertexIds: [target._id],
+        edgeIds: []
+      };
+    }
+    path.forEach((v, i) => {
+      vertexIds.push(vertexesMap[v]);
+      if (i > 0) {
+        edgeIds.push(adjList[v][path[i - 1]][0]); // 如果两点之间存在多条边，返回的是第一条边
+      }
+    })
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 广度遍历
+  bfs(vertexNum) {
+    for (let i in this.vertexesMap) {
+      this.marker[i] = false;
+    }
+    let a = (v) => {
+      this.marker[v] = true;
+
+      let queue = [];
+      queue.push(v);
+      while (queue.length > 0) {
+        let item = queue.shift();
+
+        if (!this.adjList[item]) {
+          continue;
+        }
+
+        Object.keys(this.adjList[item]).forEach(k => {
+          let i = +k;
+          if (!this.marker[i]) {
+            this.edgeTo[i] = item;
+            queue.push(i);
+            this.marker[i] = true;
+          }
+        })
+      }
+    }
+    a(vertexNum);
+  }
+  // 最短路径
+  pathTo(from, to) {
+    let path = [];
+
+    while (to !== from && this.edgeTo[to] !== undefined) {
+      path.push(to);
+      to = this.edgeTo[to];
+    }
+    path.push(from);
+    return path;
+  }
+  // 获取当前顶点呈放射状的顶点和边
+  // 以当前顶点为起点的边和边连接的所有顶点，包含当前顶点
+  radiationVertex(d) {
+    let vertexIds = [];
+    let edgeIds = [];
+    vertexIds.push(d._id);
+    this.edges.forEach((e) => {
+      if (e._from === d._id) {
+        vertexIds.push(e._to);
+        edgeIds.push(e._id);
+      }
+    })
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 获取所有与当前顶点有关联的边和顶点
+  // 包含当前顶点的所有边和边连接的所有顶点
+  relationVertex(d) {
+    let vertexIds = [];
+    let edgeIds = [];
+    vertexIds.push(d._id);
+    this.edges.forEach((e) => {
+      if (e._from === d._id || e._to === d._id) {
+        vertexIds.push(e._to);
+        vertexIds.push(e._from);
+        edgeIds.push(e._id);
+      }
+    })
+    vertexIds = Array.from(new Set(vertexIds));
+    return {
+      vertexIds,
+      edgeIds
+    };
   }
 }
