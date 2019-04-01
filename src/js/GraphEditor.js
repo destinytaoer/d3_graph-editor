@@ -69,6 +69,27 @@ class GraphEditor {
     this.graph.init();
     return this;
   }
+  refreshToolbar() {
+    let scale = d3.zoomTransform(this.graph.svg.node()).k;
+    let scaleExtent = this.graph.zoom.scaleExtent();
+
+    if (scale === scaleExtent[0]) {
+      // 达到最小
+      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+      zoom_out.classList.add('not-allow');
+    }
+    else if (scale === scaleExtent[1]) {
+      // 达到最大
+      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
+      zoom_in.classList.add('not-allow');
+    } else {
+      // 其他情况
+      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
+      zoom_out.classList.remove('not-allow');
+      zoom_in.classList.remove('not-allow');
+    }
+  }
   bindEvents() {
     this.bindEventListeners()
       .bindMenuEvent()
@@ -87,6 +108,7 @@ class GraphEditor {
     })
     this.graph.zoom.on('zoom', () => {
       this.menu.hide();
+      this.refreshToolbar();
       this.graph.onZoom.call(this.graph);
     })
     // 绑定菜单点击
@@ -177,13 +199,21 @@ class GraphEditor {
     })
     this.eventProxy.on('zoom_in', (el) => {
       console.log('zoom_in');
+      if (el.classList.contains('not-allow')) {
+        return;
+      } 
       const step = 0.3;
       this.graph.zoomTo(step + d3.zoomTransform(this.graph.svg.node()).k);
+      this.refreshToolbar();
     })
     this.eventProxy.on('zoom_out', (el) => {
       console.log('zoom_out');
+      if (el.classList.contains('not-allow')) {
+        return;
+      } 
       const step = -0.3;
       this.graph.zoomTo(step + d3.zoomTransform(this.graph.svg.node()).k);
+      this.refreshToolbar();
     })
     this.eventProxy.on('fit', (el) => {
       console.log('fit');
@@ -206,16 +236,22 @@ class GraphEditor {
       // 容器高度要减去 toolbar 的高度，防止 toolbar 盖住图谱
       let nextK = Math.min(container.width / chart.width, (container.height - toolbarH) / chart.height) * curK;
 
+      // 做边界判断
+      let scaleExtent = this.graph.zoom.scaleExtent();
+      nextK > scaleExtent[1] ? scaleExtent[1] : (nextK < scaleExtent[0] ? scaleExtent[0] : nextK);
+
       // 计算移位：(centerX - nextX) * nextK = (chartX - curX) * curK
       let nextX = centerX - (chartX - curX) / curK * nextK;
       let nextY = centerY - (chartY - curY) / curK * nextK;
 
       this.graph.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
+      this.refreshToolbar();
     })
     this.eventProxy.on('actual_size', (el) => {
       console.log('actual_size');
       // 通过计算使得最终缩放值为 1
       this.graph.zoomTo(1);
+      this.refreshToolbar();
     })
     this.eventProxy.on('info', (el) => {
       console.log('info');

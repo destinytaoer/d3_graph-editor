@@ -3,9 +3,6 @@ html, body {
     padding: 0;
     height: 100%;
 }
-* {
-  /* box-sizing: border-box; */
-}
 .graph-editor {
   position: relative;
   width: 100%;
@@ -80,7 +77,11 @@ html, body {
   margin-left: 5px;
 }
 .graph-toolbar .operations .operation.not-allow {
+  color: #aaa;
   cursor: not-allowed;
+}
+.graph-toolbar .operations .operation.not-allow:hover {
+  background: #3967fa;
 }
 
 /* 过滤面板 */
