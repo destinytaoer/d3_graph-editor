@@ -165,9 +165,10 @@ class Menu {
       let el = e.target;
       if (el.classList.contains('command')) {
         cb && cb(el);
-      } else {
-        this.hide();
       }
+    });
+    this.container.addEventListener('click', (e) => {
+      this.hide();
     })
   }
 }
