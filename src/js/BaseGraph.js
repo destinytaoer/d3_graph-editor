@@ -711,7 +711,6 @@ class BaseGraph {
     if (!data.vertexes || !data.edges) throw new error('data must have vertexes and edges properties');
 
     this.rawData = JSON.parse(JSON.stringify(data));
-    this.preprocessData();
 
     return this;
   }
@@ -823,6 +822,19 @@ class BaseGraph {
     })
     return result;
   }
+  // 获取节点或边的数据
+  getVertexById(id) {
+    let vertexArr = this.vertexes.filter(v => {
+      return v._id === id;
+    })
+    return vertexArr[0];
+  }
+  getEdgeById(id) {
+    let edgeArr = this.edges.filter(e => {
+      return e._id === id;
+    })
+    return edgeArr[0];
+  }
   // 改变节点和边的数据
   changeVertexData(data, cb) {
     let defaultData = {
@@ -874,6 +886,7 @@ class BaseGraph {
     vertex.y = y;
     this.data.vertexes.push(vertex);
     this.changeRawData(this.data);
+    this.preprocessData();
     cb && cb();
 
     return this;
@@ -890,6 +903,29 @@ class BaseGraph {
     edge._to = to;
 
     this.data.edges.push(edge);
+    this.changeRawData(this.data);
+    this.preprocessData();
+
+    cb && cb();
+
+    return this;
+  }
+  // 删除节点和边数据
+  removeVertex(id, cb) {
+    this.vertexes = this.vertexes.filter(v => {
+      return v._id !== id;
+    });
+    this.data.vertexes = this.vertexes;
+    this.changeRawData(this.data);
+    cb && cb();
+
+    return this;
+  }
+  removeEdge(id, cb) {
+    this.edges = this.edges.filter(e => {
+      return e._id !== id;
+    });
+    this.data.edges = this.edges;
     this.changeRawData(this.data);
     cb && cb();
 
