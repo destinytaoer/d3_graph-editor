@@ -137,12 +137,15 @@ class Menu {
   //   return this.el.data;
   // }
 
-  renderInnerHTML (type) {
+  renderInnerHTML (type, d) {
     this.type = type;
+
+    let id = d ? d._id : '';
 
     let menuConfig = this.options[type] ? this.options[type] :
       this.options.default;
 
+    this.el.dataset.id = id;
     this.el.innerHTML = '';
 
     menuConfig.forEach((item) => {

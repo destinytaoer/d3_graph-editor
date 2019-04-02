@@ -119,7 +119,7 @@ class GraphEditor {
       // 绑定右键
       this.graph.bindRightClick((d) => {
         let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
-        this.eventProxy.emit('menu.' + type);
+        this.eventProxy.emit('menu.' + type, d);
       })
       // 右键菜单的隐藏
       this.graph.drag.on('start', (...arg) => {
@@ -133,12 +133,12 @@ class GraphEditor {
       })
     })
     // 菜单的显示
-    this.eventProxy.on('menu.vertex', () => {
-      this.menu.renderInnerHTML('vertex');
+    this.eventProxy.on('menu.vertex', (d) => {
+      this.menu.renderInnerHTML('vertex', d);
       this.menu.show();
     })
-    this.eventProxy.on('menu.edge', () => {
-      this.menu.renderInnerHTML('edge');
+    this.eventProxy.on('menu.edge', (d) => {
+      this.menu.renderInnerHTML('edge', d);
       this.menu.show();
     })
     this.eventProxy.on('menu.default', () => {
