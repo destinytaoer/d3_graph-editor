@@ -39,6 +39,7 @@ class GraphEditor {
     this.menuOptions = options.menu || {};
     this.graphOptions = options.graph || {};
     this.infoOptions = options.info || {};
+    this.editOptions = options.edit || {};
     this.eventProxy = new EventEmitter();
   }
   init() {
@@ -51,6 +52,10 @@ class GraphEditor {
     // toolbar
     this.toolbar = new Toolbar(this.el, this.toolbarOptions);
     this.toolbar.init();
+
+    // modal
+    this.modal = new Modal(this.el, this.editOptions);
+    this.modal.init();
 
     // graph
     this.render('Force')
@@ -73,7 +78,8 @@ class GraphEditor {
     this.bindEventListeners()
       .bindMenuEvent()
       .bindToolbarEvent()
-      .bindSearchEvent();
+      .bindSearchEvent()
+      .bindModalEvent();
     this.eventProxy.emit('render');
   }
   bindMenuEvent() {    
@@ -94,24 +100,14 @@ class GraphEditor {
   bindSearchEvent() {
     // 搜索
     this.search.bindClickEvents((type, data) => {
-      if (type === 'search') {
-        let search = data.search;
-        let relation = data.relation;
-        this.graph.filterVertex(d => {
-          if (!search.name) return true;
-          return d.name === search.name;
-        }, true);
-        this.graph.filterEdge(d => {
-          return relation.includes(d.type);
-        });
-        this.graphRender();
-      } else {
-        this.graph.resetData();
-        this.graphRender();
-      }
-      this.info.bindData(this.graph.getCount());
+      this.eventProxy.emit(type, data);
     })
     return this;
+  }
+  bindModalEvent() {
+    this.modal.bindClickEvents((type, data) => {
+      this.eventProxy.emit(type, data);
+    })
   }
   bindEventListeners() {
     // 图谱的渲染
@@ -135,28 +131,42 @@ class GraphEditor {
     // 菜单的显示
     this.eventProxy.on('menu.vertex', (d) => {
       this.menu.renderInnerHTML('vertex', d);
+      this.eventProxy.emit('edit.hide');
       this.menu.show();
     })
     this.eventProxy.on('menu.edge', (d) => {
       this.menu.renderInnerHTML('edge', d);
+      this.eventProxy.emit('edit.hide');
       this.menu.show();
     })
     this.eventProxy.on('menu.default', () => {
       this.menu.renderInnerHTML('default');
+      this.eventProxy.emit('edit.hide');
       this.menu.show();
     })
     this.eventProxy.on('menu.hide', () => {
       this.menu.hide();
     })
 
-    // 功能
-    this.eventProxy.on('create.vertex', (el) => {
-      let x = parseInt(el.parentNode.style.left);
-      let y = parseInt(el.parentNode.style.top);
-      this.graph.addVertex(x, y);
+    // 编辑弹窗的显示
+    this.eventProxy.on('edit.vertex', (el) => {
+      console.log('edit vertex');
+      let data = el.parentNode.data;
+      this.modal.showVertexModal(data);
       this.eventProxy.emit('menu.hide');
-      this.graphRender();
     })
+    this.eventProxy.on('edit.edge', (el) => {
+      console.log('edit edge');
+      let data = el.parentNode.data;
+      this.modal.showEdgeModal(data);
+      this.eventProxy.emit('menu.hide');
+    })
+    this.eventProxy.on('edit.hide', (el) => {
+      this.modal.hideModal('edge')
+        .hideModal('vertex');
+    })
+
+    // 功能
     // 撤销重做
     this.eventProxy.on('undo', (el) => {
       console.log('undo');
@@ -256,17 +266,53 @@ class GraphEditor {
       el.classList.toggle('active');
       this.search.toggle();
     })
-    // 节点和边的操作
-    this.eventProxy.on('edit.vertex', (el) => {
-      console.log('edit vertex');
+    this.eventProxy.on('search', (data) => {
+      let search = data.search;
+      let relation = data.relation;
+      this.graph.filterVertex(d => {
+        if (!search.name) return true;
+        return d.name === search.name;
+      }, true);
+      this.graph.filterEdge(d => {
+        return relation.includes(d.type);
+      });
+      this.graphRender();
+      this.eventProxy.emit('resetInfo');
     })
-    this.eventProxy.on('edit.edge', (el) => {
-      console.log('edit edge');
+    this.eventProxy.on('reset', () => {
+      this.graph.resetData();
+      this.graphRender();
+      this.eventProxy.emit('resetInfo');      
     })
-    this.eventProxy.on('remove.vertex', (el) => {
+    this.eventProxy.on('resetInfo', () => {
+      this.info.bindData(this.graph.getCount());
+    })
+
+    // 新增节点
+    this.eventProxy.on('create.vertex', (el) => {
+      let x = parseInt(el.parentNode.style.left);
+      let y = parseInt(el.parentNode.style.top);
+      this.graph.addVertex(x, y);
+      this.eventProxy.emit('menu.hide');
+      this.graphRender();
+    })
+    // 编辑保存节点和边
+    this.eventProxy.on('save.vertex', (data) => {
+      console.log('save vertex');
+      this.eventProxy.emit('edit.hide');
+      this.graph.changeVertexData(data);
+      this.graphRender();
+    })
+    this.eventProxy.on('save.edge', (data) => {
+      console.log('save edge');
+      this.eventProxy.emit('edit.hide');
+      this.graph.changeEdgeData(data);
+      this.graphRender();
+    })
+    this.eventProxy.on('remove.vertex', (data) => {
       console.log('remove vertex');
     })
-    this.eventProxy.on('remove.edge', (el) => {
+    this.eventProxy.on('remove.edge', (data) => {
       console.log('remove edge');
     })
     this.eventProxy.on('copy', (el) => {

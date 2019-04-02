@@ -120,6 +120,7 @@ html, body {
   height: 40px;
   width: 180px;
   font-size: 14px;
+  background: #fff;
 }
 .search-section .search-input-box .input {
   cursor: pointer;
@@ -130,7 +131,8 @@ html, body {
   user-select: none;
   font-size: 14px;
 }
-input[type="text"] {
+input[type="text"],
+input[type="number"] {
   background:none;
   outline:none;
   -webkit-appearance: none;
@@ -139,7 +141,8 @@ input[type="text"] {
   padding: 0 10px;
   margin: 5px 0;
 }
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="number"]:focus {
   border: 1px solid #3967fa;
   background: #fff;
   outline: none;
@@ -261,6 +264,80 @@ input[type=checkbox]:checked::after{
   line-height: 2;
 }
 
+/* 编辑表单弹窗 */
+.graph-editor .graph-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* width: 300px; */
+  border: 1px solid #3967fa;
+  background: #f7f9fb;
+  transform: translate3d(-50%, -50%, 0);
+  overflow: hidden;
+}
+.graph-modal .modal-title {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 18px;
+  background: #3967fa;
+  color: #fff;
+  margin-bottom: 10px;
+}
+.graph-modal .form-item {
+  box-sizing: border-box;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+}
+.graph-modal .form-item .input {
+  height: 30px;
+  font-size: 14px;
+  background: #fff;
+}
+.graph-modal .form-item .label {
+  vertical-align: middle;
+  user-select: none;
+  font-size: 14px;
+  padding: 0 10px;
+}
+
+.graph-modal .btns {
+  text-align: right;
+  padding: 10px;
+}
+.graph-modal .btns .btn {
+  margin: 0 10px;
+  width: 50px;
+  height: 30px;
+  outline: none;
+  border: 1px solid;
+  border-radius: 3px;
+  user-select: none;
+  cursor: pointer;
+}
+.graph-modal .btns .btn.btn-info {
+  background: #3967fa;
+  border-color: #2e6da4;
+  color: #fff;
+}
+.graph-modal .btns .btn.btn-info:active {
+  background: #2c4fc0;
+  border-color: #204d74;
+}
+.graph-modal .btns .btn.btn-default {
+  background: #fff;
+  border-color: #ccc;
+  color: #333;
+}
+.graph-modal .btns .btn.btn-default:active {
+  background: #e6e6e6;
+  border-color: #adadad;
+}
+
+/* 动画 */
 .zoom-big-enter,.zoom-big-appear {
     -webkit-animation-duration: .2s;
     animation-duration: .2s;

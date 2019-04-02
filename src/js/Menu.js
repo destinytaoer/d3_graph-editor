@@ -160,7 +160,8 @@ class Menu {
   }
 
   bindClickEvents(cb) {
-    this.container.addEventListener('click', (e) => {
+    this.el.addEventListener('click', (e) => {
+      e.stopPropagation();
       let el = e.target;
       if (el.classList.contains('command')) {
         cb && cb(el);
