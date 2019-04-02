@@ -843,6 +843,13 @@ class BaseGraph {
       level: ''
     };
     data = Object.assign({}, defaultData, data);
+    this.data.vertexes.forEach(item => {
+      if (item._id === data._id) {
+        Object.keys(data).forEach(key => {
+          item[key] = data[key];
+        })
+      }
+    });
     this.vertexes.forEach(item => {
       if (item._id === data._id) {
         Object.keys(data).forEach(key => {
@@ -859,6 +866,13 @@ class BaseGraph {
       label: ''
     };
     data = Object.assign({}, defaultData, data);
+    this.data.edges.forEach(item => {
+      if (item._id === data._id) {
+        Object.keys(data).forEach(key => {
+          item[key] = data[key];
+        })
+      }
+    })
     this.edges.forEach(item => {
       if (item._id === data._id) {
         Object.keys(data).forEach(key => {
@@ -912,10 +926,19 @@ class BaseGraph {
   }
   // 删除节点和边数据
   removeVertex(id, cb) {
+    // 将 data 中的数据和单独的节点和边数据分开，防止过滤的时候产生错误
+    this.data.vertexes = this.data.vertexes.filter(v => {
+      return v._id !== id;
+    });
     this.vertexes = this.vertexes.filter(v => {
       return v._id !== id;
     });
-    this.data.vertexes = this.vertexes;
+    this.data.edges = this.data.edges.filter(e => {
+      return e._from !== id && e._to !== id;
+    });
+    this.edges = this.edges.filter(e => {
+      return e._from !== id && e._to !== id;
+    });
     this.changeRawData(this.data);
     cb && cb();
 
@@ -925,7 +948,9 @@ class BaseGraph {
     this.edges = this.edges.filter(e => {
       return e._id !== id;
     });
-    this.data.edges = this.edges;
+    this.data.edges = this.data.edges.filter(e => {
+      return e._id !== id;
+    });
     this.changeRawData(this.data);
     cb && cb();
 

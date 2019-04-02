@@ -161,7 +161,7 @@ class GraphEditor {
       this.modal.showEdgeModal(data);
       this.eventProxy.emit('menu.hide');
     })
-    this.eventProxy.on('edit.hide', (el) => {
+    this.eventProxy.on('edit.hide', () => {
       this.modal.hideModal('edge')
         .hideModal('vertex');
     })
@@ -224,7 +224,7 @@ class GraphEditor {
       this.graph.zoomTo(step + this.graph.getTransform().k);
       this.refreshToolbar();
     })
-    this.eventProxy.on('fit', (el) => {
+    this.eventProxy.on('fit', () => {
       console.log('fit');
       let chart = this.el.querySelector('.chart').getBoundingClientRect();
       let container = this.el.getBoundingClientRect();
@@ -249,7 +249,7 @@ class GraphEditor {
       this.graph.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
       this.refreshToolbar();
     })
-    this.eventProxy.on('actual_size', (el) => {
+    this.eventProxy.on('actual_size', () => {
       console.log('actual_size');
       // 通过计算使得最终缩放值为 1
       this.graph.zoomTo(1);
@@ -309,11 +309,19 @@ class GraphEditor {
       this.graph.changeEdgeData(data);
       this.graphRender();
     })
-    this.eventProxy.on('remove.vertex', (data) => {
+    this.eventProxy.on('remove.vertex', (el) => {
       console.log('remove vertex');
+      let data = el.parentNode.data;
+      this.graph.removeVertex(data._id);
+      this.eventProxy.emit('menu.hide');
+      this.graphRender();
     })
-    this.eventProxy.on('remove.edge', (data) => {
+    this.eventProxy.on('remove.edge', (el) => {
       console.log('remove edge');
+      let data = el.parentNode.data;
+      this.graph.removeEdge(data._id);
+      this.eventProxy.emit('menu.hide');
+      this.graphRender();
     })
     this.eventProxy.on('copy', (el) => {
       console.log('copy vertex');
@@ -338,12 +346,12 @@ class GraphEditor {
     let scale = this.graph.getTransform().k;
     let scaleExtent = this.graph.zoom.scaleExtent();
 
-    if (scale === scaleExtent[0]) {
+    if (scale <= scaleExtent[0]) {
       // 达到最小
       let zoom_out = document.querySelector('[data-operation="zoom_out"]');
       zoom_out.classList.add('not-allow');
     }
-    else if (scale === scaleExtent[1]) {
+    else if (scale >= scaleExtent[1]) {
       // 达到最大
       let zoom_in = document.querySelector('[data-operation="zoom_in"]');
       zoom_in.classList.add('not-allow');
