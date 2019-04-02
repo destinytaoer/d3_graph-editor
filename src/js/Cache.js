@@ -18,6 +18,15 @@ class Cache {
   constructor() {
     this.caches = [];
     this.point = 0;
+
+    Object.defineProperty(this, 'length', {
+      get() {
+        return this.caches.length;
+      },
+      set() {
+        
+      }
+    });
   }
 
   store (cache) {
@@ -43,13 +52,13 @@ class Cache {
   }
 
   next () {
-    if (this.point > this.caches.length) return;
+    if (this.point >= this.caches.length) return;
     this.point++;
     return this.caches[this.point - 1];
   }
 
   prev () {
-    if (this.point < 1) return;
+    if (this.point <= 1) return;
     this.point--;
     return this.caches[this.point - 1];
   }

@@ -899,8 +899,8 @@ class BaseGraph {
     vertex.x = x;
     vertex.y = y;
     this.data.vertexes.push(vertex);
-    this.changeRawData(this.data);
-    this.preprocessData();
+    this.changeRawData(this.data)
+      .preprocessData();
     cb && cb();
 
     return this;
@@ -917,8 +917,8 @@ class BaseGraph {
     edge._to = to;
 
     this.data.edges.push(edge);
-    this.changeRawData(this.data);
-    this.preprocessData();
+    this.changeRawData(this.data)
+      .preprocessData();
 
     cb && cb();
 

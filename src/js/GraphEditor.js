@@ -61,6 +61,11 @@ class GraphEditor {
     this.render('Force')
       .bindEvents();
     
+    // cache
+    this.cache = new Cache();
+    this.cache.store(this.graph.rawData);
+    this.refreshCacheToolbar();
+    
     // info
     this.info = new Info(this.el, this.infoOptions);
     this.info.init(this.graph.getCount());
@@ -124,7 +129,7 @@ class GraphEditor {
       })
       this.graph.zoom.on('zoom', () => {
         this.eventProxy.emit('menu.hide');
-        this.refreshToolbar();
+        this.refreshZoomToolbar();
         this.graph.onZoom.call(this.graph);
       })
     })
@@ -170,9 +175,25 @@ class GraphEditor {
     // 撤销重做
     this.eventProxy.on('undo', (el) => {
       console.log('undo');
+      if (this.cache.point === 1) return;
+      let data = this.cache.prev();
+      if (data) {
+        this.graph.changeRawData(data)
+          .preprocessData();
+        this.graphRender();
+        this.refreshCacheToolbar();
+      }
     })
     this.eventProxy.on('redo', (el) => {
       console.log('redo');
+      if (this.cache.point === this.cache.length) return;
+      let data = this.cache.next();
+      if (data) {
+        this.graph.changeRawData(data)
+          .preprocessData();
+        this.graphRender();
+        this.refreshCacheToolbar();
+      }
     })
     // 选择和框选
     this.eventProxy.on('multi', (el) => {
@@ -213,7 +234,7 @@ class GraphEditor {
       } 
       const step = 0.3;
       this.graph.zoomTo(step + this.graph.getTransform().k);
-      this.refreshToolbar();
+      this.refreshZoomToolbar();
     })
     this.eventProxy.on('zoom_out', (el) => {
       console.log('zoom_out');
@@ -222,7 +243,7 @@ class GraphEditor {
       } 
       const step = -0.3;
       this.graph.zoomTo(step + this.graph.getTransform().k);
-      this.refreshToolbar();
+      this.refreshZoomToolbar();
     })
     this.eventProxy.on('fit', () => {
       console.log('fit');
@@ -247,13 +268,13 @@ class GraphEditor {
       let nextY = centerY - (chartY - curY) / curK * nextK;
 
       this.graph.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
-      this.refreshToolbar();
+      this.refreshZoomToolbar();
     })
     this.eventProxy.on('actual_size', () => {
       console.log('actual_size');
       // 通过计算使得最终缩放值为 1
       this.graph.zoomTo(1);
-      this.refreshToolbar();
+      this.refreshZoomToolbar();
     })
     // 信息和数据过滤
     this.eventProxy.on('info', (el) => {
@@ -294,6 +315,8 @@ class GraphEditor {
       let y = parseInt(el.parentNode.style.top);
       this.graph.addVertex(x, y);
       this.eventProxy.emit('menu.hide');
+      this.cache.store(this.graph.rawData);
+      this.refreshCacheToolbar();
       this.graphRender();
     })
     // 编辑保存节点和边
@@ -301,12 +324,16 @@ class GraphEditor {
       console.log('save vertex');
       this.eventProxy.emit('edit.hide');
       this.graph.changeVertexData(data);
+      this.cache.store(this.graph.rawData);
+      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('save.edge', (data) => {
       console.log('save edge');
       this.eventProxy.emit('edit.hide');
       this.graph.changeEdgeData(data);
+      this.cache.store(this.graph.rawData);
+      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('remove.vertex', (el) => {
@@ -314,6 +341,8 @@ class GraphEditor {
       let data = el.parentNode.data;
       this.graph.removeVertex(data._id);
       this.eventProxy.emit('menu.hide');
+      this.cache.store(this.graph.rawData);
+      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('remove.edge', (el) => {
@@ -321,6 +350,8 @@ class GraphEditor {
       let data = el.parentNode.data;
       this.graph.removeEdge(data._id);
       this.eventProxy.emit('menu.hide');
+      this.cache.store(this.graph.rawData);
+      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('copy', (el) => {
@@ -342,7 +373,7 @@ class GraphEditor {
   }
 
   /* 辅助方法 */
-  refreshToolbar() {
+  refreshZoomToolbar() {
     let scale = this.graph.getTransform().k;
     let scaleExtent = this.graph.zoom.scaleExtent();
 
@@ -361,6 +392,25 @@ class GraphEditor {
       let zoom_in = document.querySelector('[data-operation="zoom_in"]');
       zoom_out.classList.remove('not-allow');
       zoom_in.classList.remove('not-allow');
+    }
+  }
+  refreshCacheToolbar() {
+    let undo = document.querySelector('[data-operation="undo"]');
+    let redo = document.querySelector('[data-operation="redo"]');
+    let len = this.cache.length;
+    let point = this.cache.point;
+    if (len === 1) {
+      undo.classList.add('not-allow');
+      redo.classList.add('not-allow');
+    } else if (point === 1) {
+      undo.classList.add('not-allow');
+      redo.classList.remove('not-allow');
+    } else if (point === len) {
+      undo.classList.remove('not-allow');
+      redo.classList.add('not-allow');
+    } else {
+      undo.classList.remove('not-allow');
+      redo.classList.remove('not-allow');
     }
   }
   graphRender() {
