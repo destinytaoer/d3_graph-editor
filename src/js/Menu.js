@@ -133,19 +133,19 @@ class Menu {
       .style('display', 'none');
   }
 
-  // getData() {
-  //   return this.el.data;
-  // }
+  getData() {
+    return this.el.data;
+  }
 
   renderInnerHTML (type, d) {
     this.type = type;
 
-    let id = d ? d._id : '';
+    d = d ? d : {};
 
     let menuConfig = this.options[type] ? this.options[type] :
       this.options.default;
 
-    this.el.dataset.id = id;
+    this.el.data = d;
     this.el.innerHTML = '';
 
     menuConfig.forEach((item) => {
