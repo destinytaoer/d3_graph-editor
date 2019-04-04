@@ -1157,12 +1157,7 @@ class BaseGraph {
       .on('mouseup.line', (d) => {
         d3.event.stopPropagation();
         if (this.newLink) {
-          let to = d._id;
-          let from = this.newLink.datum()._from;
-          this.addEdge(from, to);
-          this.newLink.remove();
-          this.newLink = null;
-          cb && cb();
+          this.appendNewLink(d, cb);
         }
       })
       .on('mouseenter.line', (d, i, g) => {
@@ -1177,31 +1172,16 @@ class BaseGraph {
           .style('cursor', 'crosshair')
           .on('mousedown.line', (d) => {
             d3.event.stopPropagation();
-            // 增加新的连线
-            this.newLink = this.chartGroup
-              .append('path')
-              .datum({
-                _from: d._id,
-                source: d
-              })
-              .attr('stroke', this.getEdgeColor(d))
-              .attr('stroke-width', this.getEdgeWidth(d))
-              .attr('marker-end', 'url("#arrow_default")');
+            this.addNewLink(d);
           })
           .on('mouseup.line', (d) => {
             d3.event.stopPropagation();
             if (this.newLink) {
               let id = this.newLink.datum()._from;
               if (id === d._id) {
-                this.newLink.remove();
-                this.newLink = null;
+                this.removeNewLink();
               } else {
-                let to = d._id;
-                let from = this.newLink.datum()._from;
-                this.addEdge(from, to);
-                this.newLink.remove();
-                this.newLink = null;
-                cb && cb();
+                this.appendNewLink(d, cb);
               }
             }
           })
@@ -1213,8 +1193,7 @@ class BaseGraph {
     
     this.linkEnter.on('mouseup.line', () => {
       if (this.newLink) {
-        this.newLink.remove();
-        this.newLink = null;
+        this.removeNewLink();
       }
     });
     
@@ -1226,8 +1205,7 @@ class BaseGraph {
     })
     .on('mouseup.line', () => {
       if (this.newLink) {
-        this.newLink.remove();
-        this.newLink = null;
+        this.removeNewLink();
       }
     })
   }
@@ -1400,5 +1378,28 @@ class BaseGraph {
       
       return 'M' + x1 + ',' + y1 + 'A0,0 0 0,0 ' + x2 + ',' + y2;
     })
+  }
+  removeNewLink() {
+    this.newLink.remove();
+    this.newLink = null;
+  }
+  appendNewLink(d, cb) {
+    let to = d._id;
+    let from = this.newLink.datum()._from;
+    this.addEdge(from, to);
+    this.removeNewLink();
+    cb && cb();
+  }
+  addNewLink(d) {
+    // 增加新的连线
+    this.newLink = this.chartGroup
+      .append('path')
+      .datum({
+        _from: d._id,
+        source: d
+      })
+      .attr('stroke', this.getEdgeColor(d))
+      .attr('stroke-width', this.getEdgeWidth(d))
+      .attr('marker-end', 'url("#arrow_default")');
   }
 }
