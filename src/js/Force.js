@@ -110,15 +110,15 @@ class Force extends BaseGraph {
           'A' + dr + ',' + dr + ' 0 0 ' + sweepFlag + ',' + d.target.x + ',' + d.target.y
         
         // 自己指向自己
-        if (d.source.name === d.target.name) {
+        if (d.source._id === d.target._id) {
           selfMap[d.source.name] = selfMap[d.source.name] ? selfMap[d.source.name] + 1 : 1;
           let h = selfMap[d.source.name] * 100;
           let w = selfMap[d.source.name] * 10;
           // 使用三次贝塞尔曲线绘制
-          path = 'M' + d.source.x + ' ' + d.source.y + 
+          path = 'M' + d.source.x + ' ' + (d.source.y - this.getRadius(d)) + 
               ' C ' + (d.source.x - w) + ' ' + (d.source.y - h) + ', ' +
               (d.source.x + h) + ' ' + (d.source.y + w) + ', ' + 
-                      d.source.x + ' ' + d.source.y;
+                      (d.source.x + this.getRadius(d)) + ' ' + d.source.y;
         }
 
         // 增加反向路径，用于旋转 label
