@@ -205,7 +205,7 @@ class Modal {
     this.$edgeEl.on('click', () => {
       d3.event.stopPropagation();
     });
-    d3.select(this.container).on('click', () => {
+    this.container.addEventListener('click', () => {
       this.hideModal('vertex')
         .hideModal('edge');
     });

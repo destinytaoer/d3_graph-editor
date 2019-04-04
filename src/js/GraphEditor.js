@@ -122,6 +122,11 @@ class GraphEditor {
         let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
         this.eventProxy.emit('menu.' + type, d);
       })
+      this.graph.bindLineWith(() => {
+        this.graphRender();
+        this.cache.store(this.graph.rawData);
+        this.refreshCacheToolbar();
+      })
       // 右键菜单的隐藏
       this.graph.drag.on('start', (...arg) => {
         this.eventProxy.emit('menu.hide');
@@ -202,7 +207,8 @@ class GraphEditor {
       let siblings = el.parentNode.childNodes;
       Array.from(siblings).forEach(item => {
         item === el ? item.classList.add('active') : item.classList.remove('active');
-      })
+      });
+      this.graph.svg.on('dblclick.zoom', null);
     })
     this.eventProxy.on('select', (el) => {
       console.log('select');

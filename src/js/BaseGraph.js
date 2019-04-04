@@ -53,7 +53,7 @@ class BaseGraph {
     this.options = options;
 
     // data 必须包含 vertexes 以及 edges 字段
-    var data = options.data;
+    let data = options.data;
     if (!data.vertexes || !data.edges) throw new Error('data must have vertexes and edges properties');
 
     // 原始数据，使用 JSON 的两个方法转换，完全克隆对象，并且不再是同一个引用地址，消除副作用
@@ -148,6 +148,7 @@ class BaseGraph {
       .attr('class', 'vertex-name')
       .style('text-anchor', 'middle')
       .style('dominant-baseline', 'baseline')
+      .style('user-select', 'none')
       .each(this.setVertexNamePos.bind(this))
     if (this.getTransform().k < 0.8) {
       this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
@@ -159,10 +160,10 @@ class BaseGraph {
   setVertexNamePos(d, i, g) {
     if (!d.name) return;
 
-    var thisText = d3.select(g[i]);
+    let thisText = d3.select(g[i]);
     thisText.selectAll('*').remove();
 
-    var textStack = this.getTextStack(d) || [];
+    let textStack = this.getTextStack(d) || [];
     textStack.forEach((v) => {
       thisText.append('tspan').text(v.name)
         .attr('x', v.dx)
@@ -222,6 +223,8 @@ class BaseGraph {
       .attr('stroke', (d) => this.getEdgeColor(d))
       .attr('id', (d) => d._id)
 
+    this.chartGroup.select('defs').selectAll('*').remove();
+    
     // 增加反向路径, 用于旋转 label
     this.chartGroup.select('defs').selectAll('.reverse-path')
       .data(this.edges)
@@ -242,6 +245,7 @@ class BaseGraph {
       })
       .attr('startOffset', '50%')
       .attr('text-anchor', 'middle')
+      .style('user-select', 'none')
       .text((d) => {
         return d.label || ''
       })
@@ -263,7 +267,19 @@ class BaseGraph {
       .attr('id', (d) => 'arrow_' + d._id)
       .classed('arrow-marker', true)
       .append('path')
-
+    
+    this.chartGroup.select('defs')
+      .append('marker')
+      .datum({
+        _id: '',
+        type: '',
+        state: 'normal',
+        _flag: true
+      })
+      .attr('id', 'arrow_default')
+      .classed('arrow-marker', true)
+      .append('path')
+    
     this.setArrowStyle();
 
     this.linkEnter.selectAll('.edge-path').attr('marker-end', (d) => this.getArrowUrl(d));
@@ -496,6 +512,9 @@ class BaseGraph {
     // }
   }
   getArrowUrl(d) {
+    if (d.source._id === d.target._id) {
+      return `url("#arrow_default")`;
+    }
     return `url("#arrow_${d._id}")`;
   }
   getEdgeColor(d) {
@@ -607,7 +626,12 @@ class BaseGraph {
         let thisArrow = d3.select(g[i]);
         const { path = 'M0,0 L10,5 L0,10 z', arrowWidth = 10, arrowHeight = 10, refx = 0, color = '#e3e3e3' } = this.getArrowConfig(d);
 
-        thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx)
+        if (d._flag) {
+          thisArrow.attr('refX', arrowWidth + refx)
+        } else {
+          thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx)
+        }
+        thisArrow
           .attr('refY', arrowHeight / 2)
           .attr('markerUnits', 'userSpaceOnUse')
           .attr('markerWidth', arrowWidth)
@@ -966,7 +990,7 @@ class BaseGraph {
     this.addClick();
     this.addHover();
     // this.bindRightClick();
-
+    // this.bindLineWith();
     return this;
   }
   bindRightClick(cb) {
@@ -974,21 +998,21 @@ class BaseGraph {
       d3.event.preventDefault();
     });
 
-    this.nodeEnter.selectAll('.vertex').on('mouseup', (...args) => {
+    this.nodeEnter.selectAll('.vertex').on('mouseup.menu', (...args) => {
       d3.event.stopPropagation();
       console.log(args);
       if (d3.event.button === 2) {
         cb && cb(...args);
       }
     });
-    this.linkEnter.on('mouseup', (...args) => {
+    this.linkEnter.on('mouseup.menu', (...args) => {
       d3.event.stopPropagation();
       console.log(args);
       if (d3.event.button === 2) {
         cb && cb(...args);
       }
     });
-    this.svg.on('mouseup', (...args) => {
+    this.svg.on('mouseup.menu', (...args) => {
       console.log(args);
       if (d3.event.button === 2) {
         cb && cb(...args);
@@ -1048,7 +1072,7 @@ class BaseGraph {
     }
     function mousemove(){
       //主动触发Change事件
-      var e = document.createEvent("Event");
+      let e = document.createEvent("Event");
       e.initEvent("change", false, true);
       range.dispatchEvent(e);
     }
@@ -1106,15 +1130,6 @@ class BaseGraph {
     console.log('edge clicked')
     // eventProxy.emit('click.vertex', d);
   }
-  onSvgClick(d) {
-    let { x: curX, y: curY, k: curK } = this.getTransform();
-    // 抵消偏移和缩放的影响
-    x = (x - curX) / curK;
-    y = (y - curY) / curK;
-    this.addVertex(x, y, () => {
-      this.reRender();
-    })
-  }
 
   // hover
   addHover() {
@@ -1126,6 +1141,7 @@ class BaseGraph {
   }
   onVertexHover(d) {
     console.log('vertex hover');
+    
   }
   onVertexHoverout(d) {
     console.log('vertex hoverout');
@@ -1135,6 +1151,85 @@ class BaseGraph {
   }
   onEdgeHoverout(d) {
     console.log('edge hoverout');
+  }
+  bindLineWith(cb) {
+    this.nodeEnter.selectAll('.vertex')
+      .on('mouseup.line', (d) => {
+        d3.event.stopPropagation();
+        if (this.newLink) {
+          let to = d._id;
+          let from = this.newLink.datum()._from;
+          this.addEdge(from, to);
+          this.newLink.remove();
+          this.newLink = null;
+          cb && cb();
+        }
+      })
+      .on('mouseenter.line', (d, i, g) => {
+        let el = g[i];
+        d3.select(el).append('rect')
+          .datum(d)
+          .attr('width', 6)
+          .attr('height', 6)
+          .attr('x', -3)
+          .attr('y', -3)
+          .attr('fill', 'transparent')
+          .style('cursor', 'crosshair')
+          .on('mousedown.line', (d) => {
+            d3.event.stopPropagation();
+            // 增加新的连线
+            this.newLink = this.chartGroup
+              .append('path')
+              .datum({
+                _from: d._id,
+                source: d
+              })
+              .attr('stroke', this.getEdgeColor(d))
+              .attr('stroke-width', this.getEdgeWidth(d))
+              .attr('marker-end', 'url("#arrow_default")');
+          })
+          .on('mouseup.line', (d) => {
+            d3.event.stopPropagation();
+            if (this.newLink) {
+              let id = this.newLink.datum()._from;
+              if (id === d._id) {
+                this.newLink.remove();
+                this.newLink = null;
+              } else {
+                let to = d._id;
+                let from = this.newLink.datum()._from;
+                this.addEdge(from, to);
+                this.newLink.remove();
+                this.newLink = null;
+                cb && cb();
+              }
+            }
+          })
+      })
+      .on('mouseleave.line', (d, i, g) => {
+        let el = g[i];
+        d3.select(el).select('rect').remove();
+      })
+    
+    this.linkEnter.on('mouseup.line', () => {
+      if (this.newLink) {
+        this.newLink.remove();
+        this.newLink = null;
+      }
+    });
+    
+    this.$el.on('mousemove.line', () => {
+      if (this.newLink) {
+        this.newLink
+            .call(this.updateNewLink.bind(this), this.svg.node());
+      }
+    })
+    .on('mouseup.line', () => {
+      if (this.newLink) {
+        this.newLink.remove();
+        this.newLink = null;
+      }
+    })
   }
 
   /* 辅助函数 */
@@ -1284,5 +1379,26 @@ class BaseGraph {
       vertexIds,
       edgeIds
     };
+  }
+  // 鼠标移动时，不断更新新建的线
+  updateNewLink(selection, container) {
+    selection.attr('d', (d) => {
+      let coord = d3.mouse(container);
+      // 抵消缩放移位的影响
+      let transform = d3.zoomTransform(container);
+      let transformedCoord = transform.invert(coord);
+
+      let x1 = d.source.x,
+        y1 = d.source.y,
+        x2 = transformedCoord[0],
+        y2 = transformedCoord[1];
+      
+      // 在拖拽新增的线条时，预留足够的移动空间，防止鼠标移动到线条上面，导致触发移出顶点的事件
+      let  angle = Math.atan2(y2 - y1, x2 - x1);
+      x2 = x2 - Math.cos(angle) * 10;
+      y2 = y2 - Math.sin(angle) * 10;
+      
+      return 'M' + x1 + ',' + y1 + 'A0,0 0 0,0 ' + x2 + ',' + y2;
+    })
   }
 }
