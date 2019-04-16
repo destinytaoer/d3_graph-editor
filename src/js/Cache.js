@@ -17,6 +17,7 @@
 class Cache {
   constructor() {
     this.caches = [];
+    this._source = null;
     this.point = 0;
 
     Object.defineProperty(this, 'length', {
@@ -27,6 +28,19 @@ class Cache {
         
       }
     });
+  }
+
+  init(cache) {
+    // 初始化 cache，清空 cache 并重置 source
+    this._source = cache;
+    this.clear();
+    this.store(cache);
+
+    return this;
+  }
+
+  getSource() {
+    return this._source;
   }
 
   store (cache) {
