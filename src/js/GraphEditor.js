@@ -63,7 +63,7 @@ class GraphEditor {
     
     // cache
     this.cache = new Cache();
-    this.cache.store(this.graph.rawData);
+    this.eventProxy.emit('store');
     this.refreshCacheToolbar();
     
     // info
@@ -124,7 +124,7 @@ class GraphEditor {
       })
       this.graph.bindLineWith(() => {
         this.graphRender();
-        this.cache.store(this.graph.rawData);
+        this.eventProxy.emit('store');
         this.refreshCacheToolbar();
       })
       // 右键菜单的隐藏
@@ -177,7 +177,7 @@ class GraphEditor {
     })
 
     // 功能
-    // 撤销重做
+    // 缓存和撤销重做
     this.eventProxy.on('undo', (el) => {
       console.log('undo');
       if (this.cache.point === 1) return;
@@ -199,6 +199,9 @@ class GraphEditor {
         this.graphRender();
         this.refreshCacheToolbar();
       }
+    })
+    this.eventProxy.on('store', () => {
+      this.cache.store(this.graph.rawData);
     })
     // 选择和框选
     this.eventProxy.on('multi', (el) => {
@@ -321,7 +324,7 @@ class GraphEditor {
       let y = parseInt(el.parentNode.style.top);
       this.graph.addVertex(x, y);
       this.eventProxy.emit('menu.hide');
-      this.cache.store(this.graph.rawData);
+      this.eventProxy.emit('store');
       this.refreshCacheToolbar();
       this.graphRender();
     })
@@ -330,7 +333,7 @@ class GraphEditor {
       console.log('save vertex');
       this.eventProxy.emit('edit.hide');
       this.graph.changeVertexData(data);
-      this.cache.store(this.graph.rawData);
+      this.eventProxy.emit('store');
       this.refreshCacheToolbar();
       this.graphRender();
     })
@@ -338,7 +341,7 @@ class GraphEditor {
       console.log('save edge');
       this.eventProxy.emit('edit.hide');
       this.graph.changeEdgeData(data);
-      this.cache.store(this.graph.rawData);
+      this.eventProxy.emit('store');
       this.refreshCacheToolbar();
       this.graphRender();
     })
@@ -347,7 +350,7 @@ class GraphEditor {
       let data = el.parentNode.data;
       this.graph.removeVertex(data._id);
       this.eventProxy.emit('menu.hide');
-      this.cache.store(this.graph.rawData);
+      this.eventProxy.emit('store');
       this.refreshCacheToolbar();
       this.graphRender();
     })
@@ -356,7 +359,7 @@ class GraphEditor {
       let data = el.parentNode.data;
       this.graph.removeEdge(data._id);
       this.eventProxy.emit('menu.hide');
-      this.cache.store(this.graph.rawData);
+      this.eventProxy.emit('store');
       this.refreshCacheToolbar();
       this.graphRender();
     })

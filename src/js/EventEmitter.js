@@ -39,6 +39,7 @@ class EventEmitter {
   once (type, listener) {
     if (typeof listener !== "function") throw new error("the second param of 'once' must be a function");
 
+    let _this = this;
     let fn = () => {
       // this 为 window
       _this.off(type, listener);
