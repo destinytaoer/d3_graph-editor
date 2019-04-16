@@ -63,8 +63,7 @@ class GraphEditor {
     
     // cache
     this.cache = new Cache();
-    this.eventProxy.emit('store');
-    this.refreshCacheToolbar();
+    this.eventProxy.emit('store', 'init');
     
     // info
     this.info = new Info(this.el, this.infoOptions);
@@ -125,7 +124,6 @@ class GraphEditor {
       this.graph.bindLineWith(() => {
         this.graphRender();
         this.eventProxy.emit('store');
-        this.refreshCacheToolbar();
       })
       // 右键菜单的隐藏
       this.graph.drag.on('start', (...arg) => {
@@ -200,8 +198,9 @@ class GraphEditor {
         this.refreshCacheToolbar();
       }
     })
-    this.eventProxy.on('store', () => {
-      this.cache.store(this.graph.rawData);
+    this.eventProxy.on('store', (type) => {
+      type === 'init' ? this.cache.init(data) : this.cache.store(this.graph.rawData);
+      this.refreshCacheToolbar();
     })
     // 选择和框选
     this.eventProxy.on('multi', (el) => {
@@ -325,7 +324,6 @@ class GraphEditor {
       this.graph.addVertex(x, y);
       this.eventProxy.emit('menu.hide');
       this.eventProxy.emit('store');
-      this.refreshCacheToolbar();
       this.graphRender();
     })
     // 编辑保存节点和边
@@ -334,7 +332,6 @@ class GraphEditor {
       this.eventProxy.emit('edit.hide');
       this.graph.changeVertexData(data);
       this.eventProxy.emit('store');
-      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('save.edge', (data) => {
@@ -342,7 +339,6 @@ class GraphEditor {
       this.eventProxy.emit('edit.hide');
       this.graph.changeEdgeData(data);
       this.eventProxy.emit('store');
-      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('remove.vertex', (el) => {
@@ -351,7 +347,6 @@ class GraphEditor {
       this.graph.removeVertex(data._id);
       this.eventProxy.emit('menu.hide');
       this.eventProxy.emit('store');
-      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('remove.edge', (el) => {
@@ -360,7 +355,6 @@ class GraphEditor {
       this.graph.removeEdge(data._id);
       this.eventProxy.emit('menu.hide');
       this.eventProxy.emit('store');
-      this.refreshCacheToolbar();
       this.graphRender();
     })
     this.eventProxy.on('copy', (el) => {
@@ -373,7 +367,7 @@ class GraphEditor {
     // 导出
     this.eventProxy.on('export_json', (el) => {
       console.log('export_json');
-      let blob = new Blob([JSON.stringify(this.graph.rawData)], { type: "" });
+      let blob = new Blob([JSON.stringify(this.graph.rawData)], { type: "application/json;chart=utf-8" });
       let alink = document.createElement("a");
       alink.id = "download";
       alink.href = URL.createObjectURL(blob);
@@ -384,6 +378,21 @@ class GraphEditor {
     })
     this.eventProxy.on('export_png', (el) => {
       console.log('export_png');
+      this.saveAsPng(this.graph.svg.node());
+      this.eventProxy.emit('menu.hide');
+    })
+    // 导入
+    this.eventProxy.on('import', (el) => {
+      console.log('import');
+      this.importJson((result) => {
+        let data = JSON.parse(result);
+        data = Object.assign({vertexes: [], edges: []}, data)
+        this.graph.changeRawData(data);
+        this.graph.preprocessData();
+        this.eventProxy.emit('store', 'init'); // 初始化缓存
+        this.graphRender();
+        this.eventProxy.emit('menu.hide');
+      })
     })
 
     return this;
@@ -433,5 +442,42 @@ class GraphEditor {
   graphRender() {
     this.graph.reRender();
     this.eventProxy.emit('render');
+  }
+  saveAsPng(svg) {
+    let serializer = new XMLSerializer();
+      let source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svg);
+      let image = new Image;
+      image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+      let canvas = document.createElement("canvas");
+      canvas.width = svg.getAttribute('width');
+      canvas.height = svg.getAttribute('height');
+      console.log(canvas.width, canvas.height)
+      let context = canvas.getContext("2d");
+      context.fillStyle = '#fff';//#fff设置保存后的PNG 是白色的
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      image.onload = () => {
+        context.drawImage(image, 0, 0);
+        let alink = document.createElement("a");
+        alink.download = "name.png";
+        alink.href = canvas.toDataURL("image/png");
+        alink.click();
+        alink = null;
+      };
+  }
+  importJson(cb) {
+    let input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', '.json');
+    input.click();
+    input.addEventListener('change', () => {
+      let reader = new FileReader();
+      reader.readAsText(input.files[0], "UTF-8");
+      reader.onload = (e) => {
+        input = null;
+        reader = null;
+        let result = e.target.result || '{}';
+        cb && cb(result);
+      }
+    })
   }
 }

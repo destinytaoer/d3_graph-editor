@@ -52,6 +52,10 @@ class Menu {
           content: '粘贴'
         },
         {
+          name: 'import',
+          content: '导入 json 数据'
+        },
+        {
           name: 'export_json',
           content: '导出 - 存为 json 数据'
         },
