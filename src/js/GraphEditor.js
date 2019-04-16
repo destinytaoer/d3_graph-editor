@@ -373,6 +373,14 @@ class GraphEditor {
     // 导出
     this.eventProxy.on('export_json', (el) => {
       console.log('export_json');
+      let blob = new Blob([JSON.stringify(this.graph.rawData)], { type: "" });
+      let alink = document.createElement("a");
+      alink.id = "download";
+      alink.href = URL.createObjectURL(blob);
+      alink.setAttribute('download', 'data.json');
+      alink.click();
+      alink = null;
+      this.eventProxy.emit('menu.hide');
     })
     this.eventProxy.on('export_png', (el) => {
       console.log('export_png');
