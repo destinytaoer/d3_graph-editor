@@ -59,6 +59,8 @@ class BaseGraph {
     // 原始数据，使用 JSON 的两个方法转换，完全克隆对象，并且不再是同一个引用地址，消除副作用
     this.rawData = JSON.parse(JSON.stringify(data));
 
+    this.idMap = [];
+
     this.adjList = [];
     this.vertexesMap = [];
     this.edgeTo = [];
@@ -69,7 +71,7 @@ class BaseGraph {
 
   init() {
     this.preprocessChart()
-      .preprocessData()
+      .preprocessData('init')
       .draw()
       .bindEvents();
   }
@@ -678,15 +680,20 @@ class BaseGraph {
     return this;
   }
   
-  /* 关于数据的处理 */
-  preprocessData () {
-    let data = JSON.parse(JSON.stringify(this.rawData));
+/* 关于数据的处理 */
+  layout() {
+    // 提供复写
+  }
+  preprocessData(type) {
+    if (type === 'init') {
+      let data = JSON.parse(JSON.stringify(this.rawData));
 
-    // 当前绘图数据，用于过滤时不影响原始数据
-    this.data = data;
-    // 顶点和边的数据
-    this.vertexes = data.vertexes;
-    this.edges = data.edges;
+      // 当前绘图数据，用于过滤时不影响原始数据
+      this.data = data;
+      // 顶点和边的数据
+      this.vertexes = JSON.parse(JSON.stringify(data.vertexes));
+      this.edges = JSON.parse(JSON.stringify(data.edges));
+    }
 
     this.vertexes.forEach((v) => {
       v.type = v.type;
@@ -698,13 +705,13 @@ class BaseGraph {
       let to = this.vertexesMap.indexOf(e._to);
       e.source = e._from;
       e.target = e._to;
-      e.type = e.type;
       e.state = e.state || 'normal';
       this.adjList[from] = this.adjList[from] || {};
       this.adjList[from][to] = this.adjList[from][to] || [];
       this.adjList[from][to].push(e._id);
     })
     this.setEdgeIndex();
+    this.layout();
 
     return this;
   }
@@ -778,6 +785,8 @@ class BaseGraph {
       return false;
     })
 
+    this.preprocessData();
+
     return this;
   }
   filterEdge(filter, isRaw) {
@@ -808,6 +817,8 @@ class BaseGraph {
       }
       return false;
     })
+
+    this.preprocessData();
 
     return this;
   }
@@ -910,11 +921,12 @@ class BaseGraph {
   // 增加节点和边数据
   addVertex(x, y, cb) {
     let vertex = {
-      _id: '',
+      _id: this.newId(),
       type: '',
       name: '',
       level: ''
     }
+    this.rawData.vertexes.push(vertex)
     // 抵消偏移和缩放的影响
     let { x: curX, y: curY, k: curK } = this.getTransform();
     x = (x - curX) / curK;
@@ -923,26 +935,26 @@ class BaseGraph {
     vertex.x = x;
     vertex.y = y;
     this.data.vertexes.push(vertex);
-    this.changeRawData(this.data)
-      .preprocessData();
+    this.vertexes.push(vertex);
+    this.preprocessData();
+
     cb && cb();
 
     return this;
   }
   addEdge(from, to, cb) {
     let edge = {
-      _id: '',
+      _id: this.newId(),
       type: '',
       label: '',
-      _from: '',
-      _to: ''
+      _from: from,
+      _to: to
     }
-    edge._from = from;
-    edge._to = to;
+    this.rawData.edges.push(edge);
 
     this.data.edges.push(edge);
-    this.changeRawData(this.data)
-      .preprocessData();
+    this.edges.push(edge);
+    this.preprocessData();
 
     cb && cb();
 
@@ -951,31 +963,41 @@ class BaseGraph {
   // 删除节点和边数据
   removeVertex(id, cb) {
     // 将 data 中的数据和单独的节点和边数据分开，防止过滤的时候产生错误
+    this.rawData.vertexes = this.rawData.vertexes.filter(v => {
+      return v._id !== id;
+    });
     this.data.vertexes = this.data.vertexes.filter(v => {
       return v._id !== id;
     });
     this.vertexes = this.vertexes.filter(v => {
       return v._id !== id;
     });
+    this.rawData.edges = this.rawData.edges.filter(e => {
+      return e._from !== id && e._to !== id;
+    });
     this.data.edges = this.data.edges.filter(e => {
       return e._from !== id && e._to !== id;
     });
     this.edges = this.edges.filter(e => {
       return e._from !== id && e._to !== id;
     });
-    this.changeRawData(this.data);
+    this.preprocessData();
     cb && cb();
 
     return this;
   }
   removeEdge(id, cb) {
-    this.edges = this.edges.filter(e => {
+    // 将 data 中的数据和单独的节点和边数据分开，防止过滤的时候产生错误
+    this.rawData.edges = this.rawData.edges.filter(e => {
       return e._id !== id;
     });
     this.data.edges = this.data.edges.filter(e => {
       return e._id !== id;
     });
-    this.changeRawData(this.data);
+    this.edges = this.edges.filter(e => {
+      return e._id !== id;
+    });
+    this.preprocessData();
     cb && cb();
 
     return this;
@@ -1401,5 +1423,22 @@ class BaseGraph {
       .attr('stroke', this.getEdgeColor(d))
       .attr('stroke-width', this.getEdgeWidth(d))
       .attr('marker-end', 'url("#arrow_default")');
+  }
+  // 获取 id
+  newId() {
+    let box = 'qwertyuiopasdfghjklzxcvbnm';
+    let id = 'xxxxxxxxxxxxxxxx'.replace(/x/g, function (c) {
+      let r = Math.floor(Math.random() * 26);
+      return box[r];
+    });
+
+    while (this.idMap.includes(id)) {
+      id = 'xxxxxxxxxxxxxxxx'.replace(/x/g, function (c) {
+        let r = Math.floor(Math.random() * 26);
+        return box[r];
+      });
+    }
+    this.idMap.push(id);
+    return id;
   }
 }

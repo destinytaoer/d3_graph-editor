@@ -71,14 +71,6 @@ class Force extends BaseGraph {
     return this;
   }
 
-  draw() {
-    this.layout()
-      .drawVertexes()
-      .drawEdges()
-    
-    return this;
-  }
-
   onTick() {
     // console.log('tick')
     // 移动点的位置

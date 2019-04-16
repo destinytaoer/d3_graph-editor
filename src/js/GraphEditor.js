@@ -182,7 +182,7 @@ class GraphEditor {
       let data = this.cache.prev();
       if (data) {
         this.graph.changeRawData(data)
-          .preprocessData();
+          .preprocessData('init');
         this.graphRender();
         this.refreshCacheToolbar();
       }
@@ -193,7 +193,7 @@ class GraphEditor {
       let data = this.cache.next();
       if (data) {
         this.graph.changeRawData(data)
-          .preprocessData();
+          .preprocessData('init');
         this.graphRender();
         this.refreshCacheToolbar();
       }
@@ -386,8 +386,8 @@ class GraphEditor {
       this.importJson((result) => {
         let data = JSON.parse(result);
         data = Object.assign({vertexes: [], edges: []}, data)
-        this.graph.changeRawData(data);
-        this.graph.preprocessData();
+        this.graph.changeRawData(data)
+          .preprocessData('init');
         this.eventProxy.emit('store', 'init'); // 初始化缓存
         this.graphRender();
         this.eventProxy.emit('menu.hide');
