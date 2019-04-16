@@ -306,14 +306,13 @@ class GraphEditor {
         return relation.includes(d.type);
       });
       this.graphRender();
-      this.eventProxy.emit('resetInfo');
     })
     this.eventProxy.on('reset', () => {
       this.graph.resetData();
       this.graphRender();
       this.eventProxy.emit('resetInfo');      
     })
-    this.eventProxy.on('resetInfo', () => {
+    this.eventProxy.on('reset.info', () => {
       this.info.bindData(this.graph.getCount());
     })
 
@@ -442,6 +441,7 @@ class GraphEditor {
   graphRender() {
     this.graph.reRender();
     this.eventProxy.emit('render');
+    this.eventProxy.emit('reset.info');
   }
   saveAsPng(svg) {
     let serializer = new XMLSerializer();
