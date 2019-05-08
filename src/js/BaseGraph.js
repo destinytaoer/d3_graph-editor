@@ -696,7 +696,6 @@ class BaseGraph {
     }
 
     this.vertexes.forEach((v) => {
-      v.type = v.type;
       v.state = v.state || 'normal';
       this.vertexesMap.push(v._id);
     })
