@@ -1,2 +1,2 @@
-export { default as Force } from './force';
-export { default as Tree } from './tree';
+export { default as Force } from './Graph/Force';
+export { default as Tree } from './Graph/Tree';
