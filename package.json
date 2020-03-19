@@ -1,0 +1,22 @@
+{
+  "name": "graph-editor",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "iife": "dist/index.iife.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -cw",
+    "dev": "cd demos && http-server"
+  },
+  "repository": "git@github.com:destinytaoer/d3_graph-editor.git",
+  "author": "destinytaoer <1848765519@qq.com>",
+  "license": "MIT",
+  "dependencies": {
+    "d3": "^5.15.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-buble": "^0.21.1",
+    "rollup": "^2.1.0"
+  }
+}
