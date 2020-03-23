@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Tree</title>
+  </head>
+  <body>
+    <div id="container"></div>
+    <script src="./lib/d3.v5.min.js"></script>
+    <script src="../node_modules/graph-editor/dist/index.iife.js"></script>
+    <script>
+      fetch('./db/tree.json')
+        .then(res => res.json())
+        .then(data => {
+          new GraphEditor.Tree('container', data);
+        })
+        .catch(err => console.log(err));
+    </script>
+  </body>
+</html>
