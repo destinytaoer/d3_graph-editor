@@ -19,6 +19,7 @@
  *   chartGroup: 绘图容器, g 元素, d3 Selection
  *   data: 数据
  *   options: 配置对象
+ *   zoom: 缩放对象, 用于控制图谱缩放行为
  *
  * @methods
  *   render: 渲染画布
@@ -103,7 +104,6 @@ class BaseGraph {
     scalable ? this.addZoom(scaleExtent) : null;
   }
   addZoom(scale) {
-    const 
     this.zoom = d3
       .zoom()
       .scaleExtent(scale)
