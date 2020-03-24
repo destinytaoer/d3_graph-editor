@@ -54,7 +54,7 @@ class BaseGraph {
     if (!data || typeof data !== 'object') {
       throw new Error('BaseGraph must some data to render');
     }
-    this.checkData();
+    this.checkData(data);
 
     this.data = data;
 
@@ -76,6 +76,7 @@ class BaseGraph {
     this.preprocessChart()
       .preprocessData()
       .draw()
+      .bindScale()
       .bindEvents();
   }
   draw() {
@@ -107,6 +108,7 @@ class BaseGraph {
     const { scalable, scaleExtent } = this.options;
 
     scalable ? this.addZoom(scaleExtent) : null;
+    return this;
   }
   addZoom(scale) {
     this.zoom = d3
@@ -121,10 +123,9 @@ class BaseGraph {
         this.chartGroup.attr('transform', d3.event.transform);
         const isWheelEvent = d3.event instanceof WheelEvent;
         if (isWheelEvent) this.zooming();
-      })
-      .on('dblclick.zoom', null);
+      });
 
-    this.svg.call(this.zoom);
+    this.svg.call(this.zoom).on('dblclick.zoom', null);
 
     return this;
   }
