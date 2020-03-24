@@ -61,15 +61,11 @@
 使用 [yarn link](https://yarnpkg.com/lang/en/docs/cli/link/)
 
 1. 在根目录中执行 `yarn link`
-2. 在 demos 目录下执行 `yarn link graph-editor`，此时 demos 目录下的 node_modules 中就会出现 graph-editor 的符号链接
-
-> 注意要在 demos 目录下先进行 `yarn init`, 否则会出现在根目录下的 node_modules 中
+2. 再执行 `yarn link graph-editor`，此时根目录下的 node_modules 中就会出现 graph-editor 的符号链接
 
 然后，就可以从 `node_modules` 引入最新的组件代码了。
 
 ```html
-<script src="./node_modules/graph-editor/dist/index.iife.js"></script>
-<!-- 两种情况的引入 -->
 <script src="../node_modules/graph-editor/dist/index.iife.js"></script>
 ```
 
