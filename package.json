@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "dev": "cd demos && http-server -p 5000 -o /"
+    "dev": "http-server -p 5000 -o /demos/index.html"
   },
   "repository": "git@github.com:destinytaoer/d3_graph-editor.git",
   "author": "destinytaoer <1848765519@qq.com>",
