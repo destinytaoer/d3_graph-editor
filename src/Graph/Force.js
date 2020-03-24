@@ -168,6 +168,41 @@ class Force extends BaseGraph {
 
     return this;
   }
+  setEdgeIndex() {
+    let edgeNumMap = {};
+    let vertexNumMap = {};
+    let edgeDirection = {};
+    this.edges.forEach(e => {
+      if (!edgeNumMap[e._from + e._to]) {
+        edgeNumMap[e._from + e._to] = edgeNumMap[e._to + e._from] = 1;
+        edgeDirection[e._from + e._to] = edgeDirection[e._to + e._from] = e._from;
+      } else {
+        edgeNumMap[e._from + e._to]++;
+        edgeNumMap[e._to + e._from]++;
+      }
+
+      vertexNumMap[e._from] = vertexNumMap[e._from] ? vertexNumMap[e._from] + 1 : 1;
+      vertexNumMap[e._to] = vertexNumMap[e._to] ? vertexNumMap[e._to] + 1 : 1;
+      e.edgeIndex = edgeNumMap[e._from + e._to]; // 节点 A、B 之间可能有多条边，这条边所在的 index
+    });
+    this.edges.forEach(e => {
+      e.siblingNum = edgeNumMap[e._from + e._to]; // 节点 A、B 之间边的条数
+      e.labelDirection = edgeDirection[e._from + e._to] === e._from ? 1 : 0; // 用于控制 label 从左到右还是从右到左渲染
+    });
+  }
+
+  /* 绘制图谱 */
+  preprocessChart() {
+    this.chartGroup.append('g').classed('vertexes', true);
+    this.chartGroup.append('g').classed('edges', true);
+    this.chartGroup.append('defs');
+    return this;
+  }
+  draw() {
+    this.drawEdges().drawVertexes();
+
+    return this;
+  }
   onTick() {
     // 移动点的位置
     this.chartGroup.selectAll('g.vertex').attr('transform', d => `translate(${d.x}, ${d.y})`);
@@ -175,6 +210,7 @@ class Force extends BaseGraph {
     this.chartGroup.selectAll('.vertex-name').attr('transform', d => `translate(${d.x}, ${d.y})`);
 
     // 移动边的位置
+    // TODO: 优化弧形边
     var selfMap = {};
     this.chartGroup.selectAll('.edge-path').attr('d', d => {
       var dx = d.target.x - d.source.x;
@@ -288,41 +324,6 @@ class Force extends BaseGraph {
         return 'translate(-5, 0)';
       }
     });
-  }
-  setEdgeIndex() {
-    let edgeNumMap = {};
-    let vertexNumMap = {};
-    let edgeDirection = {};
-    this.edges.forEach(e => {
-      if (!edgeNumMap[e._from + e._to]) {
-        edgeNumMap[e._from + e._to] = edgeNumMap[e._to + e._from] = 1;
-        edgeDirection[e._from + e._to] = edgeDirection[e._to + e._from] = e._from;
-      } else {
-        edgeNumMap[e._from + e._to]++;
-        edgeNumMap[e._to + e._from]++;
-      }
-
-      vertexNumMap[e._from] = vertexNumMap[e._from] ? vertexNumMap[e._from] + 1 : 1;
-      vertexNumMap[e._to] = vertexNumMap[e._to] ? vertexNumMap[e._to] + 1 : 1;
-      e.edgeIndex = edgeNumMap[e._from + e._to]; // 节点 A、B 之间可能有多条边，这条边所在的 index
-    });
-    this.edges.forEach(e => {
-      e.siblingNum = edgeNumMap[e._from + e._to]; // 节点 A、B 之间边的条数
-      e.labelDirection = edgeDirection[e._from + e._to] === e._from ? 1 : 0; // 用于控制 label 从左到右还是从右到左渲染
-    });
-  }
-
-  /* 绘制图谱 */
-  preprocessChart() {
-    this.chartGroup.append('g').classed('vertexes', true);
-    this.chartGroup.append('g').classed('edges', true);
-    this.chartGroup.append('defs');
-    return this;
-  }
-  draw() {
-    this.drawEdges().drawVertexes();
-
-    return this;
   }
   // 节点绘制
   drawVertexes() {
@@ -528,6 +529,16 @@ class Force extends BaseGraph {
   onEndRender() {
     // 仿真器停止时触发, 即已经完成渲染
     console.log('render end');
+  }
+  zooming() {
+    // 缩放过程中, 小于 0.8 则将文本隐藏
+    if (d3.event.transform.k < 0.8) {
+      this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
+      this.linkEnter.selectAll('.edge-label').style('opacity', '0');
+    } else {
+      this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
+      this.linkEnter.selectAll('.edge-label').style('opacity', '1');
+    }
   }
 
   /* 样式获取 */
