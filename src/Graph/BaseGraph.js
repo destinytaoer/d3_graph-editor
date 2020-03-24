@@ -54,6 +54,8 @@ class BaseGraph {
     if (!data || typeof data !== 'object') {
       throw new Error('BaseGraph must some data to render');
     }
+    this.checkData();
+
     this.data = data;
 
     let elInfo = this.el.getBoundingClientRect();
@@ -78,6 +80,9 @@ class BaseGraph {
   }
   draw() {
     return this;
+  }
+  checkData(data) {
+    // 提供复写
   }
   preprocessData() {
     return this;
