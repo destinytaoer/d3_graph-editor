@@ -23,7 +23,8 @@
  *
  * @methods
  *   render: 渲染画布
- *   preprocessChart: 初始化画布
+ *   init: 初始化, 初始化画布以及调用下面两个方法
+ *   preprocessChart: 初始化画布, 可在子类中复写
  *   processData: 数据处理, 可在子类中进行复写
  *   draw: 绘制图形, 必须在子类中复写
  *   bindEvents: 绑定事件, 可在子类中复写
@@ -73,11 +74,23 @@ class BaseGraph {
     this.options = Object.assign({}, defaultOptions, options || {});
   }
   render() {
-    this.preprocessChart()
-      .preprocessData()
+    this.init()
       .draw()
       .bindScale()
       .bindEvents();
+  }
+  init() {
+    this.$el.selectAll('svg').remove();
+    this.svg = this.$el
+      .append('svg')
+      .attr('width', this.options.width)
+      .attr('height', this.options.height);
+
+    this.chartGroup = this.svg.append('g').classed('chart', true);
+
+    this.preprocessChart().preprocessData();
+
+    return this;
   }
   draw() {
     return this;
@@ -89,14 +102,6 @@ class BaseGraph {
     return this;
   }
   preprocessChart() {
-    this.$el.selectAll('svg').remove();
-    this.svg = this.$el
-      .append('svg')
-      .attr('width', this.options.width)
-      .attr('height', this.options.height);
-
-    this.chartGroup = this.svg.append('g').classed('chart', true);
-
     return this;
   }
 
