@@ -121,12 +121,14 @@ class BaseGraph {
       .scaleExtent(scale)
       .filter(() => {
         // 区分缩放和拖拽
+        // 注意在 filter 中 d3.event 是原生的事件
         const isWheelEvent = d3.event instanceof WheelEvent;
-        return isWheelEvent || (!isWheelEvent && this.options.draggable);
+        return isWheelEvent || this.options.draggable;
       })
       .on('zoom', () => {
         this.chartGroup.attr('transform', d3.event.transform);
-        const isWheelEvent = d3.event instanceof WheelEvent;
+        // 在这里 d3.event 是 zoom 事件
+        const isWheelEvent = d3.event.sourceEvent instanceof WheelEvent;
         if (isWheelEvent) this.zooming();
       });
 
@@ -136,14 +138,6 @@ class BaseGraph {
   }
   zooming() {
     // 可复写方法, 表示在缩放过程中需要做的事情
-    // TODO:将下面代码放置到 Force 类中
-    if (d3.event.transform.k < 0.8) {
-      this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
-      this.linkEnter.selectAll('.edge-label').style('opacity', '0');
-    } else {
-      this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
-      this.linkEnter.selectAll('.edge-label').style('opacity', '1');
-    }
   }
 }
 
