@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Force</title>
+    <style>
+      #container {
+        width: 1000px;
+        height: 800px;
+        margin: 0 auto;
+      }
+    </style>
   </head>
   <body>
     <div id="container"></div>
@@ -14,7 +21,8 @@
       fetch('./db/force.json')
         .then(res => res.json())
         .then(data => {
-          new GraphEditor.Force('container', data);
+          let force = new GraphEditor.Force('container', data);
+          force.render();
         })
         .catch(err => console.log(err));
     </script>
