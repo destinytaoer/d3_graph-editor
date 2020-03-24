@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import BaseGraph from './BaseGraph';
+import { deepCopy } from '../utils';
 /**
  * Force: 力导向图类
  *
@@ -78,12 +79,12 @@ class Force extends BaseGraph {
     options = Object.assign({}, defaultOptions, options);
     super(el, data, options);
 
-    // 原始数据，使用 JSON 的两个方法转换，完全克隆对象，并且不再是同一个引用地址，消除副作用
-    this.rawData = JSON.parse(JSON.stringify(data));
+    // 原始数据，完全克隆对象，并且不再是同一个引用地址，消除副作用
+    this.rawData = deepCopy(data);
 
     // 顶点和边的数据
-    this.vertexes = JSON.parse(JSON.stringify(data.vertexes));
-    this.edges = JSON.parse(JSON.stringify(data.edges));
+    this.vertexes = deepCopy(data.vertexes);
+    this.edges = deepCopy(data.edges);
 
     // 记录当前所有节点的 ID
     this.idMap = [];
