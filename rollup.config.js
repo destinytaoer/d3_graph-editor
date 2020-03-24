@@ -14,7 +14,8 @@ export default {
       format: 'iife',
       globals: {
         d3: 'd3'
-      }
+      },
+      sourcemap: true
     },
     {
       file: pkg.module,
