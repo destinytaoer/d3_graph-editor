@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "dev": "http-server -p 5000 -o /demos/index.html"
+    "dev": "live-server --port=5000 --host=localhost --open=/demos/index.html"
   },
   "repository": "git@github.com:destinytaoer/d3_graph-editor.git",
   "author": "destinytaoer <1848765519@qq.com>",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-buble": "^0.21.1",
-    "http-server": "^0.12.1",
+    "live-server": "^1.2.1",
     "rollup": "^2.1.0"
   }
 }
