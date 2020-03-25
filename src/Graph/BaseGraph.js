@@ -79,6 +79,9 @@ class BaseGraph {
       .bindScale()
       .bindEvents();
   }
+  update() {
+    this.draw().bindEvents();
+  }
   init() {
     this.$el.selectAll('svg').remove();
     this.svg = this.$el
