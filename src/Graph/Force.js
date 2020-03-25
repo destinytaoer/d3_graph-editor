@@ -30,7 +30,7 @@ import { deepCopy } from '../utils';
  *      alphaDecay [Number] 衰减系数, 默认 0.07
  *
  * @constructor
- *   eel: 容器, HTMLElement
+ *   el: 容器, HTMLElement
  *   $el: 容器, d3 Selection
  *   svg: SVG 画布, d3 Selection
  *   chartGroup: 绘图容器, g 元素, d3 Selection
@@ -526,6 +526,9 @@ class Force extends BaseGraph {
   }
 
   /* 事件 */
+  bindEvents() {
+    this.addDrag();
+  }
   onEndRender() {
     // 仿真器停止时触发, 即已经完成渲染
     console.log('render end');
@@ -539,6 +542,69 @@ class Force extends BaseGraph {
       this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
       this.linkEnter.selectAll('.edge-label').style('opacity', '1');
     }
+  }
+  // 拖拽事件
+  addDrag() {
+    this.drag = d3
+      .drag()
+      .on('start', this.onDragStart.bind(this))
+      .on('drag', this.onDrag.bind(this))
+      .on('end', this.onDragEnd.bind(this));
+    this.nodeEnter.selectAll('.vertex').call(this.drag);
+
+    return this;
+  }
+  onDragStart(d) {
+    if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  onDrag(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+  onDragEnd(d) {
+    if (!d3.event.active) this.simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  // click
+  addClick() {
+    this.nodeEnter.selectAll('.vertex').on('click', this.onVertexClick.bind(this));
+    this.linkEnter.on('click', this.onEdgeClick.bind(this));
+  }
+  onVertexClick(d) {
+    console.log('vertex clicked');
+    // let { vertexIds, edgeIds } = this.getHighlightIds(d)
+    // this.highlightVertex(vertexIds)
+    //   .highlightEdge(edgeIds)
+    // this.resetStyle()
+    // eventProxy.emit('click.vertex', d);
+  }
+  onEdgeClick(d) {
+    console.log('edge clicked');
+    // eventProxy.emit('click.vertex', d);
+  }
+
+  // hover
+  addHover() {
+    this.nodeEnter.selectAll('.vertex').on('mouseenter', this.onVertexHover.bind(this));
+    this.nodeEnter.selectAll('.vertex').on('mouseleave', this.onVertexHoverout.bind(this));
+
+    this.linkEnter.on('mouseenter', this.onEdgeHover.bind(this));
+    this.linkEnter.on('mouseleave', this.onEdgeHoverout.bind(this));
+  }
+  onVertexHover(d) {
+    console.log('vertex hover');
+  }
+  onVertexHoverout(d) {
+    console.log('vertex hoverout');
+  }
+  onEdgeHover(d) {
+    console.log('edge hover');
+  }
+  onEdgeHoverout(d) {
+    console.log('edge hoverout');
   }
 
   /* 样式获取 */
@@ -766,7 +832,6 @@ class Force extends BaseGraph {
     // }
     return 1;
   }
-
   // 背景颜色
   getBgColor() {
     switch (this.theme) {
@@ -779,7 +844,7 @@ class Force extends BaseGraph {
     }
   }
 
-  /* 关于样式的改变 */
+  /* 样式的改变, 主要用于主题颜色的变更 */
   resetStyle() {
     this.setVertexStyle()
       .setEdgeStyle()
@@ -788,14 +853,6 @@ class Force extends BaseGraph {
   setVertexStyle() {
     this.nodeEnter
       .selectAll('.circle')
-      // .attr('d', (d) => {
-      //   let type = this.getShape(d)
-      //   type = 'symbol' + type[0].toUpperCase() + type.slice(1)
-      //   let size = this.getRadius(d) * this.getRadius(d) * Math.PI
-
-      //   let _d3 = d3 // 直接使用 d3[type] 报错
-      //   return this.symbol.size(size).type(_d3[type])()
-      // })
       .attr('fill', d => this.getVertexColor(d))
       .attr('stroke', d => this.getVertexStrokeColor(d))
       .attr('stroke-width', d => this.getVertexStrokeWidth(d));
@@ -806,7 +863,6 @@ class Force extends BaseGraph {
       .selectAll('text.vertex-name')
       .attr('y', d => this.getRadius(d) + 5)
       .style('fill', d => this.getVertexNameColor(d));
-    // .each(this.setVertexNamePos.bind(this))
 
     return this;
   }
@@ -856,37 +912,8 @@ class Force extends BaseGraph {
     this.svg.style('background', this.getBgColor());
     return this;
   }
-  // 改变主题
-  changeTheme(theme) {
-    this.theme = theme;
-    this.resetStyle();
-    return this;
-  }
-  // 高亮顶点和边
-  highlightVertex(ids) {
-    this.nodeEnter.selectAll('.vertex .circle').each((d, i, g) => {
-      if (ids.includes(d._id)) {
-        d.state = 'highlight';
-      } else {
-        d.state = 'grey';
-      }
-    });
 
-    return this;
-  }
-  highlightEdge(ids) {
-    this.linkEnter.selectAll('.edge-path').each((d, i, g) => {
-      if (ids.includes(d._id)) {
-        d.state = 'highlight';
-      } else {
-        d.state = 'grey';
-      }
-    });
-
-    return this;
-  }
-
-  /* 辅助函数 */
+  /* 辅助函数, 可供外部使用 */
   // 获取当前 svg 的 transform
   getTransform() {
     return d3.zoomTransform(this.svg.node());
@@ -935,6 +962,399 @@ class Force extends BaseGraph {
     this.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
 
     return this;
+  }
+  // 获取统计信息
+  getCount() {
+    let result = {};
+    result.vertex = this.getVertexCount();
+    result.edge = this.getEdgeCount();
+    return result;
+  }
+  getVertexCount() {
+    let result = {};
+    this.vertexes.forEach(item => {
+      if (!result[item.type]) {
+        result[item.type] = 1;
+      } else {
+        result[item.type]++;
+      }
+    });
+    return result;
+  }
+  getEdgeCount() {
+    let result = {};
+    this.edges.forEach(item => {
+      if (!result[item.type]) {
+        result[item.type] = 1;
+      } else {
+        result[item.type]++;
+      }
+    });
+    return result;
+  }
+  // 获取节点或边的数据
+  getVertexById(id) {
+    let vertexArr = this.vertexes.filter(v => {
+      return v._id === id;
+    });
+    return vertexArr[0];
+  }
+  getEdgeById(id) {
+    let edgeArr = this.edges.filter(e => {
+      return e._id === id;
+    });
+    return edgeArr[0];
+  }
+  // 改变主题
+  changeTheme(theme) {
+    this.theme = theme;
+    this.resetStyle();
+    return this;
+  }
+  // 高亮顶点和边
+  highlightVertex(ids) {
+    this.nodeEnter.selectAll('.vertex .circle').each((d, i, g) => {
+      if (ids.includes(d._id)) {
+        d.state = 'highlight';
+      } else {
+        d.state = 'grey';
+      }
+    });
+
+    return this;
+  }
+  highlightEdge(ids) {
+    this.linkEnter.selectAll('.edge-path').each((d, i, g) => {
+      if (ids.includes(d._id)) {
+        d.state = 'highlight';
+      } else {
+        d.state = 'grey';
+      }
+    });
+
+    return this;
+  }
+  // 过滤与重置
+  filterVertex(filter, isRaw) {
+    if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
+
+    let vertexIds = [];
+    let filterIds = [];
+
+    let vertexes = isRaw ? this.data.vertexes : this.vertexes;
+    let edges = isRaw ? this.data.edges : this.edges;
+
+    // 筛选掉 filter 返回为 false 的顶点
+    vertexes.forEach((d, i, g) => {
+      // 如果 filter 执行返回为 true，则保留
+      if (filter(d, i, g)) {
+        console.log(true);
+        filterIds.push(d._id);
+      }
+    });
+
+    // 保留 filter 返回 true 相连的所有边
+    this.edges = edges.filter(d => {
+      if (filterIds.includes(d._from) || filterIds.includes(d._to)) {
+        vertexIds.push(d._to);
+        vertexIds.push(d._from);
+        return true;
+      }
+      return false;
+    });
+
+    // 去重
+    vertexIds = Array.from(new Set(vertexIds));
+
+    // 筛选掉没有边连接的顶点
+    this.vertexes = vertexes.filter(d => {
+      if (vertexIds.includes(d._id)) {
+        return true;
+      }
+      return false;
+    });
+
+    this.preprocessData();
+
+    return this;
+  }
+  filterEdge(filter, isRaw) {
+    if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
+
+    let vertexIds = [];
+
+    let vertexes = isRaw ? this.data.vertexes : this.vertexes;
+    let edges = isRaw ? this.data.edges : this.edges;
+
+    // 筛选掉 filter 返回为 false 的边
+    this.edges = edges.filter((d, i, g) => {
+      if (filter(d, i, g)) {
+        vertexIds.push(d._from);
+        vertexIds.push(d._to);
+        return true;
+      }
+      return false;
+    });
+
+    // 去重
+    vertexIds = Array.from(new Set(vertexIds));
+
+    // 筛选掉没有边连接的顶点
+    this.vertexes = vertexes.filter(d => {
+      if (vertexIds.includes(d._id)) {
+        return true;
+      }
+      return false;
+    });
+
+    this.preprocessData();
+
+    return this;
+  }
+  resetData() {
+    this.vertexes = this.data.vertexes;
+    this.edges = this.data.edges;
+
+    return this;
+  }
+  // 绑定右键点击事件
+  bindRightClick(cb) {
+    this.$el.on('contextmenu', () => {
+      d3.event.preventDefault();
+    });
+
+    this.nodeEnter.selectAll('.vertex').on('mouseup.menu', (...args) => {
+      d3.event.stopPropagation();
+      console.log(args);
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
+    this.linkEnter.on('mouseup.menu', (...args) => {
+      d3.event.stopPropagation();
+      console.log(args);
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
+    this.svg.on('mouseup.menu', (...args) => {
+      console.log(args);
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
+  }
+  // 绑定
+  bindLineWith(cb) {
+    this.nodeEnter
+      .selectAll('.vertex')
+      .on('mouseup.line', d => {
+        d3.event.stopPropagation();
+        if (this.newLink) {
+          this.appendNewLink(d, cb);
+        }
+      })
+      .on('mouseenter.line', (d, i, g) => {
+        let el = g[i];
+        d3.select(el)
+          .append('rect')
+          .datum(d)
+          .attr('width', 6)
+          .attr('height', 6)
+          .attr('x', -3)
+          .attr('y', -3)
+          .attr('fill', 'transparent')
+          .style('cursor', 'crosshair')
+          .on('mousedown.line', d => {
+            d3.event.stopPropagation();
+            this.addNewLink(d);
+          })
+          .on('mouseup.line', d => {
+            d3.event.stopPropagation();
+            if (this.newLink) {
+              let id = this.newLink.datum()._from;
+              if (id === d._id) {
+                this.removeNewLink();
+              } else {
+                this.appendNewLink(d, cb);
+              }
+            }
+          });
+      })
+      .on('mouseleave.line', (d, i, g) => {
+        let el = g[i];
+        d3.select(el)
+          .select('rect')
+          .remove();
+      });
+
+    this.linkEnter.on('mouseup.line', () => {
+      if (this.newLink) {
+        this.removeNewLink();
+      }
+    });
+
+    this.$el
+      .on('mousemove.line', () => {
+        if (this.newLink) {
+          this.newLink.call(this.updateNewLink.bind(this), this.svg.node());
+        }
+      })
+      .on('mouseup.line', () => {
+        if (this.newLink) {
+          this.removeNewLink();
+        }
+      });
+  }
+  // 获取最短路径上的所有顶点和边
+  shortestPath(source, target) {
+    const { adjList, vertexesMap } = this;
+    let from = vertexesMap.indexOf(source._id);
+    let to = vertexesMap.indexOf(target._id);
+    let vertexIds = [];
+    let edgeIds = [];
+    this.bfs(from);
+    let path = this.pathTo(from, to);
+
+    if (path.length <= 1) {
+      return {
+        vertexIds: [target._id],
+        edgeIds: []
+      };
+    }
+    path.forEach((v, i) => {
+      vertexIds.push(vertexesMap[v]);
+      if (i > 0) {
+        edgeIds.push(adjList[v][path[i - 1]][0]); // 如果两点之间存在多条边，返回的是第一条边
+      }
+    });
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 广度遍历
+  bfs(vertexNum) {
+    for (let i in this.vertexesMap) {
+      this.marker[i] = false;
+    }
+    let a = v => {
+      this.marker[v] = true;
+
+      let queue = [];
+      queue.push(v);
+      while (queue.length > 0) {
+        let item = queue.shift();
+
+        if (!this.adjList[item]) {
+          continue;
+        }
+
+        Object.keys(this.adjList[item]).forEach(k => {
+          let i = +k;
+          if (!this.marker[i]) {
+            this.edgeTo[i] = item;
+            queue.push(i);
+            this.marker[i] = true;
+          }
+        });
+      }
+    };
+    a(vertexNum);
+  }
+  // 最短路径
+  pathTo(from, to) {
+    let path = [];
+
+    while (to !== from && this.edgeTo[to] !== undefined) {
+      path.push(to);
+      to = this.edgeTo[to];
+    }
+    path.push(from);
+    return path;
+  }
+  getHighlightIds(d) {
+    return this.radiationVertex(d);
+  }
+  // 获取当前顶点呈放射状的顶点和边
+  // 以当前顶点为起点的边和边连接的所有顶点，包含当前顶点
+  radiationVertex(d) {
+    let vertexIds = [];
+    let edgeIds = [];
+    vertexIds.push(d._id);
+    this.edges.forEach(e => {
+      if (e._from === d._id) {
+        vertexIds.push(e._to);
+        edgeIds.push(e._id);
+      }
+    });
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 获取所有与当前顶点有关联的边和顶点
+  // 包含当前顶点的所有边和边连接的所有顶点
+  relationVertex(d) {
+    let vertexIds = [];
+    let edgeIds = [];
+    vertexIds.push(d._id);
+    this.edges.forEach(e => {
+      if (e._from === d._id || e._to === d._id) {
+        vertexIds.push(e._to);
+        vertexIds.push(e._from);
+        edgeIds.push(e._id);
+      }
+    });
+    vertexIds = Array.from(new Set(vertexIds));
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 鼠标移动时，不断更新新建的线
+  updateNewLink(selection, container) {
+    selection.attr('d', d => {
+      let coord = d3.mouse(container);
+      // 抵消缩放移位的影响
+      let transform = d3.zoomTransform(container);
+      let transformedCoord = transform.invert(coord);
+
+      let x1 = d.source.x,
+        y1 = d.source.y,
+        x2 = transformedCoord[0],
+        y2 = transformedCoord[1];
+
+      // 在拖拽新增的线条时，预留足够的移动空间，防止鼠标移动到线条上面，导致触发移出顶点的事件
+      let angle = Math.atan2(y2 - y1, x2 - x1);
+      x2 = x2 - Math.cos(angle) * 10;
+      y2 = y2 - Math.sin(angle) * 10;
+
+      return 'M' + x1 + ',' + y1 + 'A0,0 0 0,0 ' + x2 + ',' + y2;
+    });
+  }
+  removeNewLink() {
+    this.newLink.remove();
+    this.newLink = null;
+  }
+  appendNewLink(d, cb) {
+    let to = d._id;
+    let from = this.newLink.datum()._from;
+    this.addEdge(from, to);
+    this.removeNewLink();
+    cb && cb();
+  }
+  addNewLink(d) {
+    // 增加新的连线
+    this.newLink = this.chartGroup
+      .append('path')
+      .datum({
+        _from: d._id,
+        source: d
+      })
+      .attr('stroke', this.getEdgeColor(d))
+      .attr('stroke-width', this.getEdgeWidth(d))
+      .attr('marker-end', 'url("#arrow_default")');
   }
 }
 export default Force;
