@@ -177,8 +177,12 @@ class Force extends BaseGraph {
         edgeNumMap[e._from + e._to] = edgeNumMap[e._to + e._from] = 1;
         edgeDirection[e._from + e._to] = edgeDirection[e._to + e._from] = e._from;
       } else {
-        edgeNumMap[e._from + e._to]++;
-        edgeNumMap[e._to + e._from]++;
+        if (e._from !== e._to) {
+          edgeNumMap[e._from + e._to]++;
+          edgeNumMap[e._to + e._from]++;
+        } else {
+          edgeNumMap[e._to + e._from]++;
+        }
       }
 
       vertexNumMap[e._from] = vertexNumMap[e._from] ? vertexNumMap[e._from] + 1 : 1;
@@ -242,7 +246,6 @@ class Force extends BaseGraph {
     this.chartGroup.selectAll('g.vertex').attr('transform', d => `translate(${d.x}, ${d.y})`);
 
     // 移动边的位置
-    // TODO: 优化弧形边
     var selfMap = {};
     this.chartGroup.selectAll('.edge-path').attr('d', d => {
       var dx = d.target.x - d.source.x;
@@ -256,8 +259,8 @@ class Force extends BaseGraph {
           d.edgeIndex === middleIdx
             ? 0
             : dr /
-              (Math.log(Math.abs(d.edgeIndex - middleIdx) * 0.7 + 1) +
-                1 / (10 * Math.pow(d.edgeIndex, 2))); // 弧度绘制
+              (Math.log(Math.abs(d.edgeIndex - middleIdx) * 2.5) +
+                1 / (10 * Math.pow(d.edgeIndex - middleIdx, 2))); // 弧度绘制
       }
       let sweepFlag = d.edgeIndex > middleIdx ? 1 : 0;
       if (d.labelDirection) {
@@ -281,9 +284,10 @@ class Force extends BaseGraph {
 
       // 自己指向自己
       if (d.source._id === d.target._id) {
-        selfMap[d.source.name] = selfMap[d.source.name] ? selfMap[d.source.name] + 1 : 1;
+        console.log(d.siblingNum);
+        selfMap[d.source.name] = selfMap[d.source.name] ? selfMap[d.source.name] + 0.7 : 1;
         let h = selfMap[d.source.name] * 100;
-        let w = selfMap[d.source.name] * 10;
+        let w = selfMap[d.source.name] * 1;
         // 使用三次贝塞尔曲线绘制
         path =
           'M' +
