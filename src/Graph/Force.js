@@ -195,7 +195,19 @@ class Force extends BaseGraph {
   preprocessChart() {
     this.chartGroup.append('g').classed('edges', true);
     this.chartGroup.append('g').classed('vertexes', true);
-    this.chartGroup.append('defs');
+    this.chartGroup.append('defs').classed('reverse-paths', true);
+    this.chartGroup
+      .append('defs')
+      .classed('arrows', true)
+      .append('marker')
+      .datum({
+        _id: '',
+        type: '',
+        state: 'normal',
+        _flag: true
+      })
+      .attr('id', 'arrow_default')
+      .append('path');
     return this;
   }
   draw() {
@@ -203,8 +215,25 @@ class Force extends BaseGraph {
       .select('.vertexes')
       .selectAll('g')
       .data(this.vertexes);
+    const linkUpdate = this.chartGroup
+      .select('.edges')
+      .selectAll('g')
+      .data(this.edges);
     this.drawVertexes(nodeUpdate);
-    this.drawEdges();
+    this.drawEdges(linkUpdate);
+
+    // 增加反向路径, 用于旋转 label
+    const reversePathUpdate = this.chartGroup
+      .select('.reverse-paths')
+      .selectAll('.reverse-path')
+      .data(this.edges);
+    this.drawReversePath(reversePathUpdate);
+
+    const arrowUpdate = this.chartGroup
+      .select('.arrows')
+      .selectAll('.arrow-marker')
+      .data(this.edges);
+    this.drawArrow(arrowUpdate);
 
     return this;
   }
@@ -433,101 +462,123 @@ class Force extends BaseGraph {
     //   .style('font-size', this.options.vertexFontSize);
   }
   // 边
-  drawEdges() {
-    this.linkEnter = this.chartGroup
-      .select('.edges')
-      .selectAll('g')
-      .data(this.edges)
-      .enter()
-      .append('g')
-      .classed('edge', true)
-      .attr('data-id', d => d._id)
-      .attr('type', d => d.type);
+  drawEdges(update) {
+    this.linkEnter = update.enter();
+    const exit = update.exit();
 
-    this.drawPath() // 增加边路径
-      .drawEdgeLabel() // 增加边 label
-      .drawArrow();
+    // 对 enter 的处理: 插入必要的节点
+    const edgeGroup = this.linkEnter.append('g').classed('edge', true);
+    this.drawEdge(edgeGroup);
 
-    return this;
+    // 更新节点属性和样式
+    this.setEdgeAttr();
+
+    // 对 exit 的处理: 去掉没有数据关联的节点
+    exit.remove();
   }
-  drawPath() {
-    this.linkEnter
-      .append('path')
-      .classed('edge-path', true)
-      .attr('fill', 'none')
-      .attr('stroke', d => this.getEdgeColor(d))
-      .attr('id', d => d._id);
-
-    this.chartGroup.select('defs path').remove();
-
-    // 增加反向路径, 用于旋转 label
-    this.chartGroup
-      .select('defs')
-      .selectAll('.reverse-path')
-      .data(this.edges)
-      .enter()
-      .append('path')
-      .attr('fill', 'none')
-      .attr('stroke', d => this.getEdgeColor(d))
-      .classed('reverse-path', true)
-      .attr('id', function(d) {
-        return d._id + '_reverse';
-      });
-
-    return this;
-  }
-  drawEdgeLabel() {
-    this.linkEnter
+  drawEdge(edgeGroup) {
+    edgeGroup.append('path').classed('edge-path', true);
+    edgeGroup
       .append('text')
       .classed('edge-label', true)
       .append('textPath')
+      .attr('startOffset', '50%')
+      .attr('text-anchor', 'middle')
+      .style('user-select', 'none');
+  }
+  setEdgeAttr() {
+    this.chartGroup.selectAll('.edge').each((d, i, g) => {
+      const edge = d3.select(g[i]);
+      edge.attr('data-id', d => d._id).attr('type', d => d.type);
+
+      this.setPathAttr(edge.select('.edge-path'));
+      this.setEdgeLabelAttr(edge.select('.edge-label textPath'));
+    });
+  }
+  setPathAttr(node) {
+    node
+      .attr('fill', 'none')
+      .attr('stroke', d => this.getEdgeColor(d))
+      .attr('id', d => d._id)
+      .attr('marker-end', d => this.getArrowUrl(d));
+  }
+  setEdgeLabelAttr(node) {
+    node
       .attr('xlink:href', d => {
         return '#' + d._id;
       })
-      .attr('startOffset', '50%')
-      .attr('text-anchor', 'middle')
-      .style('user-select', 'none')
       .text(d => {
         return d.label || '';
       })
       .style('font-size', this.options.edgeFontSize);
 
     if (this.getTransform().k < 0.8) {
-      this.linkEnter.selectAll('.edge-label').style('opacity', '0');
+      node.style('opacity', '0');
     } else {
-      this.linkEnter.selectAll('.edge-label').style('opacity', '1');
+      node.style('opacity', '1');
     }
-    return this;
   }
-  drawArrow() {
-    this.chartGroup
-      .select('defs')
-      .selectAll('.arrow-marker')
-      .data(this.edges)
-      .enter()
-      .append('marker')
-      .attr('id', d => 'arrow_' + d._id)
-      .classed('arrow-marker', true)
-      .append('path');
+  drawReversePath(update) {
+    const enter = update.enter();
+    const exit = update.exit();
 
-    this.chartGroup
-      .select('defs')
+    enter.append('path').classed('reverse-path', true);
+
+    this.setReversePathAttr();
+
+    exit.remove();
+  }
+  setReversePathAttr() {
+    this.chartGroup.selectAll('.reverse-path').each((d, i, g) => {
+      const node = d3.select(g[i]);
+      node
+        .attr('fill', 'none')
+        .attr('stroke', d => this.getEdgeColor(d))
+        .attr('id', function(d) {
+          return d._id + '_reverse';
+        });
+    });
+  }
+  drawArrow(update) {
+    const enter = update.enter();
+    const exit = update.exit();
+
+    enter
       .append('marker')
-      .datum({
-        _id: '',
-        type: '',
-        state: 'normal',
-        _flag: true
-      })
-      .attr('id', 'arrow_default')
       .classed('arrow-marker', true)
+      .attr('id', d => 'arrow_' + d._id)
       .append('path');
 
     this.setArrowStyle();
 
-    this.linkEnter.selectAll('.edge-path').attr('marker-end', d => this.getArrowUrl(d));
+    exit.remove();
+  }
+  setArrowAttr() {
+    this.chartGroup.selectAll('.arrow-marker').each((d, i, g) => {
+      let thisArrow = d3.select(g[i]);
+      const {
+        path = 'M0,0 L10,5 L0,10 z',
+        arrowWidth = 10,
+        arrowHeight = 10,
+        refx = 0,
+        color = '#e3e3e3'
+      } = this.getArrowConfig(d);
 
-    return this;
+      if (d._flag) {
+        thisArrow.attr('refX', arrowWidth + refx);
+      } else {
+        thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx);
+      }
+      thisArrow
+        .attr('refY', arrowHeight / 2)
+        .attr('markerUnits', 'userSpaceOnUse')
+        .attr('markerWidth', arrowWidth)
+        .attr('markerHeight', arrowHeight)
+        .attr('orient', 'auto')
+        .select('path')
+        .attr('d', path)
+        .attr('fill', color);
+    });
   }
 
   /* 事件 */
@@ -855,24 +906,21 @@ class Force extends BaseGraph {
       .setBgColor();
   }
   setVertexStyle() {
-    this.nodeEnter
+    this.chartGroup
       .selectAll('.circle')
       .attr('fill', d => this.getVertexColor(d))
       .attr('stroke', d => this.getVertexStrokeColor(d))
       .attr('stroke-width', d => this.getVertexStrokeWidth(d));
 
-    this.nodeEnter.selectAll('image').attr('xlink:href', d => this.getIcon(d));
+    this.chartGroup.selectAll('.icon').attr('xlink:href', d => this.getIcon(d));
 
-    this.nodeEnter
-      .selectAll('text.vertex-name')
-      .attr('y', d => this.getRadius(d) + 5)
-      .style('fill', d => this.getVertexNameColor(d));
+    this.chartGroup.selectAll('text.vertex-name').style('fill', d => this.getVertexNameColor(d));
 
     return this;
   }
   setEdgeStyle() {
     // 边
-    this.linkEnter
+    this.chartGroup
       .selectAll('.edge-path')
       .attr('stroke', d => this.getEdgeColor(d))
       .attr('stroke-width', d => this.getEdgeWidth(d));
@@ -881,35 +929,15 @@ class Force extends BaseGraph {
     this.setArrowStyle();
 
     // 边文字
-    this.linkEnter.selectAll('.edge-label').style('fill', d => this.getEdgeLableColor(d));
+    this.chartGroup.selectAll('.edge-label').style('fill', d => this.getEdgeLableColor(d));
 
     return this;
   }
   setArrowStyle() {
     this.chartGroup.selectAll('.arrow-marker').each((d, i, g) => {
       let thisArrow = d3.select(g[i]);
-      const {
-        path = 'M0,0 L10,5 L0,10 z',
-        arrowWidth = 10,
-        arrowHeight = 10,
-        refx = 0,
-        color = '#e3e3e3'
-      } = this.getArrowConfig(d);
-
-      if (d._flag) {
-        thisArrow.attr('refX', arrowWidth + refx);
-      } else {
-        thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx);
-      }
-      thisArrow
-        .attr('refY', arrowHeight / 2)
-        .attr('markerUnits', 'userSpaceOnUse')
-        .attr('markerWidth', arrowWidth)
-        .attr('markerHeight', arrowHeight)
-        .attr('orient', 'auto')
-        .select('path')
-        .attr('d', path)
-        .attr('fill', color);
+      const { color = '#e3e3e3' } = this.getArrowConfig(d);
+      thisArrow.attr('fill', color);
     });
   }
   setBgColor() {
