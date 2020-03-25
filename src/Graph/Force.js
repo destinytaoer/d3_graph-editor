@@ -576,7 +576,10 @@ class Force extends BaseGraph {
         thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx);
       }
       thisArrow
-        .attr('refY', arrowHeight / 2)
+        .attr('refY', d => {
+          const middleIdx = Math.ceil(d.siblingNum / 2);
+          return arrowHeight / 2 + (d.edgeIndex - middleIdx) * 1;
+        })
         .attr('markerUnits', 'userSpaceOnUse')
         .attr('markerWidth', arrowWidth)
         .attr('markerHeight', arrowHeight)
