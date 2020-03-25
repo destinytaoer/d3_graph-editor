@@ -219,20 +219,20 @@ class Force extends BaseGraph {
       .select('.edges')
       .selectAll('g')
       .data(this.edges);
-    this.drawVertexes(nodeUpdate);
-    this.drawEdges(linkUpdate);
-
+    // 箭头
+    const arrowUpdate = this.chartGroup
+      .select('.arrows')
+      .selectAll('.arrow-marker')
+      .data(this.edges);
     // 增加反向路径, 用于旋转 label
     const reversePathUpdate = this.chartGroup
       .select('.reverse-paths')
       .selectAll('.reverse-path')
       .data(this.edges);
-    this.drawReversePath(reversePathUpdate);
 
-    const arrowUpdate = this.chartGroup
-      .select('.arrows')
-      .selectAll('.arrow-marker')
-      .data(this.edges);
+    this.drawVertexes(nodeUpdate);
+    this.drawEdges(linkUpdate);
+    this.drawReversePath(reversePathUpdate);
     this.drawArrow(arrowUpdate);
     this.setBgColor();
     return this;
@@ -551,7 +551,7 @@ class Force extends BaseGraph {
       .attr('id', d => 'arrow_' + d._id)
       .append('path');
 
-    this.setArrowStyle();
+    this.setArrowAttr();
 
     exit.remove();
   }
