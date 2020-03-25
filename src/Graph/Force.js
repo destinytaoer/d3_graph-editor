@@ -193,21 +193,24 @@ class Force extends BaseGraph {
 
   /* 绘制图谱 */
   preprocessChart() {
-    this.chartGroup.append('g').classed('vertexes', true);
     this.chartGroup.append('g').classed('edges', true);
+    this.chartGroup.append('g').classed('vertexes', true);
     this.chartGroup.append('defs');
     return this;
   }
   draw() {
-    this.drawEdges().drawVertexes();
+    const nodeUpdate = this.chartGroup
+      .select('.vertexes')
+      .selectAll('g')
+      .data(this.vertexes);
+    this.drawVertexes(nodeUpdate);
+    this.drawEdges();
 
     return this;
   }
   onTick() {
     // 移动点的位置
     this.chartGroup.selectAll('g.vertex').attr('transform', d => `translate(${d.x}, ${d.y})`);
-
-    this.chartGroup.selectAll('.vertex-name').attr('transform', d => `translate(${d.x}, ${d.y})`);
 
     // 移动边的位置
     // TODO: 优化弧形边
@@ -326,30 +329,49 @@ class Force extends BaseGraph {
     });
   }
   // 节点绘制
-  drawVertexes() {
-    // 清除节点
-    this.chartGroup.selectAll('.vertexes g').remove();
+  drawVertexes(update) {
+    this.nodeEnter = update.enter();
+    const exit = update.exit();
 
-    // 增加节点 group
-    this.nodeEnter = this.chartGroup
-      .selectAll('.vertexes g')
-      .data(this.vertexes)
-      .enter()
-      .append('g')
-      .attr('data-id', d => d._id)
-      .attr('type', d => d.type);
+    // 对 enter 的处理: 插入必要的节点
+    const vertexGroup = this.nodeEnter.append('g').classed('vertex-group', true);
+    this.drawVertex(vertexGroup);
 
-    this.drawVertex() // 增加节点 circle
-      .drawVertexName() // 增加节点名称
-      .drawIcon(); // 增加节点 icon
+    // 更新节点属性和样式
+    this.setVertexAttr();
 
-    return this;
+    // 对 exit 的处理: 去掉没有数据关联的节点
+    exit.remove();
   }
-  drawVertex() {
-    this.nodeEnter
-      .append('g')
-      .classed('vertex', 'true')
-      .append('path')
+  drawVertex(vertexGroup) {
+    const vertex = vertexGroup
+      .append('g') // 增加节点
+      .classed('vertex', true);
+    vertex
+      .append('path') // 圆圈
+      .classed('circle', true);
+    vertex
+      .append('image') // 节点 icon
+      .classed('icon', true);
+    vertex
+      .append('text') // 节点名称
+      .attr('class', 'vertex-name')
+      .style('text-anchor', 'middle')
+      .style('dominant-baseline', 'baseline')
+      .style('user-select', 'none');
+  }
+  setVertexAttr() {
+    this.chartGroup.selectAll('.vertex-group').each((d, i, g) => {
+      const vertexGroup = d3.select(g[i]);
+      vertexGroup.attr('data-id', d => d._id).attr('type', d => d.type);
+
+      this.setVertexCircleAttr(vertexGroup.select('.circle'));
+      this.setIconAttr(vertexGroup.select('.icon'));
+      this.setVertexNameAttr(vertexGroup.select('.vertex-name'));
+    });
+  }
+  setVertexCircleAttr(node) {
+    node
       .attr('d', d => {
         let type = this.getShape(d);
         type = 'symbol' + type[0].toUpperCase() + type.slice(1);
@@ -357,83 +379,64 @@ class Force extends BaseGraph {
         let _d3 = d3; // 直接使用 d3[type] 报错
         return this.symbol.size(size).type(_d3[type])();
       })
-      .classed('circle', true)
       .attr('fill', d => this.getVertexColor(d))
       .attr('stroke', d => this.getVertexStrokeColor(d))
       .attr('stroke-width', d => this.getVertexStrokeWidth(d));
-
-    return this;
   }
-  drawVertexName() {
-    this.nodeEnter
-      .append('text')
-      .attr('class', 'vertex-name')
-      .style('text-anchor', 'middle')
-      .style('dominant-baseline', 'baseline')
-      .style('user-select', 'none')
-      .each(this.setVertexNamePos.bind(this));
+  setIconAttr(node) {
+    let data = node.datum();
+    let r = this.getRadius(data);
+    node
+      .attr('xlink:href', this.getIcon(data))
+      .attr('width', r * 2)
+      .attr('height', r * 2)
+      .attr('x', -r)
+      .attr('y', -r);
+  }
+  setVertexNameAttr(node) {
     if (this.getTransform().k < 0.8) {
-      this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
+      node.style('opacity', '0');
     } else {
-      this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
+      node.style('opacity', '1');
     }
-    return this;
-  }
-  setVertexNamePos(d, i, g) {
-    if (!d.name) return;
 
-    let thisText = d3.select(g[i]);
-    thisText.selectAll('tspan').remove();
+    const data = node.datum();
+    if (!data.name) return;
 
-    let textStack = this.getTextStack(d) || [];
+    node.selectAll('tspan').remove();
+
+    let textStack = this.getTextStack(data) || [];
     textStack.forEach(v => {
-      thisText
+      node
         .append('tspan')
         .text(v.name)
         .attr('x', v.dx)
         .attr('y', v.dy)
         .style('font-size', this.options.vertexFontSize);
     });
-    // this.drawType(thisText);
+    this.drawType(node);
   }
-  // drawType(text) {
-  //   // add type
-  //   this.typeNameMap = {
-  //     person: '人',
-  //     company: '公司'
-  //   };
-  //   this.typeColorMap = {
-  //     person: 'red',
-  //     company: 'blue'
-  //   };
-
-  //   text
-  //     .append('tspan')
-  //     .text(d => `[${this.typeNameMap[d.type]}]`)
-  //     .attr('fill', d => this.typeColorMap[d.type])
-  //     .style('font-size', this.options.vertexFontSize);
-  // }
-  drawIcon() {
-    this.nodeEnter
-      .selectAll('.vertex')
-      .append('image')
-      .each((d, i, g) => {
-        let r = this.getRadius(d);
-        d3.select(g[i])
-          .attr('xlink:href', this.getIcon(d))
-          .classed('icon', true)
-          .attr('width', r * 2)
-          .attr('height', r * 2)
-          .attr('x', -r)
-          .attr('y', -r);
-      });
+  drawType(text) {
+    // add type
+    // this.typeNameMap = {
+    //   person: '人',
+    //   company: '公司'
+    // };
+    // this.typeColorMap = {
+    //   person: 'red',
+    //   company: 'blue'
+    // };
+    // text
+    //   .append('tspan')
+    //   .text(d => `[${this.typeNameMap[d.type]}]`)
+    //   .attr('fill', d => this.typeColorMap[d.type])
+    //   .style('font-size', this.options.vertexFontSize);
   }
   // 边
   drawEdges() {
-    this.chartGroup.selectAll('.edges g').remove();
-
     this.linkEnter = this.chartGroup
-      .selectAll('.edges g')
+      .select('.edges')
+      .selectAll('g')
       .data(this.edges)
       .enter()
       .append('g')
@@ -459,7 +462,8 @@ class Force extends BaseGraph {
 
     // 增加反向路径, 用于旋转 label
     this.chartGroup
-      .selectAll('defs .reverse-path')
+      .select('defs')
+      .selectAll('.reverse-path')
       .data(this.edges)
       .enter()
       .append('path')
@@ -497,7 +501,8 @@ class Force extends BaseGraph {
   }
   drawArrow() {
     this.chartGroup
-      .selectAll('defs .arrow-marker')
+      .select('defs')
+      .selectAll('.arrow-marker')
       .data(this.edges)
       .enter()
       .append('marker')
@@ -536,11 +541,11 @@ class Force extends BaseGraph {
   zooming() {
     // 缩放过程中, 小于 0.8 则将文本隐藏
     if (d3.event.transform.k < 0.8) {
-      this.nodeEnter.selectAll('.vertex-name').style('opacity', '0');
-      this.linkEnter.selectAll('.edge-label').style('opacity', '0');
+      this.chartGroup.selectAll('.vertex-name').style('opacity', '0');
+      this.chartGroup.selectAll('.edge-label').style('opacity', '0');
     } else {
-      this.nodeEnter.selectAll('.vertex-name').style('opacity', '1');
-      this.linkEnter.selectAll('.edge-label').style('opacity', '1');
+      this.chartGroup.selectAll('.vertex-name').style('opacity', '1');
+      this.chartGroup.selectAll('.edge-label').style('opacity', '1');
     }
   }
   // 拖拽事件
@@ -550,9 +555,8 @@ class Force extends BaseGraph {
       .on('start', this.onDragStart.bind(this))
       .on('drag', this.onDrag.bind(this))
       .on('end', this.onDragEnd.bind(this));
-    this.nodeEnter.selectAll('.vertex').call(this.drag);
 
-    return this;
+    this.nodeEnter.selectAll('.vertex').call(this.drag);
   }
   onDragStart(d) {
     if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
