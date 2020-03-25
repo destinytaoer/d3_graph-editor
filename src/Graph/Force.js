@@ -119,7 +119,7 @@ class Force extends BaseGraph {
   preprocessData() {
     // 初始化数据以及图的最短路径算法
     this.vertexes.forEach(v => {
-      v.state = v.state || 'normal';
+      v.state = 'normal';
       this.vertexesMap.push(v._id);
     });
     this.edges.forEach(e => {
@@ -127,7 +127,7 @@ class Force extends BaseGraph {
       let to = this.vertexesMap.indexOf(e._to);
       e.source = e._from;
       e.target = e._to;
-      e.state = e.state || 'normal';
+      e.state = 'normal';
       this.adjList[from] = this.adjList[from] || {};
       this.adjList[from][to] = this.adjList[from][to] || [];
       this.adjList[from][to].push(e._id);
@@ -234,7 +234,7 @@ class Force extends BaseGraph {
       .selectAll('.arrow-marker')
       .data(this.edges);
     this.drawArrow(arrowUpdate);
-
+    this.setBgColor();
     return this;
   }
   onTick() {
@@ -433,7 +433,7 @@ class Force extends BaseGraph {
     if (!data.name) return;
 
     node.selectAll('tspan').remove();
-
+    node.style('fill', d => this.getVertexNameColor(d));
     let textStack = this.getTextStack(data) || [];
     textStack.forEach(v => {
       node
@@ -499,6 +499,7 @@ class Force extends BaseGraph {
     node
       .attr('fill', 'none')
       .attr('stroke', d => this.getEdgeColor(d))
+      .attr('stroke-width', d => this.getEdgeWidth(d))
       .attr('id', d => d._id)
       .attr('marker-end', d => this.getArrowUrl(d));
   }
@@ -510,7 +511,8 @@ class Force extends BaseGraph {
       .text(d => {
         return d.label || '';
       })
-      .style('font-size', this.options.edgeFontSize);
+      .style('font-size', this.options.edgeFontSize)
+      .style('fill', d => this.getEdgeLableColor(d));
 
     if (this.getTransform().k < 0.8) {
       node.style('opacity', '0');
@@ -673,39 +675,39 @@ class Force extends BaseGraph {
     return this.options.r;
   }
   getVertexColor(d) {
-    return this.options.vertexColor;
-    // switch (d._type) {
-    //   case 'Company':
-    //     switch (this.theme + '-' + d.state) {
-    //       case 'light-normal':
-    //       case 'light-highlight':
-    //       case 'dark-normal':
-    //       case 'dark-highlight':
-    //         return '#4FA2F1'
-    //       case 'light-grey':
-    //         return '#E9E9E9'
-    //       case 'dark-grey':
-    //         return '#323A4D'
-    //       default:
-    //         return this.options.vertexColor
-    //     }
-    //   case 'Person':
-    //     switch (this.theme + '-' + d.state) {
-    //       case 'light-normal':
-    //       case 'light-highlight':
-    //       case 'dark-highlight':
-    //       case 'dark-normal':
-    //         return '#64C680'
-    //       case 'light-grey':
-    //         return '#E9E9E9'
-    //       case 'dark-grey':
-    //         return '#323A4D'
-    //       default:
-    //         return this.options.vertexColor
-    //     }
-    //   default:
-    //     return this.options.vertexColor
-    // }
+    // return this.options.vertexColor;
+    switch (d.type) {
+      case 'company':
+        switch (this.theme + '-' + d.state) {
+          case 'light-highlight':
+          case 'dark-highlight':
+            return '#4FA2F1';
+          case 'light-grey':
+            return '#E9E9E9';
+          case 'dark-grey':
+            return '#323A4D';
+          case 'light-normal':
+          case 'dark-normal':
+          default:
+            return this.options.vertexColor;
+        }
+      case 'person':
+        switch (this.theme + '-' + d.state) {
+          case 'light-highlight':
+          case 'dark-highlight':
+            return '#64C680';
+          case 'light-grey':
+            return '#E9E9E9';
+          case 'dark-grey':
+            return '#323A4D';
+          case 'dark-normal':
+          case 'light-normal':
+          default:
+            return this.options.vertexColor;
+        }
+      default:
+        return this.options.vertexColor;
+    }
   }
   getVertexStrokeColor(d) {
     return 'none';
@@ -714,21 +716,21 @@ class Force extends BaseGraph {
     return 1;
   }
   getVertexNameColor(d) {
-    return '#42444C';
-    // switch (this.theme+'-'+d.state) {
-    //   case 'light-normal':
-    //   case 'light-highlight':
-    //     return '#42444C'
-    //   case 'light-grey':
-    //     return '#B3B3B3'
-    //   case 'dark-normal':
-    //   case 'dark-highlight':
-    //     return '#fff'
-    //   case 'dark-grey':
-    //     return '#646E87'
-    //   default:
-    //     return '#000'
-    // }
+    // return '#42444C';
+    switch (this.theme + '-' + d.state) {
+      case 'light-normal':
+      case 'light-highlight':
+        return '#42444C';
+      case 'light-grey':
+        return '#B3B3B3';
+      case 'dark-normal':
+      case 'dark-highlight':
+        return '#fff';
+      case 'dark-grey':
+        return '#646E87';
+      default:
+        return '#000';
+    }
   }
   getTextStack(d) {
     return this.textUnderVertex(d, 8);
@@ -801,40 +803,40 @@ class Force extends BaseGraph {
   }
   // 边样式
   getArrowConfig(d) {
-    return {
-      path: 'M0,0 L10,5 L0,10 z',
-      arrowWidth: 10,
-      arrowHeight: 10,
-      refx: 0,
-      color: this.getEdgeColor(d)
-    };
-    // switch (d.state) {
-    //   case 'normal':
-    //   case 'grey':
-    //     return {
-    //       path: 'M0,0 L10,5 L0,10 z',
-    //       arrowWidth: 10,
-    //       arrowHeight: 10,
-    //       refx: 0,
-    //       color: this.getEdgeColor(d)
-    //     }
-    //   case 'highlight':
-    //     return {
-    //       path: 'M0,0 L14,7 L0,14 z',
-    //       arrowWidth: 14,
-    //       arrowHeight: 14,
-    //       refx: -3,
-    //       color: this.getEdgeColor(d)
-    //     }
-    //   default:
-    //     return {
-    //       path: 'M0,0 L10,5 L0,10 z',
-    //       arrowWidth: 10,
-    //       arrowHeight: 10,
-    //       refx: 0,
-    //       color: this.getEdgeColor(d)
-    //     }
-    // }
+    // return {
+    //   path: 'M0,0 L10,5 L0,10 z',
+    //   arrowWidth: 10,
+    //   arrowHeight: 10,
+    //   refx: 0,
+    //   color: this.getEdgeColor(d)
+    // };
+    switch (d.state) {
+      case 'normal':
+      case 'grey':
+        return {
+          path: 'M0,0 L10,5 L0,10 z',
+          arrowWidth: 10,
+          arrowHeight: 10,
+          refx: 0,
+          color: this.getEdgeColor(d)
+        };
+      case 'highlight':
+        return {
+          path: 'M0,0 L14,7 L0,14 z',
+          arrowWidth: 14,
+          arrowHeight: 14,
+          refx: -3,
+          color: this.getEdgeColor(d)
+        };
+      default:
+        return {
+          path: 'M0,0 L10,5 L0,10 z',
+          arrowWidth: 10,
+          arrowHeight: 10,
+          refx: 0,
+          color: this.getEdgeColor(d)
+        };
+    }
   }
   getArrowUrl(d) {
     if (d.source._id === d.target._id) {
@@ -843,49 +845,49 @@ class Force extends BaseGraph {
     return `url("#arrow_${d._id}")`;
   }
   getEdgeColor(d) {
-    return '#D9D9D9';
-    // switch (this.theme + '-' + d.state) {
-    //   case 'light-normal':
-    //   case 'light-grey':
-    //     return '#D9D9D9'
-    //   case 'light-highlight':
-    //   case 'dark-highlight':
-    //     return this.getVertexColor(d.target)
-    //   case 'dark-grey':
-    //   case 'dark-normal':
-    //     return '#3C4257'
-    //   default:
-    //     return '#000'
-    // }
+    // return '#D9D9D9';
+    switch (this.theme + '-' + d.state) {
+      case 'light-normal':
+      case 'light-grey':
+        return '#D9D9D9';
+      case 'light-highlight':
+      case 'dark-highlight':
+        return this.getVertexColor(d.target);
+      case 'dark-grey':
+      case 'dark-normal':
+        return '#3C4257';
+      default:
+        return '#000';
+    }
   }
   getEdgeLableColor(d) {
-    return '#5B5B5B';
-    // switch (this.theme + '-' + d.state) {
-    //   case 'light-normal':
-    //     return '#5B5B5B'
-    //   case 'light-grey':
-    //     return '#B3B3B3'
-    //   case 'light-highlight':
-    //   case 'dark-highlight':
-    //     return this.getVertexColor(d.target)
-    //   case 'dark-normal':
-    //   case 'dark-grey':
-    //     return '#808593'
-    //   default:
-    //     return '#000'
-    // }
+    // return '#5B5B5B';
+    switch (this.theme + '-' + d.state) {
+      case 'light-normal':
+        return '#5B5B5B';
+      case 'light-grey':
+        return '#B3B3B3';
+      case 'light-highlight':
+      case 'dark-highlight':
+        return this.getVertexColor(d.target);
+      case 'dark-normal':
+      case 'dark-grey':
+        return '#808593';
+      default:
+        return '#000';
+    }
   }
   getEdgeWidth(d) {
-    // switch (d.state) {
-    //   case 'normal':
-    //   case 'grey':
-    //     return 1
-    //   case 'highlight':
-    //     return 4
-    //   default:
-    //     return 1
-    // }
-    return 1;
+    switch (d.state) {
+      case 'normal':
+      case 'grey':
+        return 1;
+      case 'highlight':
+        return 3;
+      default:
+        return 1;
+    }
+    // return 1;
   }
   // 背景颜色
   getBgColor() {
