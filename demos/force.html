@@ -18,10 +18,11 @@
     <script src="./lib/d3.v5.min.js"></script>
     <script src="../node_modules/graph-editor/dist/index.iife.js"></script>
     <script>
+      var force;
       fetch('./db/force.json')
         .then(res => res.json())
         .then(data => {
-          let force = new GraphEditor.Force('container', data);
+          force = new GraphEditor.Force('container', data);
           force.render();
         })
         .catch(err => console.log(err));

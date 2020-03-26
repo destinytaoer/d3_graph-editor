@@ -135,9 +135,9 @@
     },
     {
       "_id": "lff",
-      "_from": "gg",
-      "_to": "mm",
-      "label": "投资100万",
+      "_from": "mm",
+      "_to": "gg",
+      "label": "投资100万 [1]",
       "type": "invest"
     },
     {
@@ -172,21 +172,21 @@
       "_id": "ljj",
       "_from": "gg",
       "_to": "mm",
-      "label": "投资100万",
+      "label": "投资100万 [2]",
       "type": "invest"
     },
     {
       "_id": "ljj1",
       "_from": "gg",
       "_to": "mm",
-      "label": "投资100万",
+      "label": "投资100万 [3]",
       "type": "invest"
     },
     {
       "_id": "ljj2",
       "_from": "gg",
       "_to": "mm",
-      "label": "投资100万",
+      "label": "投资100万 [4]",
       "type": "invest"
     },
     {
