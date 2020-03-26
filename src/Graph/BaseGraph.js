@@ -78,14 +78,17 @@ class BaseGraph {
       .draw()
       .bindScale()
       .bindEvents();
+    this.el.appendChild(this.svg.node());
   }
   update() {
-    this.draw().bindEvents();
+    this.preprocessData()
+      .draw()
+      .bindEvents();
   }
   init() {
     this.$el.selectAll('svg').remove();
-    this.svg = this.$el
-      .append('svg')
+    this.svg = d3
+      .create('svg')
       .attr('width', this.options.width)
       .attr('height', this.options.height);
 
