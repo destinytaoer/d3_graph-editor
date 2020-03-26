@@ -176,7 +176,6 @@ class Force extends BaseGraph {
       let { _from: from, _to: to } = l;
       if (!linkMap[from + to]) {
         linkMap[from + to] = linkMap[to + from] = 1;
-        directionMap[from + to] = directionMap[to + from] = from;
       } else {
         if (from !== to) {
           linkMap[from + to]++;
@@ -184,6 +183,11 @@ class Force extends BaseGraph {
         } else {
           linkMap[to + from]++;
         }
+      }
+      if (from !== to && directionMap[to + from] === true) {
+        l.directionFlag = true;
+      } else {
+        directionMap[from + to] = true;
       }
 
       nodeMap[from] = nodeMap[from] ? nodeMap[from] + 1 : 1;
@@ -285,28 +289,93 @@ class Force extends BaseGraph {
     // 使用三次贝塞尔曲线绘制
     return `M${x} ${y} C ${x - w} ${y - h}, ${x + h} ${y + w}, ${x} ${y}`;
   }
+  // calcPath(d) {
+  //   let { x: sx, y: sy } = d.source;
+  //   let { x: tx, y: ty } = d.target;
+  //   let dx = sx - tx;
+  //   let dy = sy - ty;
+
+  //   let dr = Math.sqrt(dx * dx + dy * dy);
+  //   let midIdx = (d.linkTotal + 1) / 2;
+
+  //   dr = d.isMidLink
+  //     ? 0
+  //     : dr /
+  //       (Math.log(Math.abs(d.linkIndex - midIdx) * 2.5) +
+  //         1 / (10 * Math.pow(d.linkIndex - midIdx, 2))); // 弧度绘制
+
+  //   return {
+  //     sx,
+  //     sy,
+  //     tx,
+  //     ty,
+  //     dr,
+  //     sf: d.linkDirection
+  //   };
+  // }
   calcPath(d) {
     let { x: sx, y: sy } = d.source;
     let { x: tx, y: ty } = d.target;
-    let dx = sx - tx;
-    let dy = sy - ty;
+    const dx = sx - tx;
+    const dy = sy - ty;
+    const dr = Math.sqrt(dx * dx + dy * dy);
 
-    let dr = Math.sqrt(dx * dx + dy * dy);
-    let midIdx = (d.linkTotal + 1) / 2;
+    if (d.directionFlag) {
+      [sx, sy, tx, ty] = [tx, ty, sx, sy];
+    }
 
-    dr = d.isMidLink
+    const xFlag = sx > tx;
+    const yFlag = sy > ty;
+    const xSign = xFlag ? 1 : -1; // 加减符号标记
+    const ySign = yFlag ? 1 : -1;
+
+    const perDeg = Math.PI / 6;
+    const curDeg = Math.asin(Math.abs(dy / dr));
+
+    const sr = this.getRadius(this.getVertexById(d._from));
+    const tr = this.getRadius(this.getVertexById(d._to));
+
+    let dsx, dsy, dtx, dty; // x y 方向的偏移
+
+    const midIdx = (d.linkTotal + 1) / 2;
+
+    let index = d.isMidLink
       ? 0
-      : dr /
-        (Math.log(Math.abs(d.linkIndex - midIdx) * 2.5) +
-          1 / (10 * Math.pow(d.linkIndex - midIdx, 2))); // 弧度绘制
+      : (xFlag && yFlag) || (!xFlag && !yFlag) // 当 target 位于 左上角 和 右下角时, 改变渲染位置
+      ? d.linkIndex - midIdx
+      : midIdx - d.linkIndex;
 
+    const deg = curDeg + index * perDeg; // 当前角度
+    const minusDeg = curDeg - index * perDeg; // 当前角度
+
+    const cos1 = Math.cos(deg);
+    const sin1 = Math.sin(deg);
+    const cos2 = Math.cos(minusDeg);
+    const sin2 = Math.sin(minusDeg);
+
+    dsx = cos1;
+    dsy = sin1;
+    dtx = cos2;
+    dty = sin2;
+
+    // 计算实际相连的两个圆上的点
+    sx = sx - sr * dsx * xSign;
+    sy = sy - sr * dsy * ySign;
+    tx = tx + tr * dtx * xSign;
+    ty = ty + tr * dty * ySign;
+
+    if (d.directionFlag) {
+      [sx, sy, tx, ty] = [tx, ty, sx, sy];
+    }
+
+    const sf = d.directionFlag ? d.linkDirection : 1 - d.linkDirection;
     return {
       sx,
       sy,
       tx,
       ty,
-      dr,
-      sf: d.linkDirection
+      dr: d.isMidLink ? 0 : dr,
+      sf
     };
   }
   tickEdgeLabels() {
@@ -545,16 +614,18 @@ class Force extends BaseGraph {
         color = '#e3e3e3'
       } = this.getArrowConfig(d);
 
-      if (d._flag) {
-        thisArrow.attr('refX', arrowWidth + refx);
-      } else {
-        thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx);
-      }
+      // if (d._flag) {
+      //   thisArrow.attr('refX', arrowWidth + refx);
+      // } else {
+      //   thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx);
+      // }
       thisArrow
-        .attr('refY', d => {
-          const middleIdx = Math.ceil(d.halfTotal);
-          return arrowHeight / 2 - (d.linkIndex - middleIdx) * 1;
-        })
+        .attr('refX', 10)
+        .attr('refY', 5)
+        // .attr('refY', d => {
+        //   const middleIdx = Math.ceil(d.halfTotal);
+        //   return arrowHeight / 2 - (d.linkIndex - middleIdx) * 1;
+        // })
         .attr('markerUnits', 'userSpaceOnUse')
         .attr('markerWidth', arrowWidth)
         .attr('markerHeight', arrowHeight)
