@@ -169,29 +169,35 @@ class Force extends BaseGraph {
     return this;
   }
   setEdgeIndex() {
-    let edgeNumMap = {};
-    let vertexNumMap = {};
-    let edgeDirection = {};
-    this.edges.forEach(e => {
-      if (!edgeNumMap[e._from + e._to]) {
-        edgeNumMap[e._from + e._to] = edgeNumMap[e._to + e._from] = 1;
-        edgeDirection[e._from + e._to] = edgeDirection[e._to + e._from] = e._from;
+    let linkMap = {};
+    let nodeMap = {};
+    let directionMap = {};
+    this.edges.forEach(l => {
+      let { _from: from, _to: to } = l;
+      if (!linkMap[from + to]) {
+        linkMap[from + to] = linkMap[to + from] = 1;
+        directionMap[from + to] = directionMap[to + from] = from;
       } else {
-        if (e._from !== e._to) {
-          edgeNumMap[e._from + e._to]++;
-          edgeNumMap[e._to + e._from]++;
+        if (from !== to) {
+          linkMap[from + to]++;
+          linkMap[to + from]++;
         } else {
-          edgeNumMap[e._to + e._from]++;
+          linkMap[to + from]++;
         }
       }
 
-      vertexNumMap[e._from] = vertexNumMap[e._from] ? vertexNumMap[e._from] + 1 : 1;
-      vertexNumMap[e._to] = vertexNumMap[e._to] ? vertexNumMap[e._to] + 1 : 1;
-      e.edgeIndex = edgeNumMap[e._from + e._to]; // 节点 A、B 之间可能有多条边，这条边所在的 index
+      nodeMap[from] = nodeMap[from] ? nodeMap[from] + 1 : 1;
+      nodeMap[to] = nodeMap[to] ? nodeMap[to] + 1 : 1;
+      l.linkIndex = linkMap[from + to]; // 节点 A、B 之间可能有多条边，这条边所在的 index
     });
-    this.edges.forEach(e => {
-      e.siblingNum = edgeNumMap[e._from + e._to]; // 节点 A、B 之间边的条数
-      e.labelDirection = edgeDirection[e._from + e._to] === e._from ? 1 : 0; // 用于控制 label 从左到右还是从右到左渲染
+    this.edges.forEach(l => {
+      const { _from: from, _to: to } = l;
+      l.linkTotal = linkMap[from + to]; // 相同节点间的边总数
+      l.halfTotal = l.linkTotal / 2;
+      l.isTotalEven = l.linkTotal % 2 === 0; // 总数是否是偶数
+      l.isMidLink = !l.isTotalEven && Math.ceil(l.halfTotal) === l.linkIndex; // 是否中间的边
+      l.isLowerHalf = l.linkIndex <= l.halfTotal;
+      l.linkDirection = l.isLowerHalf ? 0 : 1;
     });
   }
 
@@ -263,7 +269,7 @@ class Force extends BaseGraph {
 
       const { sx, sy, tx, ty, dr, sf } = this.calcPath(d);
       const path = `M${sx},${sy} A ${dr},${dr} 0 0 ${sf}, ${tx} ${ty}`;
-      const reversePath = `M${sx},${sy} A ${dr},${dr} 0 0 ${1 - sf}, ${tx} ${ty}`;
+      const reversePath = `M${tx},${ty} A ${dr},${dr} 0 0 ${1 - sf}, ${sx} ${sy}`;
       // 调整反向路径
       this.chartGroup.select('#' + d._id + '_reverse').attr('d', reversePath);
 
@@ -271,12 +277,11 @@ class Force extends BaseGraph {
     });
   }
   calcSelfPath(d) {
-    let index = d.edgeIndex;
+    let index = d.linkIndex;
     let { x, y } = d.source;
     let dx = 1 + 0.7 * (index - 1);
     let h = dx * 100;
     let w = dx * 1;
-    let r = this.getRadius(this.getVertexById(d._from));
     // 使用三次贝塞尔曲线绘制
     return `M${x} ${y} C ${x - w} ${y - h}, ${x + h} ${y + w}, ${x} ${y}`;
   }
@@ -287,25 +292,21 @@ class Force extends BaseGraph {
     let dy = sy - ty;
 
     let dr = Math.sqrt(dx * dx + dy * dy);
-    let midIdx = (d.siblingNum + 1) / 2;
+    let midIdx = (d.linkTotal + 1) / 2;
 
-    dr =
-      d.edgeIndex === midIdx
-        ? 0
-        : dr /
-          (Math.log(Math.abs(d.edgeIndex - midIdx) * 2.5) +
-            1 / (10 * Math.pow(d.edgeIndex - midIdx, 2))); // 弧度绘制
-    let sf = d.edgeIndex > midIdx ? 1 : 0;
-    if (d.labelDirection) {
-      sf = 1 - sf;
-    }
+    dr = d.isMidLink
+      ? 0
+      : dr /
+        (Math.log(Math.abs(d.linkIndex - midIdx) * 2.5) +
+          1 / (10 * Math.pow(d.linkIndex - midIdx, 2))); // 弧度绘制
+
     return {
       sx,
       sy,
       tx,
       ty,
       dr,
-      sf
+      sf: d.linkDirection
     };
   }
   tickEdgeLabels() {
@@ -319,21 +320,15 @@ class Force extends BaseGraph {
     });
     // 微调边上文字的文职
     this.chartGroup.selectAll('.edge-label').attr('transform', d => {
-      let r = Math.sqrt(
-        Math.pow(d.source.x - d.target.x, 2) + Math.pow(d.source.y - d.target.y, 2)
-      );
+      let { x: sx, y: sy } = d.source;
+      let { x: tx, y: ty } = d.target;
+      let r = Math.sqrt(Math.pow(sx - tx, 2) + Math.pow(sy - ty, 2));
 
-      if (Math.abs(d.source.y - d.target.y) < r / 2) {
+      if (Math.abs(sy - ty) < r / 2) {
         return 'translate(0, -5)';
-      } else if (
-        (d.source.x > d.target.x && d.source.y > d.target.y) ||
-        (d.source.x < d.target.x && d.source.y < d.target.y)
-      ) {
+      } else if ((sx > tx && sy > ty) || (sx < tx && sy < ty)) {
         return 'translate(5, 0)';
-      } else if (
-        (d.source.x > d.target.x && d.source.y < d.target.y) ||
-        (d.source.x < d.target.x && d.source.y > d.target.y)
-      ) {
+      } else if ((sx > tx && sy < ty) || (sx < tx && sy > ty)) {
         return 'translate(-5, 0)';
       }
     });
@@ -557,8 +552,8 @@ class Force extends BaseGraph {
       }
       thisArrow
         .attr('refY', d => {
-          const middleIdx = Math.ceil(d.siblingNum / 2);
-          return arrowHeight / 2 + (d.edgeIndex - middleIdx) * 1;
+          const middleIdx = Math.ceil(d.halfTotal);
+          return arrowHeight / 2 - (d.linkIndex - middleIdx) * 1;
         })
         .attr('markerUnits', 'userSpaceOnUse')
         .attr('markerWidth', arrowWidth)
