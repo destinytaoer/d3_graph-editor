@@ -83,8 +83,8 @@ class Force extends BaseGraph {
     this.rawData = deepCopy(data);
 
     // 顶点和边的数据
-    this.vertexes = deepCopy(data.vertexes);
-    this.edges = deepCopy(data.edges);
+    this.vertexes = {};
+    this.edges = {};
 
     // 记录当前所有节点的 ID
     this.idMap = [];
@@ -117,6 +117,8 @@ class Force extends BaseGraph {
     });
   }
   preprocessData() {
+    this.vertexes = deepCopy(this.rawData.vertexes);
+    this.edges = deepCopy(this.rawData.edges);
     // 初始化数据以及图的最短路径算法
     this.vertexes.forEach(v => {
       v.state = 'normal';
@@ -227,11 +229,11 @@ class Force extends BaseGraph {
   draw() {
     const nodeUpdate = this.chartGroup
       .select('.vertexes')
-      .selectAll('g')
+      .selectAll('.vertex-group')
       .data(this.vertexes);
     const linkUpdate = this.chartGroup
       .select('.edges')
-      .selectAll('g')
+      .selectAll('.edge')
       .data(this.edges);
     // 箭头
     const arrowUpdate = this.chartGroup
@@ -262,7 +264,7 @@ class Force extends BaseGraph {
     this.tickEdgeLabels();
   }
   tickVertexes() {
-    this.chartGroup.selectAll('g.vertex').attr('transform', d => `translate(${d.x}, ${d.y})`);
+    this.chartGroup.selectAll('g.vertex-group').attr('transform', d => `translate(${d.x}, ${d.y})`);
   }
   tickEdges() {
     this.chartGroup.selectAll('.edge-path').attr('d', d => {
@@ -406,6 +408,9 @@ class Force extends BaseGraph {
   drawVertexes(update) {
     this.nodeEnter = update.enter();
     const exit = update.exit();
+    console.log('update', update);
+    console.log('enter', this.nodeEnter);
+    console.log('exit', exit);
 
     // 对 enter 的处理: 插入必要的节点
     const vertexGroup = this.nodeEnter.append('g').classed('vertex-group', true);
@@ -662,7 +667,7 @@ class Force extends BaseGraph {
       .on('drag', this.onDrag.bind(this))
       .on('end', this.onDragEnd.bind(this));
 
-    this.nodeEnter.selectAll('.vertex').call(this.drag);
+    this.nodeEnter.selectAll('.vertex-group').call(this.drag);
   }
   onDragStart(d) {
     if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
