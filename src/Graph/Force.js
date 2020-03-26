@@ -243,104 +243,81 @@ class Force extends BaseGraph {
   }
   onTick() {
     // 移动点的位置
-    this.chartGroup.selectAll('g.vertex').attr('transform', d => `translate(${d.x}, ${d.y})`);
+    this.tickVertexes();
 
     // 移动边的位置
-    var selfMap = {};
+    this.tickEdges();
+
+    // 边 label 的动态调整
+    this.tickEdgeLabels();
+  }
+  tickVertexes() {
+    this.chartGroup.selectAll('g.vertex').attr('transform', d => `translate(${d.x}, ${d.y})`);
+  }
+  tickEdges() {
     this.chartGroup.selectAll('.edge-path').attr('d', d => {
-      var dx = d.target.x - d.source.x;
-      var dy = d.target.y - d.source.y;
-
-      var dr = d.siblingNum > 1 ? Math.sqrt(dx * dx + dy * dy) : 0;
-      var middleIdx = (d.siblingNum + 1) / 2;
-
-      if (d.siblingNum > 1) {
-        dr =
-          d.edgeIndex === middleIdx
-            ? 0
-            : dr /
-              (Math.log(Math.abs(d.edgeIndex - middleIdx) * 2.5) +
-                1 / (10 * Math.pow(d.edgeIndex - middleIdx, 2))); // 弧度绘制
-      }
-      let sweepFlag = d.edgeIndex > middleIdx ? 1 : 0;
-      if (d.labelDirection) {
-        sweepFlag = 1 - sweepFlag;
-      }
-      let path =
-        'M' +
-        d.source.x +
-        ',' +
-        d.source.y +
-        'A' +
-        dr +
-        ',' +
-        dr +
-        ' 0 0 ' +
-        sweepFlag +
-        ',' +
-        d.target.x +
-        ',' +
-        d.target.y;
-
       // 自己指向自己
       if (d.source._id === d.target._id) {
-        console.log(d.siblingNum);
-        selfMap[d.source.name] = selfMap[d.source.name] ? selfMap[d.source.name] + 0.7 : 1;
-        let h = selfMap[d.source.name] * 100;
-        let w = selfMap[d.source.name] * 1;
-        // 使用三次贝塞尔曲线绘制
-        path =
-          'M' +
-          d.source.x +
-          ' ' +
-          (d.source.y - this.getRadius(d)) +
-          ' C ' +
-          (d.source.x - w) +
-          ' ' +
-          (d.source.y - h) +
-          ', ' +
-          (d.source.x + h) +
-          ' ' +
-          (d.source.y + w) +
-          ', ' +
-          (d.source.x + this.getRadius(d)) +
-          ' ' +
-          d.source.y;
+        return this.calcSelfPath(d);
       }
 
-      // 增加反向路径，用于旋转 label
-      this.chartGroup
-        .select('#' + d._id + '_reverse')
-        .attr(
-          'd',
-          'M' +
-            d.target.x +
-            ',' +
-            d.target.y +
-            'A' +
-            dr +
-            ',' +
-            dr +
-            ' 0 0 ' +
-            (1 - sweepFlag) +
-            ',' +
-            d.source.x +
-            ',' +
-            d.source.y
-        );
+      const { sx, sy, tx, ty, dr, sf } = this.calcPath(d);
+      const path = `M${sx},${sy} A ${dr},${dr} 0 0 ${sf}, ${tx} ${ty}`;
+      const reversePath = `M${sx},${sy} A ${dr},${dr} 0 0 ${1 - sf}, ${tx} ${ty}`;
+      // 调整反向路径
+      this.chartGroup.select('#' + d._id + '_reverse').attr('d', reversePath);
 
       return path;
     });
+  }
+  calcSelfPath(d) {
+    let index = d.edgeIndex;
+    let { x, y } = d.source;
+    let dx = 1 + 0.7 * (index - 1);
+    let h = dx * 100;
+    let w = dx * 1;
+    let r = this.getRadius(this.getVertexById(d._from));
+    // 使用三次贝塞尔曲线绘制
+    return `M${x} ${y} C ${x - w} ${y - h}, ${x + h} ${y + w}, ${x} ${y}`;
+  }
+  calcPath(d) {
+    let { x: sx, y: sy } = d.source;
+    let { x: tx, y: ty } = d.target;
+    let dx = sx - tx;
+    let dy = sy - ty;
 
-    // 边 label 的动态调整
+    let dr = Math.sqrt(dx * dx + dy * dy);
+    let midIdx = (d.siblingNum + 1) / 2;
+
+    dr =
+      d.edgeIndex === midIdx
+        ? 0
+        : dr /
+          (Math.log(Math.abs(d.edgeIndex - midIdx) * 2.5) +
+            1 / (10 * Math.pow(d.edgeIndex - midIdx, 2))); // 弧度绘制
+    let sf = d.edgeIndex > midIdx ? 1 : 0;
+    if (d.labelDirection) {
+      sf = 1 - sf;
+    }
+    return {
+      sx,
+      sy,
+      tx,
+      ty,
+      dr,
+      sf
+    };
+  }
+  tickEdgeLabels() {
+    // 通过旋转 label, 使文字始终处于 edge 上方
     this.chartGroup.selectAll('.edge-label textPath').attr('xlink:href', d => {
-      // 通过旋转 label, 使文字始终处于 edge 上方
       if (d.source.x > d.target.x) {
         return '#' + d._id + '_reverse';
       } else {
         return '#' + d._id;
       }
     });
+    // 微调边上文字的文职
     this.chartGroup.selectAll('.edge-label').attr('transform', d => {
       let r = Math.sqrt(
         Math.pow(d.source.x - d.target.x, 2) + Math.pow(d.source.y - d.target.y, 2)
@@ -528,7 +505,10 @@ class Force extends BaseGraph {
     const enter = update.enter();
     const exit = update.exit();
 
-    enter.append('path').classed('reverse-path', true);
+    enter
+      .filter(d => d.source._id !== d.target._id)
+      .append('path')
+      .classed('reverse-path', true);
 
     this.setReversePathAttr();
 
