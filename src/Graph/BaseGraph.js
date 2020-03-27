@@ -23,16 +23,18 @@
  *
  * @methods
  *   render: 渲染画布
+ *   update: 更新画布
  *   init: 初始化, 初始化画布以及调用下面两个方法
- *   preprocessChart: 初始化画布, 可在子类中复写
- *   processData: 数据处理, 可在子类中进行复写
+ *   checkData: 校验数据, 在子类中复写
+ *   preprocessChart: 初始化画布, 在子类中复写
+ *   processData: 数据处理, 在子类中进行复写
  *   draw: 绘制图形, 必须在子类中复写
- *   bindEvents: 绑定事件, 可在子类中复写
+ *   bindEvents: 绑定事件, 在子类中复写
  *   zooming: 可复写函数, 在缩放过程中被调用
  *
  *
  * create by destiny on 2019-03-25
- * update by destiny on 2020-03-19
+ * update by destiny on 2020-03-28
  */
 import * as d3 from 'd3';
 
@@ -66,7 +68,6 @@ class BaseGraph {
       height: elInfo.height,
       scalable: true,
       scaleExtent: [0.5, 2],
-      scaleBar: false,
       draggable: true
     };
 

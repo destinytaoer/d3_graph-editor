@@ -37,25 +37,65 @@ import { deepCopy } from '../utils';
  *   options: 配置对象
  *   data: 绘图数据
  *   rawData: 原始数据
- *   vertexes: 绘图节点数据
- *   edges: 绘图节点数据
- *   nodeEnter: 所有的节点, d3 Selection 元素数组
- *   linkEnter: 所有边, d3 Selection 元素数组
+ *   vertexes: 绘图节点数据, 保持与 data 中的数据一致
+ *   edges: 绘图节点数据, 保持与 data 中的数据一致
+ *   nodeEnter: 当前的 enter 节点, d3 Selection 元素数组
+ *   linkEnter: 当前的 enter 边, d3 Selection 元素数组
+ *   zoom: 缩放对象, 用于控制图谱缩放行为
  *
  * @methods
  *   render: 渲染画布
- *   preprocessChart: 初始化画布
- *   processData: 数据处理, 可在子类中进行复写
- *   draw: 绘制图形, 必须在子类中复写
- *   bindEvents: 绑定事件, 可在子类中复写
- *   zooming: 可复写函数, 在缩放过程中被调用
- *   addVertexes(): 绘制节点
- *   addEdges(): 绘制边
- *   filterVertex(filter, isRaw): 过滤顶点，需要另外调用 render 方法进行重绘
- *   filterEdge(filter, isRaw): 过滤边，需要另外调用 render 方法进行重绘
+ *   update: 更新画布
+ *   @style 需要时, 可以在实例渲染前进行复写, 接收当前节点或者边的数据 d
+ *    getShape(d): 节点形状, 提供了 d3.symbol 中的形状, 需要返回形状字符串
+ *    getRadius(d): 节点半径, 需要返回数字
+ *    getVertexColor(d): 节点颜色, 需要返回颜色字符串
+ *    getVertexStrokeColor(d): 节点边框颜色, 默认为 none, 需要返回颜色字符串
+ *    getVertexStrokeWidth(d): 节点边框大小, 需要返回数字
+ *    getVertexNameColor(d): 节点名称颜色, 需要返回颜色字符串
+ *    getTextStack(d): 节点文本的排版, 需要返回一个数组,包含被分行的文本字符串
+ *    getIcon(d): 节点 icon, 需要返回一个 URL 字符串, 表示 SVG icon 的路径
+ *    getArrowColor(d): 箭头颜色, 需要返回颜色字符串
+ *    getEdgeColor(d): 边颜色, 需要返回颜色字符串
+ *    getEdgeLableColor(d): 边上文字颜色, 需要返回颜色字符串
+ *    getEdgeWidth(d): 边的宽度, 需要返回数字
+ *    getBgColor(): 背景颜色, 需要返回颜色字符串
+ *   @data
+ *    getVertexById(id): 通过 id 获取某个节点数据
+ *    getEdgeById(id): 通过 id 获取某个边数据
+ *    changeRawData(type, rawData, updateData): 改变 rawData 或者 data
+ *    addVertex(x, y, data, cb):
+ *    addEdge(from, to, data, cb)
+ *    updateVertex(data, cb)
+ *    updateEdge(data, cb)
+ *    removeVertex(id, cb)
+ *    removeEdge(id, cb)
+ *    filterVertex(filter): 过滤顶点，需要调用 update 才能更新
+ *    filterEdge(filter): 过滤边，需要调用  update 才能更新
+ *    resetData(): 使用 rawData 重置 data 绘图数据
+ *   @event
+ *    bindEvents(): 绑定事件, 需要在实例 render 前调用, 每次更新也会执行
+ *    bindScale(): 绑定缩放
+ *    bindDrag(): 绑定拖拽
+ *    zooming(): 缩放过程中触发
+ *    需要自行在 bindEvents 中添加:
+ *    bindRightClick(cb): 绑定右键点击事件
+ *    bindLineWith(cb): 绑定连线事件
+ *    addDblClick(cb): 双击事件
+ *   @else 其他辅助类函数
+ *    getTransform(): 获取当前 SVG 的偏移和缩放
+ *    transformTo(transform): 将当前图谱转换到某个位置和缩放大小
+ *    zoomTo(scale): 缩放至某大小
+ *    getCount(): 获取当前数据的统计信息, 根据 type 分类
+ *    changeTheme(theme): 改变当前主题
+ *    highlightVertex(ids): 高亮某些节点
+ *    highlightEdge(ids): 高亮某些边
+ *    shortestPath(source, target): 获取两个节点之间最短路径上的所有节点和边的 ids
+ *    radiationVertex(d): 获取当前顶点呈放射状的顶点和边
+ *    relationVertex(d): 获取当前顶点所有直接关联的边和顶点
  *
  * create by destiny on 2019-03-25
- * update by destiny on 2020-03-22
+ * update by destiny on 2020-03-28
  */
 class Force extends BaseGraph {
   constructor(el, data, options) {
@@ -162,9 +202,7 @@ class Force extends BaseGraph {
       .force('charge_force', d3.forceManyBody().strength(chargeStrength))
       // 中心力
       .force('center_force', d3.forceCenter(width / 2, height / 2))
-      .on('tick', this.onTick.bind(this))
-      // 仿真停止时触发
-      .on('end', this.onEndRender.bind(this));
+      .on('tick', this.onTick.bind(this));
 
     return this;
   }
@@ -389,6 +427,7 @@ class Force extends BaseGraph {
     // 更新节点属性和样式
     this.setVertexAttr();
     this.setVertexStyle();
+    this.options.draggable ? this.bindDrag() : null;
 
     // 对 exit 的处理: 去掉没有数据关联的节点
     exit.remove();
@@ -622,13 +661,7 @@ class Force extends BaseGraph {
   }
 
   /* 事件 */
-  bindEvents() {
-    this.addDrag();
-  }
-  onEndRender() {
-    // 仿真器停止时触发, 即已经完成渲染
-    console.log('render end');
-  }
+  bindEvents() {}
   zooming() {
     // 缩放过程中, 小于 0.8 则将文本隐藏
     if (d3.event.transform.k < 0.8) {
@@ -640,7 +673,7 @@ class Force extends BaseGraph {
     }
   }
   // 拖拽事件
-  addDrag() {
+  bindDrag() {
     this.drag = d3
       .drag()
       .on('start', this.onDragStart.bind(this))
@@ -663,43 +696,151 @@ class Force extends BaseGraph {
     d.fx = null;
     d.fy = null;
   }
-  // click
-  addClick() {
-    this.nodeEnter.selectAll('.vertex').on('click', this.onVertexClick.bind(this));
-    this.linkEnter.on('click', this.onEdgeClick.bind(this));
-  }
-  onVertexClick(d) {
-    console.log('vertex clicked');
-    // let { vertexIds, edgeIds } = this.getHighlightIds(d)
-    // this.highlightVertex(vertexIds)
-    //   .highlightEdge(edgeIds)
-    // this.resetStyle()
-    // eventProxy.emit('click.vertex', d);
-  }
-  onEdgeClick(d) {
-    console.log('edge clicked');
-    // eventProxy.emit('click.vertex', d);
-  }
+  // 绑定点击事件
+  // addClick(onVertexClick, onEdgeClick) {
+  //   this.nodeEnter.selectAll('.vertex').on('click', onVertexClick);
+  //   this.linkEnter.on('click', onEdgeClick);
+  // }
+  // 绑定 hover 事件
+  // addHover(onVertexHover, onVertexHoverout, onEdgeHover, onEdgeHoverout) {
+  //   this.nodeEnter.selectAll('.vertex').on('mouseenter', onVertexHover);
+  //   this.nodeEnter.selectAll('.vertex').on('mouseleave', onVertexHoverout);
 
-  // hover
-  addHover() {
-    this.nodeEnter.selectAll('.vertex').on('mouseenter', this.onVertexHover.bind(this));
-    this.nodeEnter.selectAll('.vertex').on('mouseleave', this.onVertexHoverout.bind(this));
+  //   this.linkEnter.on('mouseenter', onEdgeHover);
+  //   this.linkEnter.on('mouseleave', onEdgeHoverout);
+  // }
+  // 绑定右键点击事件
+  bindRightClick(cb) {
+    this.$el.on('contextmenu', () => {
+      d3.event.preventDefault();
+    });
 
-    this.linkEnter.on('mouseenter', this.onEdgeHover.bind(this));
-    this.linkEnter.on('mouseleave', this.onEdgeHoverout.bind(this));
+    this.nodeEnter.selectAll('.vertex').on('mouseup.menu', (...args) => {
+      d3.event.stopPropagation();
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
+    this.linkEnter.on('mouseup.menu', (...args) => {
+      d3.event.stopPropagation();
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
+    this.svg.on('mouseup.menu', (...args) => {
+      if (d3.event.button === 2) {
+        cb && cb(...args);
+      }
+    });
   }
-  onVertexHover(d) {
-    console.log('vertex hover');
+  // TODO: 绑定双击事件
+  addDblClick(cb) {}
+  // 绑定连线事件
+  bindLineWith(cb) {
+    this.nodeEnter
+      .selectAll('.vertex')
+      .on('mouseup.line', d => {
+        d3.event.stopPropagation();
+        if (this.newLink) {
+          this.appendNewLink(d, cb);
+        }
+      })
+      .on('mouseenter.line', (d, i, g) => {
+        let el = g[i];
+        d3.select(el)
+          .append('rect')
+          .datum(d)
+          .attr('width', 6)
+          .attr('height', 6)
+          .attr('x', -3)
+          .attr('y', -3)
+          .attr('fill', 'transparent')
+          .style('cursor', 'crosshair')
+          .on('mousedown.line', d => {
+            d3.event.stopPropagation();
+            this.addNewLink(d);
+          })
+          .on('mouseup.line', d => {
+            d3.event.stopPropagation();
+            if (this.newLink) {
+              let id = this.newLink.datum()._from;
+              if (id === d._id) {
+                this.removeNewLink();
+              } else {
+                this.appendNewLink(d, cb);
+              }
+            }
+          });
+      })
+      .on('mouseleave.line', (d, i, g) => {
+        let el = g[i];
+        d3.select(el)
+          .select('rect')
+          .remove();
+      });
+
+    this.linkEnter.on('mouseup.line', () => {
+      if (this.newLink) {
+        this.removeNewLink();
+      }
+    });
+
+    this.$el
+      .on('mousemove.line', () => {
+        if (this.newLink) {
+          this.newLink.call(this.updateNewLink.bind(this), this.svg.node());
+        }
+      })
+      .on('mouseup.line', () => {
+        if (this.newLink) {
+          this.removeNewLink();
+        }
+      });
   }
-  onVertexHoverout(d) {
-    console.log('vertex hoverout');
+  // 鼠标移动时，不断更新新建的线
+  updateNewLink(selection, container) {
+    selection.attr('d', d => {
+      let coord = d3.mouse(container);
+      // 抵消缩放移位的影响
+      let transform = d3.zoomTransform(container);
+      let transformedCoord = transform.invert(coord);
+
+      let x1 = d.source.x,
+        y1 = d.source.y,
+        x2 = transformedCoord[0],
+        y2 = transformedCoord[1];
+
+      // 在拖拽新增的线条时，预留足够的移动空间，防止鼠标移动到线条上面，导致触发移出顶点的事件
+      let angle = Math.atan2(y2 - y1, x2 - x1);
+      x2 = x2 - Math.cos(angle) * 10;
+      y2 = y2 - Math.sin(angle) * 10;
+
+      return 'M' + x1 + ',' + y1 + 'A0,0 0 0,0 ' + x2 + ',' + y2;
+    });
   }
-  onEdgeHover(d) {
-    console.log('edge hover');
+  removeNewLink() {
+    this.newLink.remove();
+    this.newLink = null;
   }
-  onEdgeHoverout(d) {
-    console.log('edge hoverout');
+  appendNewLink(d, cb) {
+    let to = d._id;
+    let from = this.newLink.datum()._from;
+    this.addEdge(from, to, {});
+    this.removeNewLink();
+    cb && cb();
+  }
+  addNewLink(d) {
+    // 增加新的连线
+    this.newLink = this.chartGroup
+      .append('path')
+      .datum({
+        _from: d._id,
+        source: d,
+        state: 'normal'
+      })
+      .attr('stroke', this.getEdgeColor(d))
+      .attr('stroke-width', this.getEdgeWidth(d))
+      .attr('marker-end', 'url("#arrow_default")');
   }
 
   /* 样式获取 */
@@ -906,96 +1047,7 @@ class Force extends BaseGraph {
     }
   }
 
-  /* 重置样式, 主要用于主题颜色的变更 */
-  resetStyle() {
-    this.setVertexStyle()
-      .setEdgeStyle()
-      .setBgColor();
-  }
-  setBgColor() {
-    this.svg.style('background', this.getBgColor());
-    return this;
-  }
-
-  /* 辅助函数, 可供外部使用 */
-  // 获取当前 svg 的 transform
-  getTransform() {
-    return d3.zoomTransform(this.svg.node());
-  }
-  // 变形至传递的 transform
-  transformTo(transform) {
-    this.svg
-      .transition()
-      .duration(300)
-      .call(this.zoom.transform, transform);
-  }
-  // 缩放至某个值
-  zoomTo(scale) {
-    // 由于 zoom 事件是绑定在 svg 上的，所以要从 svg 上获取
-    let transform = this.getTransform();
-    let curK = transform.k;
-    let scaleExtent = this.zoom.scaleExtent();
-
-    // 达到最大时再增加，或者达到最小时再缩小，则直接返回
-    if (
-      (scale - curK > 0 && curK === scaleExtent[1]) ||
-      (scale - curK < 0 && curK === scaleExtent[0])
-    )
-      return;
-
-    let nextK = scale;
-
-    // 如果当前缩放处于最大或最小，那么直接返回
-    // 对下一个缩放进行范围限制
-    nextK =
-      nextK < scaleExtent[0] ? scaleExtent[0] : nextK > scaleExtent[1] ? scaleExtent[1] : nextK;
-
-    // 中心位置
-    let containerRect = this.el.getBoundingClientRect();
-    let centerX = containerRect.width / 2;
-    let centerY = containerRect.height / 2;
-    let curX = transform.x;
-    let curY = transform.y;
-
-    // 计算缩放后的位移：(centerX - nextX) / nextK = (centerX - curX) / curK
-    // 使得缩放始终以当前位移为中心进行
-    let nextX = centerX - ((centerX - curX) / curK) * nextK;
-    let nextY = centerY - ((centerY - curY) / curK) * nextK;
-
-    // 仍然要挂载到 svg 上
-    this.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
-
-    return this;
-  }
-  // 获取统计信息
-  getCount() {
-    let result = {};
-    result.vertex = this.getVertexCount();
-    result.edge = this.getEdgeCount();
-    return result;
-  }
-  getVertexCount() {
-    let result = {};
-    this.vertexes.forEach(item => {
-      if (!result[item.type]) {
-        result[item.type] = 1;
-      } else {
-        result[item.type]++;
-      }
-    });
-    return result;
-  }
-  getEdgeCount() {
-    let result = {};
-    this.edges.forEach(item => {
-      if (!result[item.type]) {
-        result[item.type] = 1;
-      } else {
-        result[item.type]++;
-      }
-    });
-    return result;
-  }
+  /* 关于数据的获取和变更 */
   // 获取节点或边的数据
   getVertexById(id) {
     let vertexArr = this.vertexes.filter(v => {
@@ -1008,316 +1060,6 @@ class Force extends BaseGraph {
       return e._id === id;
     });
     return edgeArr[0];
-  }
-  // 改变主题
-  changeTheme(theme) {
-    this.theme = theme;
-    this.resetStyle();
-    return this;
-  }
-  // 高亮顶点和边
-  highlightVertex(ids) {
-    this.nodeEnter.selectAll('.vertex .circle').each((d, i, g) => {
-      if (ids.includes(d._id)) {
-        d.state = 'highlight';
-      } else {
-        d.state = 'grey';
-      }
-    });
-
-    this.setVertexStyle();
-
-    return this;
-  }
-  highlightEdge(ids) {
-    this.linkEnter.selectAll('.edge-path').each((d, i, g) => {
-      if (ids.includes(d._id)) {
-        d.state = 'highlight';
-      } else {
-        d.state = 'grey';
-      }
-    });
-    this.setEdgeStyle();
-
-    return this;
-  }
-  // 过滤与重置
-  filterVertex(filter) {
-    if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
-
-    let vertexIds = [];
-    let filterIds = [];
-
-    let vertexes = deepCopy(this.rawData.vertexes);
-    let edges = deepCopy(this.rawData.edges);
-
-    // 筛选掉 filter 返回为 false 的顶点
-    vertexes.forEach((d, i, g) => {
-      // 如果 filter 执行返回为 true，则保留
-      if (filter(d, i, g)) {
-        filterIds.push(d._id);
-      }
-    });
-
-    // 保留 filter 返回 true 相连的所有边
-    this.data.edges = this.edges = edges.filter(d => {
-      if (filterIds.includes(d._from) || filterIds.includes(d._to)) {
-        vertexIds.push(d._to);
-        vertexIds.push(d._from);
-        return true;
-      }
-      return false;
-    });
-
-    // 去重
-    vertexIds = Array.from(new Set(vertexIds));
-
-    // 筛选掉没有边连接的顶点
-    this.data.vertexes = this.vertexes = vertexes.filter(d => {
-      if (vertexIds.includes(d._id)) {
-        return true;
-      }
-      return false;
-    });
-
-    this.update();
-
-    return this;
-  }
-  filterEdge(filter, isRaw) {
-    if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
-
-    let vertexIds = [];
-
-    let vertexes = deepCopy(this.rawData.vertexes);
-    let edges = deepCopy(this.rawData.edges);
-
-    // 筛选掉 filter 返回为 false 的边
-    this.data.edges = this.edges = edges.filter((d, i, g) => {
-      if (filter(d, i, g)) {
-        vertexIds.push(d._from);
-        vertexIds.push(d._to);
-        return true;
-      }
-      return false;
-    });
-
-    // 去重
-    vertexIds = Array.from(new Set(vertexIds));
-
-    // 筛选掉没有边连接的顶点
-    this.data.vertexes = this.vertexes = vertexes.filter(d => {
-      if (vertexIds.includes(d._id)) {
-        return true;
-      }
-      return false;
-    });
-
-    this.update();
-
-    return this;
-  }
-  resetData() {
-    this.vertexes = deepCopy(this.rawData.vertexes);
-    this.edges = deepCopy(this.rawData.edges);
-
-    this.update();
-    return this;
-  }
-  // 绑定右键点击事件
-  bindRightClick(cb) {
-    this.$el.on('contextmenu', () => {
-      d3.event.preventDefault();
-    });
-
-    this.nodeEnter.selectAll('.vertex').on('mouseup.menu', (...args) => {
-      d3.event.stopPropagation();
-      console.log(args);
-      if (d3.event.button === 2) {
-        cb && cb(...args);
-      }
-    });
-    this.linkEnter.on('mouseup.menu', (...args) => {
-      d3.event.stopPropagation();
-      console.log(args);
-      if (d3.event.button === 2) {
-        cb && cb(...args);
-      }
-    });
-    this.svg.on('mouseup.menu', (...args) => {
-      console.log(args);
-      if (d3.event.button === 2) {
-        cb && cb(...args);
-      }
-    });
-  }
-  // 绑定
-  bindLineWith(cb) {
-    this.nodeEnter
-      .selectAll('.vertex')
-      .on('mouseup.line', d => {
-        d3.event.stopPropagation();
-        if (this.newLink) {
-          this.appendNewLink(d, cb);
-        }
-      })
-      .on('mouseenter.line', (d, i, g) => {
-        let el = g[i];
-        d3.select(el)
-          .append('rect')
-          .datum(d)
-          .attr('width', 6)
-          .attr('height', 6)
-          .attr('x', -3)
-          .attr('y', -3)
-          .attr('fill', 'transparent')
-          .style('cursor', 'crosshair')
-          .on('mousedown.line', d => {
-            d3.event.stopPropagation();
-            this.addNewLink(d);
-          })
-          .on('mouseup.line', d => {
-            d3.event.stopPropagation();
-            if (this.newLink) {
-              let id = this.newLink.datum()._from;
-              if (id === d._id) {
-                this.removeNewLink();
-              } else {
-                this.appendNewLink(d, cb);
-              }
-            }
-          });
-      })
-      .on('mouseleave.line', (d, i, g) => {
-        let el = g[i];
-        d3.select(el)
-          .select('rect')
-          .remove();
-      });
-
-    this.linkEnter.on('mouseup.line', () => {
-      if (this.newLink) {
-        this.removeNewLink();
-      }
-    });
-
-    this.$el
-      .on('mousemove.line', () => {
-        if (this.newLink) {
-          this.newLink.call(this.updateNewLink.bind(this), this.svg.node());
-        }
-      })
-      .on('mouseup.line', () => {
-        if (this.newLink) {
-          this.removeNewLink();
-        }
-      });
-  }
-  // 获取最短路径上的所有顶点和边
-  shortestPath(source, target) {
-    const { adjList, vertexesMap } = this;
-    let from = vertexesMap.indexOf(source._id);
-    let to = vertexesMap.indexOf(target._id);
-    let vertexIds = [];
-    let edgeIds = [];
-    this.bfs(from);
-    let path = this.pathTo(from, to);
-
-    if (path.length <= 1) {
-      return {
-        vertexIds: [target._id],
-        edgeIds: []
-      };
-    }
-    path.forEach((v, i) => {
-      vertexIds.push(vertexesMap[v]);
-      if (i > 0) {
-        edgeIds.push(adjList[v][path[i - 1]][0]); // 如果两点之间存在多条边，返回的是第一条边
-      }
-    });
-    return {
-      vertexIds,
-      edgeIds
-    };
-  }
-  // 广度遍历
-  bfs(vertexNum) {
-    for (let i in this.vertexesMap) {
-      this.marker[i] = false;
-    }
-    let a = v => {
-      this.marker[v] = true;
-
-      let queue = [];
-      queue.push(v);
-      while (queue.length > 0) {
-        let item = queue.shift();
-
-        if (!this.adjList[item]) {
-          continue;
-        }
-
-        Object.keys(this.adjList[item]).forEach(k => {
-          let i = +k;
-          if (!this.marker[i]) {
-            this.edgeTo[i] = item;
-            queue.push(i);
-            this.marker[i] = true;
-          }
-        });
-      }
-    };
-    a(vertexNum);
-  }
-  // 最短路径
-  pathTo(from, to) {
-    let path = [];
-
-    while (to !== from && this.edgeTo[to] !== undefined) {
-      path.push(to);
-      to = this.edgeTo[to];
-    }
-    path.push(from);
-    return path;
-  }
-  getHighlightIds(d) {
-    return this.radiationVertex(d);
-  }
-  // 获取当前顶点呈放射状的顶点和边
-  // 以当前顶点为起点的边和边连接的所有顶点，包含当前顶点
-  radiationVertex(d) {
-    let vertexIds = [];
-    let edgeIds = [];
-    vertexIds.push(d._id);
-    this.edges.forEach(e => {
-      if (e._from === d._id) {
-        vertexIds.push(e._to);
-        edgeIds.push(e._id);
-      }
-    });
-    return {
-      vertexIds,
-      edgeIds
-    };
-  }
-  // 获取所有与当前顶点有关联的边和顶点
-  // 包含当前顶点的所有边和边连接的所有顶点
-  relationVertex(d) {
-    let vertexIds = [];
-    let edgeIds = [];
-    vertexIds.push(d._id);
-    this.edges.forEach(e => {
-      if (e._from === d._id || e._to === d._id) {
-        vertexIds.push(e._to);
-        vertexIds.push(e._from);
-        edgeIds.push(e._id);
-      }
-    });
-    vertexIds = Array.from(new Set(vertexIds));
-    return {
-      vertexIds,
-      edgeIds
-    };
   }
   // 改变原始数据
   changeRawData(type, rawData, updateData) {
@@ -1442,50 +1184,309 @@ class Force extends BaseGraph {
 
     return this;
   }
-  // 鼠标移动时，不断更新新建的线
-  updateNewLink(selection, container) {
-    selection.attr('d', d => {
-      let coord = d3.mouse(container);
-      // 抵消缩放移位的影响
-      let transform = d3.zoomTransform(container);
-      let transformedCoord = transform.invert(coord);
+  // 过滤与重置
+  filterVertex(filter) {
+    if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
-      let x1 = d.source.x,
-        y1 = d.source.y,
-        x2 = transformedCoord[0],
-        y2 = transformedCoord[1];
+    let vertexIds = [];
+    let filterIds = [];
 
-      // 在拖拽新增的线条时，预留足够的移动空间，防止鼠标移动到线条上面，导致触发移出顶点的事件
-      let angle = Math.atan2(y2 - y1, x2 - x1);
-      x2 = x2 - Math.cos(angle) * 10;
-      y2 = y2 - Math.sin(angle) * 10;
+    let vertexes = deepCopy(this.rawData.vertexes);
+    let edges = deepCopy(this.rawData.edges);
 
-      return 'M' + x1 + ',' + y1 + 'A0,0 0 0,0 ' + x2 + ',' + y2;
+    // 筛选掉 filter 返回为 false 的顶点
+    vertexes.forEach((d, i, g) => {
+      // 如果 filter 执行返回为 true，则保留
+      if (filter(d, i, g)) {
+        filterIds.push(d._id);
+      }
     });
+
+    // 保留 filter 返回 true 相连的所有边
+    this.data.edges = this.edges = edges.filter(d => {
+      if (filterIds.includes(d._from) || filterIds.includes(d._to)) {
+        vertexIds.push(d._to);
+        vertexIds.push(d._from);
+        return true;
+      }
+      return false;
+    });
+
+    // 去重
+    vertexIds = Array.from(new Set(vertexIds));
+
+    // 筛选掉没有边连接的顶点
+    this.data.vertexes = this.vertexes = vertexes.filter(d => {
+      if (vertexIds.includes(d._id)) {
+        return true;
+      }
+      return false;
+    });
+
+    return this;
   }
-  removeNewLink() {
-    this.newLink.remove();
-    this.newLink = null;
+  filterEdge(filter) {
+    if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
+
+    let vertexIds = [];
+
+    let vertexes = deepCopy(this.rawData.vertexes);
+    let edges = deepCopy(this.rawData.edges);
+
+    // 筛选掉 filter 返回为 false 的边
+    this.data.edges = this.edges = edges.filter((d, i, g) => {
+      if (filter(d, i, g)) {
+        vertexIds.push(d._from);
+        vertexIds.push(d._to);
+        return true;
+      }
+      return false;
+    });
+
+    // 去重
+    vertexIds = Array.from(new Set(vertexIds));
+
+    // 筛选掉没有边连接的顶点
+    this.data.vertexes = this.vertexes = vertexes.filter(d => {
+      if (vertexIds.includes(d._id)) {
+        return true;
+      }
+      return false;
+    });
+
+    return this;
   }
-  appendNewLink(d, cb) {
-    let to = d._id;
-    let from = this.newLink.datum()._from;
-    this.addEdge(from, to, {});
-    this.removeNewLink();
-    cb && cb();
+  resetData() {
+    this.data = deepCopy(this.rawData);
+    this.vertexes = this.data.vertexes;
+    this.edges = this.data.edges;
+
+    this.update();
+    return this;
   }
-  addNewLink(d) {
-    // 增加新的连线
-    this.newLink = this.chartGroup
-      .append('path')
-      .datum({
-        _from: d._id,
-        source: d,
-        state: 'normal'
-      })
-      .attr('stroke', this.getEdgeColor(d))
-      .attr('stroke-width', this.getEdgeWidth(d))
-      .attr('marker-end', 'url("#arrow_default")');
+
+  /* 辅助函数 */
+  // 获取当前 svg 的 transform
+  getTransform() {
+    return d3.zoomTransform(this.svg.node());
+  }
+  // 变形至传递的 transform
+  transformTo(transform) {
+    this.svg
+      .transition()
+      .duration(300)
+      .call(this.zoom.transform, transform);
+  }
+  // 缩放至某个值
+  zoomTo(scale) {
+    // 由于 zoom 事件是绑定在 svg 上的，所以要从 svg 上获取
+    let transform = this.getTransform();
+    let curK = transform.k;
+    let scaleExtent = this.zoom.scaleExtent();
+
+    // 达到最大时再增加，或者达到最小时再缩小，则直接返回
+    if (
+      (scale - curK > 0 && curK === scaleExtent[1]) ||
+      (scale - curK < 0 && curK === scaleExtent[0])
+    )
+      return;
+
+    let nextK = scale;
+
+    // 如果当前缩放处于最大或最小，那么直接返回
+    // 对下一个缩放进行范围限制
+    nextK =
+      nextK < scaleExtent[0] ? scaleExtent[0] : nextK > scaleExtent[1] ? scaleExtent[1] : nextK;
+
+    // 中心位置
+    let containerRect = this.el.getBoundingClientRect();
+    let centerX = containerRect.width / 2;
+    let centerY = containerRect.height / 2;
+    let curX = transform.x;
+    let curY = transform.y;
+
+    // 计算缩放后的位移：(centerX - nextX) / nextK = (centerX - curX) / curK
+    // 使得缩放始终以当前位移为中心进行
+    let nextX = centerX - ((centerX - curX) / curK) * nextK;
+    let nextY = centerY - ((centerY - curY) / curK) * nextK;
+
+    // 仍然要挂载到 svg 上
+    this.transformTo(d3.zoomIdentity.translate(nextX, nextY).scale(nextK));
+
+    return this;
+  }
+  // 获取统计信息
+  getCount() {
+    let result = {};
+    result.vertex = this.getVertexCount();
+    result.edge = this.getEdgeCount();
+    return result;
+  }
+  getVertexCount() {
+    let result = {};
+    this.vertexes.forEach(item => {
+      if (!result[item.type]) {
+        result[item.type] = 1;
+      } else {
+        result[item.type]++;
+      }
+    });
+    return result;
+  }
+  getEdgeCount() {
+    let result = {};
+    this.edges.forEach(item => {
+      if (!result[item.type]) {
+        result[item.type] = 1;
+      } else {
+        result[item.type]++;
+      }
+    });
+    return result;
+  }
+  // 改变主题
+  changeTheme(theme) {
+    this.theme = theme;
+    this.resetStyle();
+    return this;
+  }
+  resetStyle() {
+    this.setVertexStyle()
+      .setEdgeStyle()
+      .setBgColor();
+  }
+  setBgColor() {
+    this.svg.style('background', this.getBgColor());
+    return this;
+  }
+  // 高亮顶点和边
+  highlightVertex(ids) {
+    this.nodeEnter.selectAll('.vertex .circle').each((d, i, g) => {
+      if (ids.includes(d._id)) {
+        d.state = 'highlight';
+      } else {
+        d.state = 'grey';
+      }
+    });
+
+    this.setVertexStyle();
+
+    return this;
+  }
+  highlightEdge(ids) {
+    this.linkEnter.selectAll('.edge-path').each((d, i, g) => {
+      if (ids.includes(d._id)) {
+        d.state = 'highlight';
+      } else {
+        d.state = 'grey';
+      }
+    });
+    this.setEdgeStyle();
+
+    return this;
+  }
+  // 获取最短路径上的所有顶点和边
+  shortestPath(source, target) {
+    const { adjList, vertexesMap } = this;
+    let from = vertexesMap.indexOf(source._id);
+    let to = vertexesMap.indexOf(target._id);
+    let vertexIds = [];
+    let edgeIds = [];
+    this.bfs(from);
+    let path = this.pathTo(from, to);
+
+    if (path.length <= 1) {
+      return {
+        vertexIds: [target._id],
+        edgeIds: []
+      };
+    }
+    path.forEach((v, i) => {
+      vertexIds.push(vertexesMap[v]);
+      if (i > 0) {
+        edgeIds.push(adjList[v][path[i - 1]][0]); // 如果两点之间存在多条边，返回的是第一条边
+      }
+    });
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 广度遍历
+  bfs(vertexNum) {
+    for (let i in this.vertexesMap) {
+      this.marker[i] = false;
+    }
+    let a = v => {
+      this.marker[v] = true;
+
+      let queue = [];
+      queue.push(v);
+      while (queue.length > 0) {
+        let item = queue.shift();
+
+        if (!this.adjList[item]) {
+          continue;
+        }
+
+        Object.keys(this.adjList[item]).forEach(k => {
+          let i = +k;
+          if (!this.marker[i]) {
+            this.edgeTo[i] = item;
+            queue.push(i);
+            this.marker[i] = true;
+          }
+        });
+      }
+    };
+    a(vertexNum);
+  }
+  // 最短路径
+  pathTo(from, to) {
+    let path = [];
+
+    while (to !== from && this.edgeTo[to] !== undefined) {
+      path.push(to);
+      to = this.edgeTo[to];
+    }
+    path.push(from);
+    return path;
+  }
+  // 获取当前顶点呈放射状的顶点和边
+  // 以当前顶点为起点的边和边连接的所有顶点，包含当前顶点
+  radiationVertex(d) {
+    let vertexIds = [];
+    let edgeIds = [];
+    vertexIds.push(d._id);
+    this.edges.forEach(e => {
+      if (e._from === d._id) {
+        vertexIds.push(e._to);
+        edgeIds.push(e._id);
+      }
+    });
+    return {
+      vertexIds,
+      edgeIds
+    };
+  }
+  // 获取所有与当前顶点有关联的边和顶点
+  // 包含当前顶点的所有边和边连接的所有顶点
+  relationVertex(d) {
+    let vertexIds = [];
+    let edgeIds = [];
+    vertexIds.push(d._id);
+    this.edges.forEach(e => {
+      if (e._from === d._id || e._to === d._id) {
+        vertexIds.push(e._to);
+        vertexIds.push(e._from);
+        edgeIds.push(e._id);
+      }
+    });
+    vertexIds = Array.from(new Set(vertexIds));
+    return {
+      vertexIds,
+      edgeIds
+    };
   }
 }
 export default Force;
