@@ -1025,6 +1025,8 @@ class Force extends BaseGraph {
       }
     });
 
+    this.setVertexStyle();
+
     return this;
   }
   highlightEdge(ids) {
@@ -1035,6 +1037,7 @@ class Force extends BaseGraph {
         d.state = 'grey';
       }
     });
+    this.setEdgeStyle();
 
     return this;
   }
