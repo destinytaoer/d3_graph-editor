@@ -83,8 +83,8 @@ class Force extends BaseGraph {
     this.rawData = deepCopy(data);
 
     // 顶点和边的数据
-    this.vertexes = {};
-    this.edges = {};
+    this.vertexes = this.data.vertexes;
+    this.edges = this.data.edges;
 
     // 记录当前所有节点的 ID
     this.idMap = [];
@@ -117,8 +117,6 @@ class Force extends BaseGraph {
     });
   }
   preprocessData() {
-    this.vertexes = deepCopy(this.rawData.vertexes);
-    this.edges = deepCopy(this.rawData.edges);
     // 初始化数据以及图的最短路径算法
     this.vertexes.forEach(v => {
       v.state = 'normal';
@@ -186,6 +184,7 @@ class Force extends BaseGraph {
           linkMap[to + from]++;
         }
       }
+      l.directionFlag = false;
       if (from !== to && directionMap[to + from] === true) {
         l.directionFlag = true;
       } else {
@@ -227,29 +226,10 @@ class Force extends BaseGraph {
     return this;
   }
   draw() {
-    const nodeUpdate = this.chartGroup
-      .select('.vertexes')
-      .selectAll('.vertex-group')
-      .data(this.vertexes);
-    const linkUpdate = this.chartGroup
-      .select('.edges')
-      .selectAll('.edge')
-      .data(this.edges);
-    // 箭头
-    const arrowUpdate = this.chartGroup
-      .select('.arrows')
-      .selectAll('.arrow-marker')
-      .data(this.edges);
-    // 增加反向路径, 用于旋转 label
-    const reversePathUpdate = this.chartGroup
-      .select('.reverse-paths')
-      .selectAll('.reverse-path')
-      .data(this.edges);
-
-    this.drawVertexes(nodeUpdate);
-    this.drawEdges(linkUpdate);
-    this.drawReversePath(reversePathUpdate);
-    this.drawArrow(arrowUpdate);
+    this.drawVertexes();
+    this.drawEdges();
+    this.drawReversePath();
+    this.drawArrow();
     this.setBgColor();
     return this;
   }
@@ -405,12 +385,13 @@ class Force extends BaseGraph {
     });
   }
   // 节点绘制
-  drawVertexes(update) {
+  drawVertexes() {
+    const update = this.chartGroup
+      .select('.vertexes')
+      .selectAll('.vertex-group')
+      .data(this.vertexes);
     this.nodeEnter = update.enter();
     const exit = update.exit();
-    console.log('update', update);
-    console.log('enter', this.nodeEnter);
-    console.log('exit', exit);
 
     // 对 enter 的处理: 插入必要的节点
     const vertexGroup = this.nodeEnter.append('g').classed('vertex-group', true);
@@ -418,6 +399,7 @@ class Force extends BaseGraph {
 
     // 更新节点属性和样式
     this.setVertexAttr();
+    this.setVertexStyle();
 
     // 对 exit 的处理: 去掉没有数据关联的节点
     exit.remove();
@@ -450,23 +432,18 @@ class Force extends BaseGraph {
     });
   }
   setVertexCircleAttr(node) {
-    node
-      .attr('d', d => {
-        let type = this.getShape(d);
-        type = 'symbol' + type[0].toUpperCase() + type.slice(1);
-        let size = this.getRadius(d) * this.getRadius(d) * Math.PI;
-        let _d3 = d3; // 直接使用 d3[type] 报错
-        return this.symbol.size(size).type(_d3[type])();
-      })
-      .attr('fill', d => this.getVertexColor(d))
-      .attr('stroke', d => this.getVertexStrokeColor(d))
-      .attr('stroke-width', d => this.getVertexStrokeWidth(d));
+    node.attr('d', d => {
+      let type = this.getShape(d);
+      type = 'symbol' + type[0].toUpperCase() + type.slice(1);
+      let size = this.getRadius(d) * this.getRadius(d) * Math.PI;
+      let _d3 = d3; // 直接使用 d3[type] 报错
+      return this.symbol.size(size).type(_d3[type])();
+    });
   }
   setIconAttr(node) {
     let data = node.datum();
     let r = this.getRadius(data);
     node
-      .attr('xlink:href', this.getIcon(data))
       .attr('width', r * 2)
       .attr('height', r * 2)
       .attr('x', -r)
@@ -483,7 +460,6 @@ class Force extends BaseGraph {
     if (!data.name) return;
 
     node.selectAll('tspan').remove();
-    node.style('fill', d => this.getVertexNameColor(d));
     let textStack = this.getTextStack(data) || [];
     textStack.forEach(v => {
       node
@@ -494,6 +470,19 @@ class Force extends BaseGraph {
         .style('font-size', this.options.vertexFontSize);
     });
     this.drawType(node);
+  }
+  setVertexStyle() {
+    this.chartGroup
+      .selectAll('.circle')
+      .attr('fill', d => this.getVertexColor(d))
+      .attr('stroke', d => this.getVertexStrokeColor(d))
+      .attr('stroke-width', d => this.getVertexStrokeWidth(d));
+
+    this.chartGroup.selectAll('.icon').attr('xlink:href', d => this.getIcon(d));
+
+    this.chartGroup.selectAll('text.vertex-name').style('fill', d => this.getVertexNameColor(d));
+
+    return this;
   }
   drawType(text) {
     // add type
@@ -512,7 +501,11 @@ class Force extends BaseGraph {
     //   .style('font-size', this.options.vertexFontSize);
   }
   // 边
-  drawEdges(update) {
+  drawEdges() {
+    const update = this.chartGroup
+      .select('.edges')
+      .selectAll('.edge')
+      .data(this.edges);
     this.linkEnter = update.enter();
     const exit = update.exit();
 
@@ -522,6 +515,7 @@ class Force extends BaseGraph {
 
     // 更新节点属性和样式
     this.setEdgeAttr();
+    this.setEdgeStyle();
 
     // 对 exit 的处理: 去掉没有数据关联的节点
     exit.remove();
@@ -548,8 +542,6 @@ class Force extends BaseGraph {
   setPathAttr(node) {
     node
       .attr('fill', 'none')
-      .attr('stroke', d => this.getEdgeColor(d))
-      .attr('stroke-width', d => this.getEdgeWidth(d))
       .attr('id', d => d._id)
       .attr('marker-end', d => this.getArrowUrl(d));
   }
@@ -561,8 +553,7 @@ class Force extends BaseGraph {
       .text(d => {
         return d.label || '';
       })
-      .style('font-size', this.options.edgeFontSize)
-      .style('fill', d => this.getEdgeLableColor(d));
+      .style('font-size', this.options.edgeFontSize);
 
     if (this.getTransform().k < 0.8) {
       node.style('opacity', '0');
@@ -570,7 +561,24 @@ class Force extends BaseGraph {
       node.style('opacity', '1');
     }
   }
-  drawReversePath(update) {
+  setEdgeStyle() {
+    // 边
+    this.chartGroup
+      .selectAll('.edge-path')
+      .attr('stroke', d => this.getEdgeColor(d))
+      .attr('stroke-width', d => this.getEdgeWidth(d));
+
+    // 边文字
+    this.chartGroup.selectAll('.edge-label').style('fill', d => this.getEdgeLableColor(d));
+
+    return this;
+  }
+  drawReversePath() {
+    // 增加反向路径, 用于旋转 label
+    const update = this.chartGroup
+      .select('.reverse-paths')
+      .selectAll('.reverse-path')
+      .data(this.edges);
     const enter = update.enter();
     const exit = update.exit();
 
@@ -594,7 +602,12 @@ class Force extends BaseGraph {
         });
     });
   }
-  drawArrow(update) {
+  drawArrow() {
+    // 箭头
+    const update = this.chartGroup
+      .select('.arrows')
+      .selectAll('.arrow-marker')
+      .data(this.edges);
     const enter = update.enter();
     const exit = update.exit();
 
@@ -605,6 +618,7 @@ class Force extends BaseGraph {
       .append('path');
 
     this.setArrowAttr();
+    this.setArrowStyle();
 
     exit.remove();
   }
@@ -639,6 +653,14 @@ class Force extends BaseGraph {
         .attr('d', path)
         .attr('fill', color);
     });
+  }
+  setArrowStyle() {
+    this.chartGroup.selectAll('.arrow-marker').each((d, i, g) => {
+      let thisArrow = d3.select(g[i]);
+      const { color = '#e3e3e3' } = this.getArrowConfig(d);
+      thisArrow.attr('fill', color);
+    });
+    return this;
   }
 
   /* 事件 */
@@ -959,46 +981,12 @@ class Force extends BaseGraph {
     }
   }
 
-  /* 样式的改变, 主要用于主题颜色的变更 */
+  /* 重置样式, 主要用于主题颜色的变更 */
   resetStyle() {
     this.setVertexStyle()
       .setEdgeStyle()
+      .setArrowStyle()
       .setBgColor();
-  }
-  setVertexStyle() {
-    this.chartGroup
-      .selectAll('.circle')
-      .attr('fill', d => this.getVertexColor(d))
-      .attr('stroke', d => this.getVertexStrokeColor(d))
-      .attr('stroke-width', d => this.getVertexStrokeWidth(d));
-
-    this.chartGroup.selectAll('.icon').attr('xlink:href', d => this.getIcon(d));
-
-    this.chartGroup.selectAll('text.vertex-name').style('fill', d => this.getVertexNameColor(d));
-
-    return this;
-  }
-  setEdgeStyle() {
-    // 边
-    this.chartGroup
-      .selectAll('.edge-path')
-      .attr('stroke', d => this.getEdgeColor(d))
-      .attr('stroke-width', d => this.getEdgeWidth(d));
-
-    // 箭头
-    this.setArrowStyle();
-
-    // 边文字
-    this.chartGroup.selectAll('.edge-label').style('fill', d => this.getEdgeLableColor(d));
-
-    return this;
-  }
-  setArrowStyle() {
-    this.chartGroup.selectAll('.arrow-marker').each((d, i, g) => {
-      let thisArrow = d3.select(g[i]);
-      const { color = '#e3e3e3' } = this.getArrowConfig(d);
-      thisArrow.attr('fill', color);
-    });
   }
   setBgColor() {
     this.svg.style('background', this.getBgColor());
@@ -1127,26 +1115,25 @@ class Force extends BaseGraph {
     return this;
   }
   // 过滤与重置
-  filterVertex(filter, isRaw) {
+  filterVertex(filter) {
     if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
     let vertexIds = [];
     let filterIds = [];
 
-    let vertexes = isRaw ? this.data.vertexes : this.vertexes;
-    let edges = isRaw ? this.data.edges : this.edges;
+    let vertexes = deepCopy(this.rawData.vertexes);
+    let edges = deepCopy(this.rawData.edges);
 
     // 筛选掉 filter 返回为 false 的顶点
     vertexes.forEach((d, i, g) => {
       // 如果 filter 执行返回为 true，则保留
       if (filter(d, i, g)) {
-        console.log(true);
         filterIds.push(d._id);
       }
     });
 
     // 保留 filter 返回 true 相连的所有边
-    this.edges = edges.filter(d => {
+    this.data.edges = this.edges = edges.filter(d => {
       if (filterIds.includes(d._from) || filterIds.includes(d._to)) {
         vertexIds.push(d._to);
         vertexIds.push(d._from);
@@ -1159,14 +1146,14 @@ class Force extends BaseGraph {
     vertexIds = Array.from(new Set(vertexIds));
 
     // 筛选掉没有边连接的顶点
-    this.vertexes = vertexes.filter(d => {
+    this.data.vertexes = this.vertexes = vertexes.filter(d => {
       if (vertexIds.includes(d._id)) {
         return true;
       }
       return false;
     });
 
-    this.preprocessData();
+    this.update();
 
     return this;
   }
@@ -1175,11 +1162,11 @@ class Force extends BaseGraph {
 
     let vertexIds = [];
 
-    let vertexes = isRaw ? this.data.vertexes : this.vertexes;
-    let edges = isRaw ? this.data.edges : this.edges;
+    let vertexes = deepCopy(this.rawData.vertexes);
+    let edges = deepCopy(this.rawData.edges);
 
     // 筛选掉 filter 返回为 false 的边
-    this.edges = edges.filter((d, i, g) => {
+    this.data.edges = this.edges = edges.filter((d, i, g) => {
       if (filter(d, i, g)) {
         vertexIds.push(d._from);
         vertexIds.push(d._to);
@@ -1192,21 +1179,22 @@ class Force extends BaseGraph {
     vertexIds = Array.from(new Set(vertexIds));
 
     // 筛选掉没有边连接的顶点
-    this.vertexes = vertexes.filter(d => {
+    this.data.vertexes = this.vertexes = vertexes.filter(d => {
       if (vertexIds.includes(d._id)) {
         return true;
       }
       return false;
     });
 
-    this.preprocessData();
+    this.update();
 
     return this;
   }
   resetData() {
-    this.vertexes = this.data.vertexes;
-    this.edges = this.data.edges;
+    this.vertexes = deepCopy(this.rawData.vertexes);
+    this.edges = deepCopy(this.rawData.edges);
 
+    this.update();
     return this;
   }
   // 绑定右键点击事件
@@ -1404,6 +1392,125 @@ class Force extends BaseGraph {
       edgeIds
     };
   }
+  // 改变原始数据
+  changeRawData(type, rawData, updateData) {
+    let [newType, dataType] = type.split('-');
+    this.changeData(newType, rawData[dataType], udpate);
+    if (dataType === 'vertexes') {
+      rawData.edges.forEach(item => {
+        if (item._from !== updateData && item._to !== updateData) {
+          delete item;
+        }
+      });
+    }
+
+    return this;
+  }
+  changeData(type, rawData, updateData) {
+    switch (type) {
+      case 'add':
+        rawData.push(deepCopy(updateData));
+      case 'update':
+        rawData.forEach(item => {
+          this.updateItem(item, updateData);
+        });
+      case 'remove':
+        rawData.forEach(item => {
+          if (item._id === updateData) {
+            delete item;
+          }
+        });
+    }
+  }
+  updateItem(item, data) {
+    if (item._id === data._id) {
+      Object.keys(data).forEach(key => {
+        item[key] = data[key];
+      });
+    }
+  }
+  // 增加节点和边数据
+  addVertex(x, y, data, cb) {
+    let defaultData = {
+      _id: this.newId(),
+      type: '',
+      name: '',
+      level: ''
+    };
+    let vertex = Object.assign({}, defaultData, data);
+    this.changeRawData('add-vertexes', this.rawData, vertex);
+
+    // 抵消偏移和缩放的影响
+    let { x: curX, y: curY, k: curK } = this.getTransform();
+    x = (x - curX) / curK;
+    y = (y - curY) / curK;
+
+    vertex.x = x;
+    vertex.y = y;
+    this.changeRawData('add-vertexes', this.data, vertex);
+
+    this.update();
+
+    cb && cb();
+  }
+  addEdge(from, to, data, cb) {
+    let defaultData = {
+      _id: this.newId(),
+      type: '',
+      label: '',
+      _from: from,
+      _to: to
+    };
+    let edge = Object.assign({}, defaultData, data);
+
+    this.changeRawData('add-edges', this.rawData, data);
+    this.changeRawData('add-edges', this.data, data);
+    this.update();
+
+    cb && cb();
+  }
+  // 改变节点和边的数据
+  updateVertex(data, cb) {
+    let defaultData = {
+      type: '',
+      name: '',
+      level: ''
+    };
+    data = Object.assign({}, defaultData, data);
+    this.changeRawData('update-vertexes', this.rawData, data);
+    this.changeRawData('update-vertexes', this.data, data);
+
+    this.setVertexAttr();
+    cb && cb();
+  }
+  updateEdge(data, cb) {
+    let defaultData = {
+      type: '',
+      label: ''
+    };
+    data = Object.assign({}, defaultData, data);
+    this.changeRawData('update-edges', this.rawData, data);
+    this.changeRawData('update-edges', this.data, data);
+    this.setEdgeAttr();
+    cb && cb();
+  }
+  // 删除节点和边数据
+  removeVertex(id, cb) {
+    this.changeRawData('remove-vertexes', this.rawData, id);
+    this.changeRawData('remove-vertexes', this.data, id);
+    this.update();
+    cb && cb();
+
+    return this;
+  }
+  removeEdge(id, cb) {
+    this.changeRawData('remove-edges', this.rawData, id);
+    this.changeRawData('remove-edges', this.data, id);
+    this.update();
+    cb && cb();
+
+    return this;
+  }
   // 鼠标移动时，不断更新新建的线
   updateNewLink(selection, container) {
     selection.attr('d', d => {
@@ -1432,7 +1539,7 @@ class Force extends BaseGraph {
   appendNewLink(d, cb) {
     let to = d._id;
     let from = this.newLink.datum()._from;
-    this.addEdge(from, to);
+    this.addEdge(from, to, {});
     this.removeNewLink();
     cb && cb();
   }
@@ -1442,7 +1549,8 @@ class Force extends BaseGraph {
       .append('path')
       .datum({
         _from: d._id,
-        source: d
+        source: d,
+        state: 'normal'
       })
       .attr('stroke', this.getEdgeColor(d))
       .attr('stroke-width', this.getEdgeWidth(d))
