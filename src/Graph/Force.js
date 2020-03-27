@@ -211,25 +211,14 @@ class Force extends BaseGraph {
     this.chartGroup.append('g').classed('edges', true);
     this.chartGroup.append('g').classed('vertexes', true);
     this.chartGroup.append('defs').classed('reverse-paths', true);
-    this.chartGroup
-      .append('defs')
-      .classed('arrows', true)
-      .append('marker')
-      .datum({
-        _id: '',
-        type: '',
-        state: 'normal',
-        _flag: true
-      })
-      .attr('id', 'arrow_default')
-      .append('path');
+    this.drawArrow();
+
     return this;
   }
   draw() {
     this.drawVertexes();
     this.drawEdges();
     this.drawReversePath();
-    this.drawArrow();
     this.setBgColor();
     return this;
   }
@@ -543,7 +532,7 @@ class Force extends BaseGraph {
     node
       .attr('fill', 'none')
       .attr('id', d => d._id)
-      .attr('marker-end', d => this.getArrowUrl(d));
+      .attr('marker-end', '#arrow');
   }
   setEdgeLabelAttr(node) {
     node
@@ -567,6 +556,9 @@ class Force extends BaseGraph {
       .selectAll('.edge-path')
       .attr('stroke', d => this.getEdgeColor(d))
       .attr('stroke-width', d => this.getEdgeWidth(d));
+
+    // 箭头
+    this.setArrowStyle();
 
     // 边文字
     this.chartGroup.selectAll('.edge-label').style('fill', d => this.getEdgeLableColor(d));
@@ -604,62 +596,28 @@ class Force extends BaseGraph {
   }
   drawArrow() {
     // 箭头
-    const update = this.chartGroup
-      .select('.arrows')
-      .selectAll('.arrow-marker')
-      .data(this.edges);
-    const enter = update.enter();
-    const exit = update.exit();
-
-    enter
+    this.chartGroup
+      .append('defs')
+      .classed('arrows', true)
       .append('marker')
-      .classed('arrow-marker', true)
-      .attr('id', d => 'arrow_' + d._id)
-      .append('path');
+      .attr('id', 'arrow-marker')
+      .append('path')
+      .attr('id', 'arrow')
+      .select('#arrow-marker')
+      .attr('refX', 10)
+      .attr('refY', 5)
+      .attr('markerUnits', 'strokeWidth')
+      .attr('markerWidth', 10)
+      .attr('markerHeight', 10)
+      .attr('orient', 'auto')
+      .select('path')
+      .attr('d', 'M0,0 L10,5 L0,10 z');
 
-    this.setArrowAttr();
     this.setArrowStyle();
-
-    exit.remove();
-  }
-  setArrowAttr() {
-    this.chartGroup.selectAll('.arrow-marker').each((d, i, g) => {
-      let thisArrow = d3.select(g[i]);
-      const {
-        path = 'M0,0 L10,5 L0,10 z',
-        arrowWidth = 10,
-        arrowHeight = 10,
-        refx = 0,
-        color = '#e3e3e3'
-      } = this.getArrowConfig(d);
-
-      // if (d._flag) {
-      //   thisArrow.attr('refX', arrowWidth + refx);
-      // } else {
-      //   thisArrow.attr('refX', this.getRadius(d.target) + arrowWidth + refx);
-      // }
-      thisArrow
-        .attr('refX', 10)
-        .attr('refY', 5)
-        // .attr('refY', d => {
-        //   const middleIdx = Math.ceil(d.halfTotal);
-        //   return arrowHeight / 2 - (d.linkIndex - middleIdx) * 1;
-        // })
-        .attr('markerUnits', 'userSpaceOnUse')
-        .attr('markerWidth', arrowWidth)
-        .attr('markerHeight', arrowHeight)
-        .attr('orient', 'auto')
-        .select('path')
-        .attr('d', path)
-        .attr('fill', color);
-    });
   }
   setArrowStyle() {
-    this.chartGroup.selectAll('.arrow-marker').each((d, i, g) => {
-      let thisArrow = d3.select(g[i]);
-      const { color = '#e3e3e3' } = this.getArrowConfig(d);
-      thisArrow.attr('fill', color);
-    });
+    this.chartGroup.select('#arrow-marker').attr('fill', this.getArrowColor(d));
+
     return this;
   }
 
@@ -882,48 +840,15 @@ class Force extends BaseGraph {
       : '';
   }
   // 边样式
-  getArrowConfig(d) {
-    // return {
-    //   path: 'M0,0 L10,5 L0,10 z',
-    //   arrowWidth: 10,
-    //   arrowHeight: 10,
-    //   refx: 0,
-    //   color: this.getEdgeColor(d)
-    // };
-    switch (d.state) {
-      case 'normal':
-      case 'grey':
-        return {
-          path: 'M0,0 L10,5 L0,10 z',
-          arrowWidth: 10,
-          arrowHeight: 10,
-          refx: 0,
-          color: this.getEdgeColor(d)
-        };
-      case 'highlight':
-        return {
-          path: 'M0,0 L14,7 L0,14 z',
-          arrowWidth: 14,
-          arrowHeight: 14,
-          refx: -3,
-          color: this.getEdgeColor(d)
-        };
-      default:
-        return {
-          path: 'M0,0 L10,5 L0,10 z',
-          arrowWidth: 10,
-          arrowHeight: 10,
-          refx: 0,
-          color: this.getEdgeColor(d)
-        };
-    }
+  getArrowColor(d) {
+    return this.getEdgeColor(d);
   }
-  getArrowUrl(d) {
-    if (d.source._id === d.target._id) {
-      return `url("#arrow_default")`;
-    }
-    return `url("#arrow_${d._id}")`;
-  }
+  // getArrowUrl(d) {
+  //   if (d.source._id === d.target._id) {
+  //     return `url("#arrow_default")`;
+  //   }
+  //   return `url("#arrow_${d._id}")`;
+  // }
   getEdgeColor(d) {
     // return '#D9D9D9';
     switch (this.theme + '-' + d.state) {
@@ -985,7 +910,6 @@ class Force extends BaseGraph {
   resetStyle() {
     this.setVertexStyle()
       .setEdgeStyle()
-      .setArrowStyle()
       .setBgColor();
   }
   setBgColor() {
