@@ -532,7 +532,7 @@ class Force extends BaseGraph {
     node
       .attr('fill', 'none')
       .attr('id', d => d._id)
-      .attr('marker-end', '#arrow');
+      .attr('marker-end', d => `url(#arrow_${d._id})`);
   }
   setEdgeLabelAttr(node) {
     node
@@ -596,27 +596,27 @@ class Force extends BaseGraph {
   }
   drawArrow() {
     // 箭头
+    this.chartGroup.append('defs').classed('arrows', true);
     this.chartGroup
-      .append('defs')
-      .classed('arrows', true)
+      .select('.arrows')
+      .selectAll('.arrow-marker')
+      .data(this.edges)
+      .enter()
       .append('marker')
-      .attr('id', 'arrow-marker')
-      .append('path')
-      .attr('id', 'arrow')
-      .select('#arrow-marker')
+      .classed('arrow-marker', true)
+      .attr('id', d => 'arrow_' + d._id)
       .attr('refX', 10)
       .attr('refY', 5)
-      .attr('markerUnits', 'strokeWidth')
+      .attr('markerUnits', 'userSpaceOnUse')
       .attr('markerWidth', 10)
       .attr('markerHeight', 10)
       .attr('orient', 'auto')
-      .select('path')
+      .append('path')
+      .classed('arrow-path', true)
       .attr('d', 'M0,0 L10,5 L0,10 z');
-
-    this.setArrowStyle();
   }
   setArrowStyle() {
-    // this.chartGroup.select('#arrow-marker').attr('fill', this.getArrowColor(d));
+    this.chartGroup.selectAll('.arrow-path').attr('fill', d => this.getArrowColor(d));
 
     return this;
   }
