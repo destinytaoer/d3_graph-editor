@@ -616,7 +616,7 @@ class Force extends BaseGraph {
     this.setArrowStyle();
   }
   setArrowStyle() {
-    this.chartGroup.select('#arrow-marker').attr('fill', this.getArrowColor(d));
+    // this.chartGroup.select('#arrow-marker').attr('fill', this.getArrowColor(d));
 
     return this;
   }
@@ -1324,11 +1324,13 @@ class Force extends BaseGraph {
     let [newType, dataType] = type.split('-');
     this.changeData(newType, rawData[dataType], udpate);
     if (dataType === 'vertexes') {
-      rawData.edges.forEach(item => {
+      for (let i = 0; i < rawData.edges.length; i++) {
+        let item = rawData.edges[i];
         if (item._from !== updateData && item._to !== updateData) {
-          delete item;
+          rawData.edges.splice(i, 1);
+          i--;
         }
-      });
+      }
     }
 
     return this;
@@ -1342,11 +1344,13 @@ class Force extends BaseGraph {
           this.updateItem(item, updateData);
         });
       case 'remove':
-        rawData.forEach(item => {
+        for (let i = 0; i < rawData.length; i++) {
+          let item = rawData[i];
           if (item._id === updateData) {
-            delete item;
+            rawData.splice(i, 1);
+            i--;
           }
-        });
+        }
     }
   }
   updateItem(item, data) {
