@@ -1,7 +1,8 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 .graph-editor {
   position: relative;
@@ -11,15 +12,15 @@ html, body {
 }
 
 /* 菜单 */
-.graph-editor .graph-menu {
+.graph-editor > .graph-menu {
   position: absolute;
   width: 150px;
   background: #fff;
   color: #000;
   z-index: 2;
-  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
-.graph-editor .graph-menu .command {
+.graph-editor > .graph-menu > .command {
   padding: 8px;
   height: 12px;
   font-size: 12px;
@@ -27,30 +28,43 @@ html, body {
   -moz-box-sizing: content-box;
   box-sizing: content-box;
 }
-.graph-editor .graph-menu .command:hover {
+.graph-editor > .graph-menu > .command:hover {
   cursor: pointer;
   background: #e5f7ff;
 }
 
 /* 工具栏 */
-.graph-editor .graph-toolbar {
-  position: absolute;
+.graph-editor > .graph-toolbar {
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  line-height: 50px;
-  padding: 0 10px;
+  line-height: 60px;
   background: #3967fa;
   font-size: 0;
 }
-.graph-toolbar .operations {
+.graph-toolbar > .title {
+  display: inline-block;
+  padding: 0 5px;
+}
+.graph-toolbar > .operations {
   display: inline-block;
   font-size: 0;
   height: 40px;
   vertical-align: middle;
   padding-right: 5px;
 }
-.graph-toolbar .operations + .operations {
+.graph-toolbar > .title > .iconfont {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  line-height: 60px;
+  text-align: center;
+  vertical-align: top;
+  color: #fff;
+}
+.graph-toolbar .operations {
   padding-left: 5px;
   border-left: 1px solid #8897ec;
 }
@@ -61,10 +75,6 @@ html, body {
   font-size: 30px;
   line-height: 40px;
   text-align: center;
-}
-.graph-toolbar .operations .operation {
-  display: inline-block;
-  height: 40px;
   vertical-align: top;
   color: #fff;
   cursor: pointer;
@@ -92,7 +102,7 @@ html, body {
   width: 250px;
   border: 1px solid #3967fa;
   background: #f7f9fb;
-  transition: all .5s ease-out;
+  transition: all 0.5s ease-out;
   transform: translate3d(-300px, 0, 0);
   overflow: hidden;
 }
@@ -131,23 +141,23 @@ html, body {
   user-select: none;
   font-size: 14px;
 }
-input[type="text"],
-input[type="number"] {
-  background:none;
-  outline:none;
+input[type='text'],
+input[type='number'] {
+  background: none;
+  outline: none;
   -webkit-appearance: none;
   border: 1px solid #bbb;
   border-radius: 5px;
   padding: 0 10px;
   margin: 5px 0;
 }
-input[type="text"]:focus,
-input[type="number"]:focus {
+input[type='text']:focus,
+input[type='number']:focus {
   border: 1px solid #3967fa;
   background: #fff;
   outline: none;
 }
-input[type='checkbox']{
+input[type='checkbox'] {
   width: 20px;
   height: 20px;
   background-color: #fff;
@@ -158,21 +168,21 @@ input[type='checkbox']{
   margin: 0;
   vertical-align: middle;
 }
-input[type=checkbox]:checked{
+input[type='checkbox']:checked {
   color: #fff;
   background: #1890ff;
   border: none;
 }
-input[type=checkbox]:checked::after{
-  content: "\e610";
+input[type='checkbox']:checked::after {
+  content: '\e610';
   float: left;
   width: 20px;
   height: 20px;
-  font-family: "iconfont";
+  font-family: 'iconfont';
   font-size: 10px;
   line-height: 20px;
   color: #fff;
-  text-align: center; 
+  text-align: center;
 }
 .graph-search .btns {
   text-align: right;
@@ -215,7 +225,7 @@ input[type=checkbox]:checked::after{
   width: 300px;
   border: 1px solid #3967fa;
   background: #fff;
-  transition: all .5s ease-out;
+  transition: all 0.5s ease-out;
   transform: translate3d(350px, 0, 0);
   overflow: hidden;
 }
@@ -244,7 +254,7 @@ input[type=checkbox]:checked::after{
   margin: 15px 0;
   text-align: center;
 }
-.info-content .info-item:nth-child(2n+1) {
+.info-content .info-item:nth-child(2n + 1) {
   border-right: 1px solid #3967fa;
 }
 .info-content .info-item:nth-child(n-1) .info-item-num:after {
@@ -338,154 +348,160 @@ input[type=checkbox]:checked::after{
 }
 
 /* 动画 */
-.zoom-big-enter,.zoom-big-appear {
-    -webkit-animation-duration: .2s;
-    animation-duration: .2s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-    -webkit-animation-play-state: paused;
-    animation-play-state: paused
+.zoom-big-enter,
+.zoom-big-appear {
+  -webkit-animation-duration: 0.2s;
+  animation-duration: 0.2s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation-play-state: paused;
+  animation-play-state: paused;
 }
 
 .zoom-big-leave {
-    -webkit-animation-duration: .2s;
-    animation-duration: .2s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-    -webkit-animation-play-state: paused;
-    animation-play-state: paused
+  -webkit-animation-duration: 0.2s;
+  animation-duration: 0.2s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation-play-state: paused;
+  animation-play-state: paused;
 }
 
-.zoom-big-enter.zoom-big-enter-active,.zoom-big-appear.zoom-big-appear-active {
-    -webkit-animation-name: antZoomBigIn;
-    animation-name: antZoomBigIn;
-    -webkit-animation-play-state: running;
-    animation-play-state: running
+.zoom-big-enter.zoom-big-enter-active,
+.zoom-big-appear.zoom-big-appear-active {
+  -webkit-animation-name: antZoomBigIn;
+  animation-name: antZoomBigIn;
+  -webkit-animation-play-state: running;
+  animation-play-state: running;
 }
 
 .zoom-big-leave.zoom-big-leave-active {
-    -webkit-animation-name: antZoomBigOut;
-    animation-name: antZoomBigOut;
-    -webkit-animation-play-state: running;
-    animation-play-state: running;
-    pointer-events: none
+  -webkit-animation-name: antZoomBigOut;
+  animation-name: antZoomBigOut;
+  -webkit-animation-play-state: running;
+  animation-play-state: running;
+  pointer-events: none;
 }
 
-.zoom-big-enter,.zoom-big-appear {
-    -webkit-transform: scale(0);
-    -ms-transform: scale(0);
-    transform: scale(0);
-    -webkit-animation-timing-function: cubic-bezier(.08, .82, .17, 1);
-    animation-timing-function: cubic-bezier(.08, .82, .17, 1)
+.zoom-big-enter,
+.zoom-big-appear {
+  -webkit-transform: scale(0);
+  -ms-transform: scale(0);
+  transform: scale(0);
+  -webkit-animation-timing-function: cubic-bezier(0.08, 0.82, 0.17, 1);
+  animation-timing-function: cubic-bezier(0.08, 0.82, 0.17, 1);
 }
 
 .zoom-big-leave {
-    -webkit-animation-timing-function: cubic-bezier(.78, .14, .15, .86);
-    animation-timing-function: cubic-bezier(.78, .14, .15, .86)
+  -webkit-animation-timing-function: cubic-bezier(0.78, 0.14, 0.15, 0.86);
+  animation-timing-function: cubic-bezier(0.78, 0.14, 0.15, 0.86);
 }
 
-.zoom-big-fast-enter,.zoom-big-fast-appear {
-    -webkit-animation-duration: .1s;
-    animation-duration: .1s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-    -webkit-animation-play-state: paused;
-    animation-play-state: paused
+.zoom-big-fast-enter,
+.zoom-big-fast-appear {
+  -webkit-animation-duration: 0.1s;
+  animation-duration: 0.1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation-play-state: paused;
+  animation-play-state: paused;
 }
 
 .zoom-big-fast-leave {
-    -webkit-animation-duration: .1s;
-    animation-duration: .1s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-    -webkit-animation-play-state: paused;
-    animation-play-state: paused
+  -webkit-animation-duration: 0.1s;
+  animation-duration: 0.1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation-play-state: paused;
+  animation-play-state: paused;
 }
 
-.zoom-big-fast-enter.zoom-big-fast-enter-active,.zoom-big-fast-appear.zoom-big-fast-appear-active {
-    -webkit-animation-name: antZoomBigIn;
-    animation-name: antZoomBigIn;
-    -webkit-animation-play-state: running;
-    animation-play-state: running
+.zoom-big-fast-enter.zoom-big-fast-enter-active,
+.zoom-big-fast-appear.zoom-big-fast-appear-active {
+  -webkit-animation-name: antZoomBigIn;
+  animation-name: antZoomBigIn;
+  -webkit-animation-play-state: running;
+  animation-play-state: running;
 }
 
 .zoom-big-fast-leave.zoom-big-fast-leave-active {
-    -webkit-animation-name: antZoomBigOut;
-    animation-name: antZoomBigOut;
-    -webkit-animation-play-state: running;
-    animation-play-state: running;
-    pointer-events: none
+  -webkit-animation-name: antZoomBigOut;
+  animation-name: antZoomBigOut;
+  -webkit-animation-play-state: running;
+  animation-play-state: running;
+  pointer-events: none;
 }
 
-.zoom-big-fast-enter,.zoom-big-fast-appear {
-    -webkit-transform: scale(0);
-    -ms-transform: scale(0);
-    transform: scale(0);
-    -webkit-animation-timing-function: cubic-bezier(.08, .82, .17, 1);
-    animation-timing-function: cubic-bezier(.08, .82, .17, 1)
+.zoom-big-fast-enter,
+.zoom-big-fast-appear {
+  -webkit-transform: scale(0);
+  -ms-transform: scale(0);
+  transform: scale(0);
+  -webkit-animation-timing-function: cubic-bezier(0.08, 0.82, 0.17, 1);
+  animation-timing-function: cubic-bezier(0.08, 0.82, 0.17, 1);
 }
 
 .zoom-big-fast-leave {
-    -webkit-animation-timing-function: cubic-bezier(.78, .14, .15, .86);
-    animation-timing-function: cubic-bezier(.78, .14, .15, .86)
+  -webkit-animation-timing-function: cubic-bezier(0.78, 0.14, 0.15, 0.86);
+  animation-timing-function: cubic-bezier(0.78, 0.14, 0.15, 0.86);
 }
 
 @-webkit-keyframes antZoomBigIn {
-    0% {
-        opacity: 0;
-        -webkit-transform: scale(.8);
-        transform: scale(.8)
-    }
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
 
-    100% {
-        opacity: 1;
-        -webkit-transform: scale(1);
-        transform: scale(1)
-    }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
 }
 
 @keyframes antZoomBigIn {
-    0% {
-        opacity: 0;
-        -webkit-transform: scale(.8);
-        transform: scale(.8)
-    }
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
 
-    100% {
-        opacity: 1;
-        -webkit-transform: scale(1);
-        transform: scale(1)
-    }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
 }
 
 @-webkit-keyframes antZoomBigOut {
-    0% {
-        opacity: 1;
-        -webkit-transform: scale(1);
-        transform: scale(1)
-    }
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
 
-    100% {
-        opacity: 0;
-        -webkit-transform: scale(.8);
-        transform: scale(.8)
-    }
+  100% {
+    opacity: 0;
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
 }
 
 @keyframes antZoomBigOut {
-    0% {
-        opacity: 1;
-        -webkit-transform: scale(1);
-        transform: scale(1)
-    }
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
 
-    100% {
-        opacity: 0;
-        -webkit-transform: scale(.8);
-        transform: scale(.8)
-    }
+  100% {
+    opacity: 0;
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
 }
 
 .graph-full-screen {
-    padding: 0 20px;
+  padding: 0 20px;
 }
