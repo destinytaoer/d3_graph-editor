@@ -42,3 +42,16 @@ export function isPlainObject(obj) {
       Object.prototype.hasOwnProperty.toString.call(Object)
   );
 }
+export function checkEl(el) {
+  if (!(el instanceof HTMLElement) && typeof el !== 'string') {
+    throw new Error('BaseGraph need HTMLElement or ID as first parameter');
+  }
+
+  if (typeof el === 'string') {
+    el = document.getElementById(el);
+    if (!el) {
+      throw new Error('this page has not such id');
+    }
+  }
+  return el;
+}

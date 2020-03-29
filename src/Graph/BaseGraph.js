@@ -37,22 +37,13 @@
  * update by destiny on 2020-03-28
  */
 import * as d3 from 'd3';
+import { checkEl } from '../utils';
 
 class BaseGraph {
   constructor(el, data, options) {
     // 校验 el
-    if (!(el instanceof HTMLElement) && typeof el !== 'string') {
-      throw new Error('BaseGraph need HTMLElement or ID as first parameter');
-    }
+    this.el = checkEl(el);
 
-    if (typeof el === 'string') {
-      this.el = document.getElementById(el);
-      if (!this.el) {
-        throw new Error('this page has not such id');
-      }
-    } else {
-      this.el = el;
-    }
     // 校验 data
     if (!data || typeof data !== 'object') {
       throw new Error('BaseGraph must some data to render');
