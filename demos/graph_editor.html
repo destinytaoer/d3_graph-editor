@@ -5,16 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>GraphEditor</title>
+    <link rel="stylesheet" href="./style/animate.css" />
+    <link rel="stylesheet" href="./font/iconfont.css" />
+    <link rel="stylesheet" href="./style/graph-editor.css" />
   </head>
   <body>
-    <div id="container"></div>
+    <div id="container" class="graph-editor"></div>
     <script src="./lib/d3.v5.min.js"></script>
     <script src="../node_modules/graph-editor/dist/index.iife.js"></script>
     <script>
+      var editor;
       fetch('./db/force.json')
         .then(res => res.json())
         .then(data => {
-          new GraphEditor('container', data);
+          editor = new GraphEditor('container', data);
+          editor.init();
         })
         .catch(err => console.log(err));
     </script>
