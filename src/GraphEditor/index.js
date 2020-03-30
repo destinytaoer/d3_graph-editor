@@ -3,6 +3,7 @@
  *
  * @parameter
  *   el [ HTMLElement | String ] 容器元素或者 ID
+ *   data: 数据
  *   options [ Object ] 配置选项
  *
  * @constructor
@@ -10,6 +11,8 @@
  *   graph: 当前图实例
  *   type: 当前图谱类型
  *   eventProxy: 事件池
+ *   toolbar: 菜单栏
+ *   info: 信息面板
  *
  * @methods
  *
@@ -29,9 +32,9 @@ import Modal from './Modal';
 import { checkEl } from '../utils';
 
 class GraphEditor {
-  constructor(el, options) {
+  constructor(el, data, options = {}) {
     this.el = checkEl(el);
-    this.options = options;
+    this.data = data;
     this.toolbarOptions = options.toolbar || {};
     this.searchOptions = options.search || {};
     this.menuOptions = options.menu || {};
@@ -43,6 +46,13 @@ class GraphEditor {
   init() {
     this.toolbar = new Toolbar(this.el, this.type, this.toolbarOptions);
     this.toolbar.init();
+    this.graph =
+      this.type === 'force'
+        ? new Force(this.el, this.data, this.graphOptions)
+        : new Tree(this.el, this.data, this.graphOptions);
+    this.graph.render();
+    this.info = new Info(this.el, this.infoOptions);
+    this.info.init(this.graph.getCount());
   }
 }
 

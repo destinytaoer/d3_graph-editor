@@ -7,7 +7,8 @@
  *   options [ Object ] 配置
  *
  * @constructor
- *   el: 容器, HTMLElement
+ *   container: 容器
+ *   el: 菜单栏, HTMLElement
  *   type: 图谱类型
  *   options: 菜单配置
  *
