@@ -58,6 +58,8 @@ class GraphEditor {
     this.search.init();
     this.modal = new Modal(this.el, this.modalOptions);
     this.modal.init();
+    this.menu = new Menu(this.el, this.menuOptions);
+    this.menu.init();
   }
 }
 
