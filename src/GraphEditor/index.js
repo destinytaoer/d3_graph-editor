@@ -39,6 +39,7 @@ class GraphEditor {
     this.searchOptions = options.search || {};
     this.menuOptions = options.menu || {};
     this.graphOptions = options.graph || {};
+    this.modalOptions = options.modal || {};
     this.infoOptions = options.info || {};
     this.editOptions = options.edit || {};
     this.type = this.graphOptions.type || 'force';
@@ -55,6 +56,8 @@ class GraphEditor {
     this.info.init(this.graph.getCount());
     this.search = new Search(this.el, this.searchOptions);
     this.search.init();
+    this.modal = new Modal(this.el, this.modalOptions);
+    this.modal.init();
   }
 }
 
