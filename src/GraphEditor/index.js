@@ -53,6 +53,8 @@ class GraphEditor {
     this.graph.render();
     this.info = new Info(this.el, this.infoOptions);
     this.info.init(this.graph.getCount());
+    this.search = new Search(this.el, this.searchOptions);
+    this.search.init();
   }
 }
 

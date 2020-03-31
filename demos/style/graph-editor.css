@@ -40,6 +40,7 @@ body {
   left: 0;
   width: 100%;
   line-height: 60px;
+  border-bottom: 1px solid #eee;
   background: #3967fa;
   font-size: 0;
 }
@@ -97,7 +98,7 @@ body {
 /* 过滤面板 */
 .graph-editor .graph-search {
   position: absolute;
-  top: 50px;
+  top: 61px;
   left: 0;
   width: 250px;
   border: 1px solid #3967fa;
@@ -221,7 +222,7 @@ input[type='checkbox']:checked::after {
 .graph-editor .graph-info {
   position: absolute;
   right: 0;
-  top: 50px;
+  top: 61px;
   width: 300px;
   border: 1px solid #3967fa;
   background: #fff;
