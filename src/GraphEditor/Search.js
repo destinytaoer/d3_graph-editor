@@ -1,46 +1,63 @@
 /**
- * Search: 关系以及顶点过滤模块
+ * Search: 顶点和边过滤面板
  *
  * @parameter
  *   container [ HTMLElement | String ] 容器元素
  *   options [ Object ] 相关配置
  *
+ * @constructor
+ *   container: 容器元素
+ *   el: 过滤面板元素
+ *   options: 表单配置
+ *
  * @methods
+ *   init(): 初始化过滤面板
+ *   toggle(): 显示/隐藏过滤面板
  *   bindClickEvents(cb): 在点击搜索时触发的事件，在 GraphEditor 中调用时传入 cb，回传筛选条件数据
  *
  * create by destiny on 2019-03-28
- * update by destiny on 2019-03-29
+ * update by destiny on 2020-04-02
  */
 
-import { checkEl } from '../utils';
+import { checkEl, createFormHTML, getFormData } from '../utils';
 
 class Search {
   constructor(container, options) {
     this.container = checkEl(container);
 
     let defalutOptions = {
-      search: [
+      vertex: [
         {
           name: 'name',
+          type: 'text',
           content: '名称'
+        },
+        {
+          name: 'idCard',
+          type: 'text',
+          content: '身份证号'
         }
-        // {
-        //   name: 'idCard',
-        //   content: '身份证号'
-        // }
       ],
-      relation: [
+      edge: [
         {
-          name: 'invest',
-          content: '投资'
-        },
-        {
-          name: 'member',
-          content: '成员'
-        },
-        {
-          name: 'self',
-          content: '自身变动'
+          name: 'type',
+          content: '类型',
+          type: 'checkbox',
+          options: [
+            {
+              value: 'invest',
+              content: '投资',
+              checked: true
+            },
+            {
+              value: 'member',
+              content: '成员'
+            },
+            {
+              value: 'self',
+              content: '自身变动'
+            }
+          ]
         }
       ]
     };
@@ -55,7 +72,11 @@ class Search {
     this.el.addEventListener('click', e => {
       let el = e.target;
       if (el.id === 'btnSearch') {
-        let data = this.getFormData();
+        let data = {
+          vertex: getFormData('search_vertex_form'),
+          edge: getFormData('search_edge_form')
+        };
+
         cb && cb('search', data);
       }
       if (el.id === 'btnReset') {
@@ -68,36 +89,26 @@ class Search {
     var search = document.createElement('div');
     search.classList.add('graph-search');
     this.el = search;
-    this.$el = d3.select(search);
+    let html = '';
 
-    let html = '<form id="search_form">';
-
-    // 节点筛选输入框
+    // 节点筛选表单
+    html += '<div class="search-section">';
     html += '<h3 class="search-title"><i class="iconfont icon-filter"></i> 节点筛选</h3>';
-    html += '<div class="search-section">';
-    this.options.search.forEach(item => {
-      html += `
-      <div class="search-input-box">
-        <input class="search-input" type="text" id="${item.name}" placeholder="${item.content}" name="${item.name}">
-      </div>`;
-    });
+    html += createFormHTML('search_vertex_form', 'search_vertex', this.options.vertex);
     html += '</div>';
-    // 关系多选按钮
-    html += '<h3 class="search-title"><i class="iconfont icon-filter"></i> 关系过滤</h3>';
+
+    // 边筛选表单
     html += '<div class="search-section">';
-    this.options.relation.forEach(item => {
-      html += `
-      <div class="search-input-box">
-        <input class="input" checked type="checkbox" id="${item.name}" value="${item.name}" name="relation">
-        <label class="label" for="${item.name}">${item.content}</label>
-      </div>`;
-    });
+    html += '<h3 class="search-title"><i class="iconfont icon-filter"></i> 边筛选</h3>';
+    html += createFormHTML('search_edge_form', 'search_edge', this.options.edge);
     html += '</div>';
     // 搜索和重置按钮
-    html +=
-      '<div class="btns"><button type="button" id="btnReset" class="btn btn-default">重置</button><button type="button" id="btnSearch" class="btn btn-info">过滤</button></div>';
-
-    html += '</form>';
+    html += '<div class="footer">';
+    html += `<div class="btns">
+        <button type="button" id="btnReset" class="btn btn-default">重置</button>
+        <button type="button" id="btnSearch" class="btn btn-info">过滤</button>
+      </div>`;
+    html += '</div>';
 
     search.innerHTML = html;
 
@@ -106,28 +117,11 @@ class Search {
     return this;
   }
   reset() {
-    let form = document.querySelector('#search_form');
-    form.reset();
-  }
-  getFormData() {
-    let form = document.querySelector('#search_form');
-    let data = {
-      search: {},
-      relation: []
-    };
-
-    this.options.search.forEach(item => {
-      let key = item.name;
-      data.search[key] = form[key].value;
-    });
-
-    this.options.relation.forEach(item => {
-      if (form[item.name].checked) {
-        data.relation.push(form[item.name].value);
-      }
-    });
-
-    return data;
+    let vertexForm = document.getElementById('search_vertex_form');
+    let edgeForm = document.getElementById('search_edge_form');
+    vertexForm.reset();
+    edgeForm.reset();
+    console.log('reset');
   }
   toggle() {
     this.el.classList.toggle('active');
