@@ -85,7 +85,24 @@ function createText({ name, content }, type) {
         <input type="text" id="${type}_${name}" class="input" name="${name}">
       </div>`;
 }
-function createRadio({ name, content, options }, type) {}
+function createRadio({ name, content, options }, type) {
+  let radio = `<div class="form-item">
+        <label class="label">${content}</label>
+        <div class="radio-wrapper">`;
+  options.forEach(option => {
+    let { value, content, checked } = option;
+    radio += `
+      <div class="radio-item">
+        <input class="radio" ${
+          checked ? 'checked' : ''
+        } type="radio" id="${type}_${value}" value="${value}" name=${name}>
+        <label class="label" for="${type}_${value}">${content}</label>
+      </div>
+    `;
+  });
+  radio += '</div>';
+  return radio;
+}
 function createCheckbox({ name, content, options }, type) {
   let checkbox = `<div class="form-item">
         <label class="label">${content}</label>
@@ -153,7 +170,6 @@ export function getFormData(id) {
     return null;
   }
   let formArr = Array.prototype.slice.call(form);
-  console.log(formArr);
   let data = {};
 
   formArr.forEach(item => {
