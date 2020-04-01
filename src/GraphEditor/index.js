@@ -10,15 +10,22 @@
  *   el: 容器, HTML 元素
  *   graph: 当前图实例
  *   type: 当前图谱类型
+ *   data: 数据
  *   eventProxy: 事件池
  *   toolbar: 菜单栏
  *   info: 信息面板
+ *   search: 过滤面板
+ *   menu: 右键菜单
+ *   vertexModal: 节点表单弹窗
+ *   edgeModal: 边表单弹窗
+ *   outModal: 离开时的提示弹窗
  *
  * @methods
- *
+ *   getVertexFormConfig(): 可复写方法, 设置节点的信息表单项
+ *   getEdgeFormConfig(): 可复写方法, 设置边的信息表单项
  *
  * create by destiny on 2019-03-26
- * update by destiny on 2020-03-28
+ * update by destiny on 2020- 04-01
  */
 import Force from '../Graph/Force';
 import Tree from '../Graph/Tree';
@@ -69,6 +76,7 @@ class GraphEditor {
     this.menu.init();
     this.createModal();
   }
+  // 创建弹窗
   createModal() {
     this.createVertexModal();
     this.createEdgeModal();

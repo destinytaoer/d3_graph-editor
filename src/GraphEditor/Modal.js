@@ -6,15 +6,15 @@
  *
  * @constructor
  *   container: 容器元素，HTML Element
- *   el: 当前 Modal 元素
+ *   el: 当前 Modal 包裹元素
+ *   dialog: 当前 Modal 元素
  *
  * @methods
- *   init(): 初始化 Modal
- *   show(options): 显示 Modal, 传入 title, body, footer 的配置
+ *   show(): 显示 Modal
  *   hide(): 隐藏 Modal
  *
  * create by destiny on 2019-04-02
- * update by destiny on 2020-03-31
+ * update by destiny on 2020-04-01
  */
 import { checkEl } from '../utils';
 class Modal {
