@@ -55,3 +55,114 @@ export function checkEl(el) {
   }
   return el;
 }
+
+// TODO: 需要增加 checkbox/radio 等其他表单控件的创建方法
+function createSelect({ name, content, options }, type) {
+  let select = `
+      <div class="form-item">
+        <label for="${type}_${name}" class="label">${content}</label>
+        <select id="${type}_${name}" class="input" name="${name}">
+      `;
+  options.forEach(option => {
+    select += `<option value="${option.value}">${option.content}</option>`;
+  });
+  select += '</select></div>';
+
+  return select;
+}
+function createNumber({ name, content, extent }, type) {
+  return `
+      <div class="form-item">
+        <label for="${type}_${name}" class="label">${content}</label>
+        <input type="number" id="${type}_${name}" min="${extent[0]}" max="${extent[1]}" class="input" name="${name}">
+      </div>
+    `;
+}
+function createText({ name, content }, type) {
+  return `
+      <div class="form-item">
+        <label for="${type}_${name}" class="label">${content}</label>
+        <input type="text" id="${type}_${name}" class="input" name="${name}">
+      </div>`;
+}
+function createRadio({ name, content, options }, type) {}
+function createCheckbox({ name, content, options }, type) {}
+
+let formItemMap = {
+  select: createSelect,
+  number: createNumber,
+  text: createText,
+  radio: createRadio,
+  checkbox: createCheckbox
+};
+
+/**
+ * createFormHTML: 根据配置创建 form HTML string
+ *
+ * @parameter
+ *   id [String] form 的 id
+ *   type [String] 为每个 formItem 上 id 的前缀, 防止 id 重复
+ *   config [Array<Object>] 为 formItem 的配置
+ *
+ * @return
+ *   [String]: form 的 HTML string
+ *
+ * by destiny on 2020-03-24
+ */
+export function createFormHTML(id, type, config) {
+  let form = `<form class="form" id="${id}">`;
+
+  config.forEach(c => {
+    let formItem = formItemMap[c.type](c, type);
+    form += formItem;
+  });
+  form += '</form>';
+  return form;
+}
+/**
+ * getFormData:  获取表单数据
+ *
+ * @parameter
+ *   id [String] form 的 id
+ *
+ * @return
+ *   [Object]:  表单的数据
+ *
+ * by destiny on 2020-03-24
+ */
+export function getFormData(id) {
+  let form = document.getElementById(id);
+  let formArr = Array.prototype.slice.call(form);
+  let data = {};
+
+  formArr.forEach(item => {
+    let { name, value, type } = item;
+    switch (type) {
+      case 'checkbox':
+        if (item.checked) {
+          if (data[name]) {
+            data[name].push(value);
+          } else {
+            data[name] = [value];
+          }
+        }
+        break;
+      case 'radio':
+        if (item.checked) {
+          if (value === 'false') {
+            value = false;
+          }
+          if (value === 'true') {
+            value = true;
+          }
+          data[name] = value;
+        }
+        break;
+      case 'text':
+      default:
+        data[name] = value;
+    }
+  });
+
+  return data;
+}

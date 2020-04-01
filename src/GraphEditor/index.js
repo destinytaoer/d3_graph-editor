@@ -36,7 +36,7 @@ import Info from './Info';
 import Search from './Search';
 import Menu from './Menu';
 import Modal from './Modal';
-import { checkEl } from '../utils';
+import { checkEl, createFormHTML, getFormData } from '../utils';
 
 class GraphEditor {
   constructor(el, data, options = {}) {
@@ -115,7 +115,7 @@ class GraphEditor {
   createVertexModal() {
     let title = '修改节点信息';
 
-    let body = this.createForm('vertex_form', 'vertex', this.getVertexFormConfig());
+    let body = createFormHTML('vertex_form', 'vertex', this.getVertexFormConfig());
 
     let footer = `
       <div class="btns">
@@ -156,7 +156,7 @@ class GraphEditor {
   createEdgeModal() {
     let title = '修改边信息';
 
-    let body = this.createForm('edge_form', 'edge', this.getEdgeFormConfig());
+    let body = createFormHTML('edge_form', 'edge', this.getEdgeFormConfig());
 
     let footer = `
       <div class="btns">
@@ -179,100 +179,6 @@ class GraphEditor {
       </div>
     `;
     this.outModal = new Modal(this.el, { title, body, footer });
-  }
-
-  /* 辅助函数 */
-  // 根据配置动态创建表单
-  // TODO: 需要增加 checkbox/radio 等其他表单控件的创建方法
-  createForm(id, type, config) {
-    // id 为 form 的 id
-    // type 为每个 formItem 上 id 的前缀, 防止 id 重复
-    // config 为 formItem 的配置
-    let form = `<form class="form" id="${id}">`;
-
-    config.forEach(c => {
-      let formItem = this[`create${this.toUpperFirst(c.type)}`](c, type);
-      form += formItem;
-    });
-    form += '</form>';
-    return form;
-  }
-  createSelect({ name, content, options }, type) {
-    let select = `
-      <div class="form-item">
-        <label for="${type}_${name}" class="label">${content}</label>
-        <select id="${type}_${name}" class="input" name="${name}">
-      `;
-    options.forEach(option => {
-      select += `<option value="${option.value}">${option.content}</option>`;
-    });
-    select += '</select></div>';
-
-    return select;
-  }
-  createNumber({ name, content, extent }, type) {
-    return `
-      <div class="form-item">
-        <label for="${type}_${name}" class="label">${content}</label>
-        <input type="number" id="${type}_${name}" min="${extent[0]}" max="${extent[1]}" class="input" name="${name}">
-      </div>
-    `;
-  }
-  createText({ name, content }, type) {
-    return `
-      <div class="form-item">
-        <label for="${type}_${name}" class="label">${content}</label>
-        <input type="text" id="${type}_${name}" class="input" name="${name}">
-      </div>`;
-  }
-  // 获取表单数据
-  getFormData(id) {
-    let form = document.getElementById(id);
-    let formArr = Array.prototype.slice.call(form);
-    let data = {};
-
-    formArr.forEach(item => {
-      let { name, value, type } = item;
-      switch (type) {
-        case 'checkbox':
-          if (item.checked) {
-            if (data[name]) {
-              data[name].push(value);
-            } else {
-              data[name] = [value];
-            }
-          }
-          break;
-        case 'radio':
-          if (item.checked) {
-            if (value === 'false') {
-              value = false;
-            }
-            if (value === 'true') {
-              value = true;
-            }
-            data[name] = value;
-          }
-          break;
-        case 'text':
-        default:
-          data[name] = value;
-      }
-    });
-
-    return data;
-  }
-  // 转换为首字母大写
-  toUpperFirst(str) {
-    return str
-      .split('')
-      .map((item, index) => {
-        if (index === 0) {
-          return item.toUpperCase();
-        }
-        return item.toLowerCase();
-      })
-      .join('');
   }
 }
 
