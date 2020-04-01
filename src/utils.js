@@ -149,20 +149,21 @@ export function createFormHTML(id, type, config) {
  */
 export function getFormData(id) {
   let form = document.getElementById(id);
+  if (!form) {
+    return null;
+  }
   let formArr = Array.prototype.slice.call(form);
+  console.log(formArr);
   let data = {};
 
   formArr.forEach(item => {
     let { name, value, type } = item;
     switch (type) {
       case 'checkbox':
-        if (item.checked) {
-          if (data[name]) {
-            data[name].push(value);
-          } else {
-            data[name] = [value];
-          }
+        if (!data[name]) {
+          data[name] = [];
         }
+        if (item.checked) data[name].push(value);
         break;
       case 'radio':
         if (item.checked) {
