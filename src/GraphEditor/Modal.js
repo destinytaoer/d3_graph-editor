@@ -18,31 +18,24 @@
  */
 import { checkEl } from '../utils';
 class Modal {
-  constructor(container) {
+  constructor(container, options = {}) {
     this.container = checkEl(container);
+    this.options = options;
+    this.init();
   }
   init() {
     this.el = document.createElement('div');
-    this.el.classList.add('graph-modal', 'hide');
+    this.el.classList.add('graph-modal', 'fade', 'modal-hide');
+    this.dialog = document.createElement('div');
+    this.dialog.classList.add('modal-dialog');
 
+    this.createContent(this.options);
+
+    this.el.appendChild(this.dialog);
     this.container.appendChild(this.el);
     this.bindClickEvents();
   }
-
-  bindClickEvents() {
-    // 点击其他地方隐藏弹窗
-    this.el.addEventListener('click', e => {
-      e.stopPropagation();
-    });
-    this.el.addEventListener('click', e => {
-      e.stopPropagation();
-    });
-    this.container.addEventListener('click', () => {
-      this.hide();
-    });
-  }
-  show({ title, body, footer }) {
-    this.hide();
+  createContent({ title, body, footer }) {
     let fr = document.createDocumentFragment();
     if (title) {
       let h3 = document.createElement('h3');
@@ -62,13 +55,30 @@ class Modal {
       oFooter.innerHTML = footer;
       fr.append(oFooter);
     }
-    this.el.appendChild(fr);
+    this.dialog.appendChild(fr);
+  }
 
-    this.el.classList.remove('hide');
+  bindClickEvents() {
+    // 点击其他地方隐藏弹窗
+    this.el.addEventListener('click', e => {
+      e.stopPropagation();
+      let el = e.target;
+      if (el !== this.dialog) {
+        this.hide();
+      }
+    });
+  }
+  show() {
+    this.el.style.display = 'block';
+    setTimeout(() => {
+      this.el.classList.remove('modal-hide');
+    }, 0);
   }
   hide() {
-    this.el.innerHTML = '';
-    this.el.classList.add('hide');
+    this.el.classList.add('modal-hide');
+    setTimeout(() => {
+      this.el.style.display = 'none';
+    }, 300);
   }
 }
 
