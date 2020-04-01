@@ -92,7 +92,7 @@ class Menu {
   }
 
   init() {
-    this.create().bindEvents();
+    this.create();
   }
 
   create() {
@@ -140,7 +140,7 @@ class Menu {
     this.el.appendChild(fr);
   }
 
-  bindEvents(cb) {
+  bindClickEvents(cb) {
     this.el.addEventListener('click', e => {
       e.stopPropagation();
       let el = e.target;
