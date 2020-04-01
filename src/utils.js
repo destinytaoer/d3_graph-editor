@@ -86,7 +86,24 @@ function createText({ name, content }, type) {
       </div>`;
 }
 function createRadio({ name, content, options }, type) {}
-function createCheckbox({ name, content, options }, type) {}
+function createCheckbox({ name, content, options }, type) {
+  let checkbox = `<div class="form-item">
+        <label class="label">${content}</label>
+        <div class="checkbox-wrapper">`;
+  options.forEach(option => {
+    let { value, content, checked } = option;
+    checkbox += `
+      <div class="checkbox-item">
+        <input class="checkbox" ${
+          checked ? 'checked' : ''
+        } type="checkbox" id="${type}_${value}" value="${value}" name=${name}>
+        <label class="label" for="${type}_${value}">${content}</label>
+      </div>
+    `;
+  });
+  checkbox += '</div>';
+  return checkbox;
+}
 
 let formItemMap = {
   select: createSelect,
