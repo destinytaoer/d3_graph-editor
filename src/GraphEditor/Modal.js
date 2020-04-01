@@ -26,6 +26,7 @@ class Modal {
   init() {
     this.el = document.createElement('div');
     this.el.classList.add('graph-modal', 'fade', 'modal-hide');
+    this.el.style.display = 'none';
     this.dialog = document.createElement('div');
     this.dialog.classList.add('modal-dialog');
 
@@ -60,12 +61,11 @@ class Modal {
 
   bindClickEvents() {
     // 点击其他地方隐藏弹窗
-    this.el.addEventListener('click', e => {
+    this.dialog.addEventListener('click', e => {
       e.stopPropagation();
-      let el = e.target;
-      if (el !== this.dialog) {
-        this.hide();
-      }
+    });
+    this.el.addEventListener('click', e => {
+      this.hide();
     });
   }
   show() {
