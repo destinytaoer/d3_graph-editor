@@ -93,7 +93,7 @@ class Toolbar {
   bindClickEvents(cb) {
     this.el.addEventListener('click', e => {
       let el = e.target;
-      if (el.classList.contains('operation')) {
+      if (!el.classList.contains('not-allow') && el.classList.contains('operation')) {
         let operation = el.dataset.operation;
         cb && cb(el, operation);
       }
