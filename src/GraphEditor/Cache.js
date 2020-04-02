@@ -62,8 +62,7 @@ class Cache {
 
   // 一般不会存在删除某个缓存的问题
   delete(index) {
-    // 从 1 开始
-    delete this.caches.splice(index - 1, 1);
+    return this.caches.splice(index, 1);
   }
 
   next() {
@@ -73,7 +72,7 @@ class Cache {
   }
 
   prev() {
-    if (this.point <= 1) return;
+    if (this.point <= 0) return;
     this.point--;
     return this.caches[this.point - 1];
   }
