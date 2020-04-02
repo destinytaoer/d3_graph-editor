@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import BaseGraph from './BaseGraph';
-import { deepCopy } from '../utils';
+import { deepCopy, getUUId } from '../utils';
 /**
  * Force: 力导向图类
  *
@@ -127,7 +127,7 @@ class Force extends BaseGraph {
     this.edges = this.data.edges;
 
     // 记录当前所有节点的 ID
-    this.idMap = [];
+    this.idMap = this.vertexes.map(v => v._id).concat(this.edges.map(e => e._id));
 
     // 用于最短路径查找
     this.adjList = [];
@@ -284,7 +284,7 @@ class Force extends BaseGraph {
       const path = `M${sx},${sy} A ${dr},${dr} 0 0 ${sf}, ${tx} ${ty}`;
       const reversePath = `M${tx},${ty} A ${dr},${dr} 0 0 ${1 - sf}, ${sx} ${sy}`;
       // 调整反向路径
-      this.chartGroup.select('#' + d._id + '_reverse').attr('d', reversePath);
+      this.chartGroup.select('#path_reverse_' + d._id).attr('d', reversePath);
 
       return path;
     });
@@ -391,9 +391,9 @@ class Force extends BaseGraph {
     // 通过旋转 label, 使文字始终处于 edge 上方
     this.chartGroup.selectAll('.edge-label textPath').attr('xlink:href', d => {
       if (d.source.x > d.target.x) {
-        return '#' + d._id + '_reverse';
+        return '#path_reverse_' + d._id;
       } else {
-        return '#' + d._id;
+        return '#path_' + d._id;
       }
     });
     // 微调边上文字的文职
@@ -570,7 +570,7 @@ class Force extends BaseGraph {
   setPathAttr(node) {
     node
       .attr('fill', 'none')
-      .attr('id', d => d._id)
+      .attr('id', d => 'path_' + d._id)
       .attr('marker-end', d => `url(#arrow_${d._id})`);
   }
   setEdgeLabelAttr(node) {
@@ -629,7 +629,7 @@ class Force extends BaseGraph {
         .attr('fill', 'none')
         .attr('stroke', d => this.getEdgeColor(d))
         .attr('id', function(d) {
-          return d._id + '_reverse';
+          return 'path_reverse_' + d._id;
         });
     });
   }
@@ -1141,6 +1141,15 @@ class Force extends BaseGraph {
     this.update();
 
     cb && cb();
+  }
+  // 创建新的无重复 ID
+  newId() {
+    let newId = getUUId();
+    while (this.idMap.includes(newId)) {
+      newId = getUUId();
+    }
+    this.idMap.push(newId);
+    return newId;
   }
   // 改变节点和边的数据
   updateVertex(data, cb) {

@@ -1,97 +1,97 @@
 {
   "vertexes": [
     {
-      "_id": "aa",
+      "_id": "20348bbe1667a2d4b38fc1a64fb851b5",
       "name": "深圳市xxx电子商务有限公司",
       "type": "company",
       "level": 2
     },
     {
-      "_id": "bb",
+      "_id": "08c2075f85c25b15b7fcc0c6a56b0f32",
       "name": "深圳市xxx教育咨询有限公司",
       "type": "company",
       "level": 2
     },
     {
-      "_id": "cc",
+      "_id": "0c0009b42fa3009daa106967cc58a82f",
       "name": "深圳市xxx投资企业（有限合伙）",
       "type": "company",
       "level": 2
     },
     {
-      "_id": "dd",
+      "_id": "76c679753ede2e26895dc141979c66a6",
       "name": "深圳市xxx优选投资企业（有限合伙）",
       "type": "company",
       "level": 4
     },
     {
-      "_id": "ee",
+      "_id": "192bd880a32a5dac985e820e69903aaf",
       "name": "深圳市互联网投资企业（有限合伙）",
       "type": "company",
       "level": 4
     },
     {
-      "_id": "ff",
+      "_id": "a05f62cff34c42769316e3e8ce75facf",
       "name": "深圳市xxx金融控股有限公司",
       "type": "company",
       "level": 4
     },
     {
-      "_id": "gg",
+      "_id": "fc93e7bdca569f049952c593009e91dd",
       "name": "深圳市xxx投资控股有限公司",
       "type": "company",
       "level": 1
     },
     {
-      "_id": "hh",
+      "_id": "3787905e563d1de5be0e0d9bb2a96b1e",
       "name": "深圳市地产发展有限公司",
       "type": "company",
       "level": 4
     },
     {
-      "_id": "ii",
+      "_id": "04101e9107f5a7a8bbcedd7cfe014bc2",
       "name": "深圳市保险代理有限公司",
       "type": "company",
       "level": 4
     },
     {
-      "_id": "jj",
+      "_id": "1b246f3629ec8adfa71793b5d5e53a1b",
       "name": "赵安伟",
       "type": "person",
       "level": 3
     },
     {
-      "_id": "kk",
+      "_id": "c260df028a253a17bf6b9e370c2e3378",
       "name": "张开",
       "type": "person",
       "level": 3
     },
     {
-      "_id": "ll",
+      "_id": "354bb982d4b1ec29b71dc59d41f88de2",
       "name": "深圳市xxx酒店管理有限公司",
       "type": "company",
       "level": 2
     },
     {
-      "_id": "mm",
+      "_id": "413b08bad4c5bedb9bdb19cd76a10dba",
       "name": "深圳市xxx管理有限公司",
       "type": "company",
       "level": 2
     },
     {
-      "_id": "nn",
+      "_id": "d62abd94e4288fe1b71d08af786dfe23",
       "name": "王飒",
       "type": "person",
       "level": 3
     },
     {
-      "_id": "oo",
+      "_id": "8adafcda7194ce35b01495a3fac9d282",
       "name": "深圳市xxx基金管理有限公司",
       "type": "company",
       "level": 2
     },
     {
-      "_id": "pp",
+      "_id": "4b4b3f47aa63634092908abe932625e7",
       "name": "唐浩",
       "type": "person",
       "level": 3
@@ -99,170 +99,170 @@
   ],
   "edges": [
     {
-      "_id": "laa",
-      "_from": "gg",
-      "_to": "ii",
+      "_id": "118647f63d2ea8fa89dc4ec7eb244ea0",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "04101e9107f5a7a8bbcedd7cfe014bc2",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "lbb",
-      "_from": "gg",
-      "_to": "aa",
+      "_id": "7b02dca5e850ca5d9cf39671a5407ac4",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "20348bbe1667a2d4b38fc1a64fb851b5",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "lcc",
-      "_from": "gg",
-      "_to": "bb",
+      "_id": "852d3f26e5f42d3097e92cbde689944a",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "08c2075f85c25b15b7fcc0c6a56b0f32",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "ldd",
-      "_from": "gg",
-      "_to": "cc",
+      "_id": "ba1a6f268f8c34f4a230d0454f540bbc",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "0c0009b42fa3009daa106967cc58a82f",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "lee",
-      "_from": "gg",
-      "_to": "ll",
+      "_id": "51d35d095cf48bb5a96ab4c44e116bc1",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "354bb982d4b1ec29b71dc59d41f88de2",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "lff",
-      "_from": "mm",
-      "_to": "gg",
+      "_id": "77dbe11a1af31ab1abbfd697f22e63ae",
+      "_from": "413b08bad4c5bedb9bdb19cd76a10dba",
+      "_to": "fc93e7bdca569f049952c593009e91dd",
       "label": "投资100万 [1]",
       "type": "invest"
     },
     {
-      "_id": "lgg",
-      "_from": "gg",
-      "_to": "oo",
+      "_id": "b2d0b14ea369df9f9e0e6cbcdcc72d6b",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "8adafcda7194ce35b01495a3fac9d282",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "lhh",
-      "_from": "pp",
-      "_to": "gg",
+      "_id": "5ca46bb59f403a59b1d635052b29822d",
+      "_from": "4b4b3f47aa63634092908abe932625e7",
+      "_to": "fc93e7bdca569f049952c593009e91dd",
       "label": "投资100万",
       "type": "invest"
     },
     {
-      "_id": "lii",
-      "_from": "aa",
-      "_to": "aa",
+      "_id": "9e9e4ec773dc2ffa8a73308809c812ad",
+      "_from": "20348bbe1667a2d4b38fc1a64fb851b5",
+      "_to": "20348bbe1667a2d4b38fc1a64fb851b5",
       "label": "调整",
       "type": "self"
     },
     {
-      "_id": "lxx",
-      "_from": "aa",
-      "_to": "aa",
+      "_id": "79b5b4ee6297d5d08815b91fcfba00c5",
+      "_from": "20348bbe1667a2d4b38fc1a64fb851b5",
+      "_to": "20348bbe1667a2d4b38fc1a64fb851b5",
       "label": "裁员",
       "type": "self"
     },
     {
-      "_id": "ljj",
-      "_from": "gg",
-      "_to": "mm",
+      "_id": "fe6aef4f87e09d488dd052222ddbb38d",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "413b08bad4c5bedb9bdb19cd76a10dba",
       "label": "投资100万 [2]",
       "type": "invest"
     },
     {
-      "_id": "ljj1",
-      "_from": "gg",
-      "_to": "mm",
+      "_id": "d4e4cf7290b078669463f91620e75770",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "413b08bad4c5bedb9bdb19cd76a10dba",
       "label": "投资100万 [3]",
       "type": "invest"
     },
     {
-      "_id": "ljj2",
-      "_from": "gg",
-      "_to": "mm",
+      "_id": "d1d75586850646809ba94527e148d647",
+      "_from": "fc93e7bdca569f049952c593009e91dd",
+      "_to": "413b08bad4c5bedb9bdb19cd76a10dba",
       "label": "投资100万 [4]",
       "type": "invest"
     },
     {
-      "_id": "lkk",
-      "_from": "aa",
-      "_to": "jj",
+      "_id": "7de83232a79029d8987ec2820c578d46",
+      "_from": "20348bbe1667a2d4b38fc1a64fb851b5",
+      "_to": "1b246f3629ec8adfa71793b5d5e53a1b",
       "label": "监事",
       "type": "member"
     },
     {
-      "_id": "lll",
-      "_from": "aa",
-      "_to": "kk",
+      "_id": "ddbe5bbd1b08ac51ba6897873de7cb19",
+      "_from": "20348bbe1667a2d4b38fc1a64fb851b5",
+      "_to": "c260df028a253a17bf6b9e370c2e3378",
       "label": "总经理",
       "type": "member"
     },
     {
-      "_id": "lmm",
-      "_from": "aa",
-      "_to": "nn",
+      "_id": "5481c101c3f7f00ba786eed972d8a8b4",
+      "_from": "20348bbe1667a2d4b38fc1a64fb851b5",
+      "_to": "d62abd94e4288fe1b71d08af786dfe23",
       "label": "监事",
       "type": "member"
     },
     {
-      "_id": "loo",
-      "_from": "aa",
-      "_to": "pp",
+      "_id": "3364b2ceda602cdf935f5c391d72df81",
+      "_from": "20348bbe1667a2d4b38fc1a64fb851b5",
+      "_to": "4b4b3f47aa63634092908abe932625e7",
       "label": "总经理、执行董事",
       "type": "member"
     },
     {
-      "_id": "lpp",
-      "_from": "pp",
-      "_to": "cc",
+      "_id": "dc4310ce3e501bdb8159730177fadb9e",
+      "_from": "4b4b3f47aa63634092908abe932625e7",
+      "_to": "0c0009b42fa3009daa106967cc58a82f",
       "label": "投资",
       "type": "member"
     },
     {
-      "_id": "lqq",
-      "_from": "pp",
-      "_to": "ii",
+      "_id": "1219554c521ee266bb4d3a4f8647cda8",
+      "_from": "4b4b3f47aa63634092908abe932625e7",
+      "_to": "04101e9107f5a7a8bbcedd7cfe014bc2",
       "label": "投资",
       "type": "invest"
     },
     {
-      "_id": "lrr",
-      "_from": "kk",
-      "_to": "ff",
+      "_id": "20a137f996194c47a3661a6cf8f627b1",
+      "_from": "c260df028a253a17bf6b9e370c2e3378",
+      "_to": "a05f62cff34c42769316e3e8ce75facf",
       "label": "投资",
       "type": "invest"
     },
     {
-      "_id": "lss",
-      "_from": "kk",
-      "_to": "hh",
+      "_id": "c815e27d3084ac34a725989e3a7eb3ed",
+      "_from": "c260df028a253a17bf6b9e370c2e3378",
+      "_to": "3787905e563d1de5be0e0d9bb2a96b1e",
       "label": "投资",
       "type": "invest"
     },
     {
-      "_id": "luu",
-      "_from": "pp",
-      "_to": "dd",
+      "_id": "ce8a12ae1c2fe375bc9659884c73bc1e",
+      "_from": "4b4b3f47aa63634092908abe932625e7",
+      "_to": "76c679753ede2e26895dc141979c66a6",
       "label": "投资",
       "type": "invest"
     },
     {
-      "_id": "lvv",
-      "_from": "pp",
-      "_to": "ee",
+      "_id": "a291885b43e8aad0b64f78d023314869",
+      "_from": "4b4b3f47aa63634092908abe932625e7",
+      "_to": "192bd880a32a5dac985e820e69903aaf",
       "label": "投资",
       "type": "invest"
     },
     {
-      "_id": "lww",
-      "_from": "pp",
-      "_to": "ff",
+      "_id": "b4ab0196c5dab15cab54a410ee432391",
+      "_from": "4b4b3f47aa63634092908abe932625e7",
+      "_to": "a05f62cff34c42769316e3e8ce75facf",
       "label": "投资",
       "type": "invest"
     }
