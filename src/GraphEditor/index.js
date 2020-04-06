@@ -66,6 +66,7 @@ class GraphEditor {
     this.modal = new Modal(this.el, this.modalOptions);
     this.menu = new Menu(this.el, this.menuOptions);
   }
+  /* 初始化 */
   init() {
     this.cache.init(this.data);
     this.graph.render();
@@ -75,6 +76,10 @@ class GraphEditor {
     this.modal.init();
     this.menu.init();
     this.createModal();
+
+    this.refreshCacheToolbar();
+    this.subscribeListeners();
+    this.bindEvents();
   }
   // 创建弹窗
   createModal() {
@@ -179,6 +184,108 @@ class GraphEditor {
       </div>
     `;
     this.outModal = new Modal(this.el, { title, body, footer });
+  }
+
+  /* 功能订阅 */
+  subscribeListeners() {
+    this.addToolbarListeners();
+  }
+  // Toolbar 的功能实现
+  addToolbarListeners() {
+    // 缓存和撤销重做
+    this.eventProxy.on('undo', el => {
+      let data = this.cache.prev();
+      if (data) {
+        // TODO: 撤销数据操作
+        this.refreshCacheToolbar();
+      }
+    });
+    this.eventProxy.on('redo', el => {
+      let data = this.cache.next();
+      if (data) {
+        // TODO: 重做数据操作
+        this.refreshCacheToolbar();
+      }
+    });
+    this.eventProxy.on('store', cache => {
+      this.cache.store(cache);
+      this.refreshCacheToolbar();
+    });
+
+    // 缩放
+    this.eventProxy.on('zoom_in', el => {
+      const step = 0.3;
+      let curk = step + this.graph.getTransform().k;
+      this.graph.zoomTo(curk);
+      this.refreshZoomToolbar(curk);
+    });
+    this.eventProxy.on('zoom_out', el => {
+      const step = -0.3;
+      let curk = step + this.graph.getTransform().k;
+      this.graph.zoomTo(curk);
+      this.refreshZoomToolbar(curk);
+    });
+    this.eventProxy.on('actual_size', () => {
+      // 通过计算使得最终缩放值为 1
+      this.graph.zoomTo(1);
+      this.refreshZoomToolbar(1);
+    });
+    // 信息和数据过滤
+    this.eventProxy.on('info', el => {
+      el.classList.toggle('active');
+      this.info.toggle();
+    });
+    this.eventProxy.on('filter', el => {
+      el.classList.toggle('active');
+      this.search.toggle();
+    });
+  }
+
+  /* 事件派发 */
+  bindEvents() {
+    this.bindToolbarEvent();
+  }
+  bindToolbarEvent() {
+    this.toolbar.bindClickEvents((el, operation) => {
+      this.eventProxy.emit(operation, el);
+    });
+  }
+
+  /* 辅助方法 */
+  refreshZoomToolbar(scale) {
+    let scaleExtent = this.graph.zoom.scaleExtent();
+
+    if (scale <= scaleExtent[0]) {
+      // 达到最小
+      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+      zoom_out.classList.add('not-allow');
+    } else if (scale >= scaleExtent[1]) {
+      // 达到最大
+      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
+      zoom_in.classList.add('not-allow');
+    } else {
+      // 其他情况
+      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
+      zoom_out.classList.remove('not-allow');
+      zoom_in.classList.remove('not-allow');
+    }
+  }
+  refreshCacheToolbar() {
+    let undo = document.querySelector('[data-operation="undo"]');
+    let redo = document.querySelector('[data-operation="redo"]');
+    let len = this.cache.length;
+    let point = this.cache.point;
+    if (len === 0) {
+      undo.classList.add('not-allow');
+      redo.classList.add('not-allow');
+    } else if (point === len) {
+      undo.classList.remove('not-allow');
+      redo.classList.add('not-allow');
+    } else {
+      undo.classList.remove('not-allow');
+      redo.classList.remove('not-allow');
+    }
   }
 }
 
