@@ -126,8 +126,10 @@ class BaseGraph {
       .on('zoom', () => {
         this.chartGroup.attr('transform', d3.event.transform);
         // 在这里 d3.event 是 zoom 事件
-        const isWheelEvent = d3.event.sourceEvent instanceof WheelEvent;
-        if (isWheelEvent) this.zooming();
+        const event = d3.event.sourceEvent;
+        // 是滚轮事件或者是 null, 则触发 zooming
+        // null 是由 scaleTo 来手动触发的, 所以没有源事件响应
+        if (!event || event instanceof WheelEvent) this.zooming();
       });
 
     this.svg.call(this.zoom).on('dblclick.zoom', null);
