@@ -737,23 +737,23 @@ class Force extends BaseGraph {
   // }
   // 绑定右键点击事件
   bindRightClick(cb) {
-    this.$el.on('contextmenu', () => {
+    this.nodeEnter.selectAll('.vertex').on('contextmenu', (...args) => {
       d3.event.preventDefault();
-    });
-
-    this.nodeEnter.selectAll('.vertex').on('mouseup.menu', (...args) => {
       d3.event.stopPropagation();
       if (d3.event.button === 2) {
         cb && cb(...args);
       }
     });
-    this.linkEnter.selectAll('.edge').on('mouseup.menu', (...args) => {
+    this.linkEnter.selectAll('.edge').on('contextmenu', (...args) => {
+      d3.event.preventDefault();
       d3.event.stopPropagation();
       if (d3.event.button === 2) {
         cb && cb(...args);
       }
     });
-    this.svg.on('mouseup.menu', (...args) => {
+    this.svg.on('contextmenu', (...args) => {
+      console.log('1');
+      d3.event.preventDefault();
       if (d3.event.button === 2) {
         cb && cb(...args);
       }
@@ -762,13 +762,13 @@ class Force extends BaseGraph {
   // TODO: 绑定双击事件
   addDblClick(cb) {}
   // 绑定连线事件
-  bindLineWith(cb) {
+  bindLineWith(start, end) {
     this.nodeEnter
       .selectAll('.vertex')
       .on('mouseup.line', d => {
         d3.event.stopPropagation();
         if (this.newLink) {
-          this.appendNewLink(d, cb);
+          this.appendNewLink(d, end);
         }
       })
       .on('mouseenter.line', (d, i, g) => {
@@ -784,6 +784,7 @@ class Force extends BaseGraph {
           .style('cursor', 'crosshair')
           .on('mousedown.line', d => {
             d3.event.stopPropagation();
+            start && start();
             this.addNewLink(d);
           })
           .on('mouseup.line', d => {
@@ -793,7 +794,7 @@ class Force extends BaseGraph {
               if (id === d._id) {
                 this.removeNewLink();
               } else {
-                this.appendNewLink(d, cb);
+                this.appendNewLink(d, end);
               }
             }
           });
