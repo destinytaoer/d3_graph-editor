@@ -16,7 +16,7 @@
  *   bindClickEvents(cb): 在点击搜索时触发的事件，在 GraphEditor 中调用时传入 cb，回传筛选条件数据
  *
  * create by destiny on 2019-03-28
- * update by destiny on 2020-04-02
+ * update by destiny on 2020-04-10
  */
 
 import { checkEl, createFormHTML, getFormData } from '../utils';
@@ -51,11 +51,13 @@ class Search {
             },
             {
               value: 'member',
-              content: '成员'
+              content: '成员',
+              checked: true
             },
             {
               value: 'self',
-              content: '自身变动'
+              content: '自身变动',
+              checked: true
             }
           ]
         }
@@ -121,7 +123,6 @@ class Search {
     let edgeForm = document.getElementById('search_edge_form');
     vertexForm.reset();
     edgeForm.reset();
-    console.log('reset');
   }
   toggle() {
     this.el.classList.toggle('active');

@@ -25,7 +25,7 @@
  *   getEdgeFormConfig(): 可复写方法, 设置边的信息表单项
  *
  * create by destiny on 2019-03-26
- * update by destiny on 2020- 04-01
+ * update by destiny on 2020-04-10
  */
 import Force from '../Graph/Force';
 import Tree from '../Graph/Tree';
@@ -189,6 +189,7 @@ class GraphEditor {
   /* 功能订阅 */
   subscribeListeners() {
     this.addToolbarListeners();
+    this.addSearchListeners();
   }
   // Toolbar 的功能实现
   addToolbarListeners() {
@@ -240,14 +241,42 @@ class GraphEditor {
       this.search.toggle();
     });
   }
+  // Search 的功能实现
+  addSearchListeners() {
+    this.eventProxy.on('search', data => {
+      let { vertex, edge } = data;
+      if (vertex) {
+        this.graph.filterVertex(d => {
+          return this.filterData(vertex, d);
+        }, true);
+      }
+      if (edge) {
+        this.graph.filterEdge(d => {
+          return this.filterData(edge, d);
+        });
+      }
+      this.graph.update();
+      this.eventProxy.emit('reset.info');
+    });
+    this.eventProxy.on('reset', () => {
+      this.graph.resetData();
+      this.eventProxy.emit('reset.info');
+    });
+  }
 
   /* 事件派发 */
   bindEvents() {
     this.bindToolbarEvent();
+    this.bindSearchEvent();
   }
   bindToolbarEvent() {
     this.toolbar.bindClickEvents((el, operation) => {
       this.eventProxy.emit(operation, el);
+    });
+  }
+  bindSearchEvent() {
+    this.search.bindClickEvents((type, data) => {
+      this.eventProxy.emit(type, data);
     });
   }
 
@@ -286,6 +315,19 @@ class GraphEditor {
       undo.classList.remove('not-allow');
       redo.classList.remove('not-allow');
     }
+  }
+  filterData(data, d) {
+    for (let key in data) {
+      let value = data[key];
+      if (value != undefined) {
+        if (Array.isArray(value)) {
+          return value.includes(d[key]);
+        } else {
+          return d[key] === value;
+        }
+      }
+    }
+    return true;
   }
 }
 
