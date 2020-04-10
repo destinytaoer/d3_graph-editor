@@ -191,6 +191,9 @@ class GraphEditor {
     this.addToolbarListeners();
     this.addSearchListeners();
     this.addInfoListeners();
+    if (this.type === 'force') {
+      this.addForceListeners();
+    }
   }
   // Toolbar 的功能实现
   addToolbarListeners() {
@@ -264,9 +267,35 @@ class GraphEditor {
       this.eventProxy.emit('reset.info');
     });
   }
+  // Info 的功能实现
   addInfoListeners() {
     this.eventProxy.on('reset.info', () => {
       this.info.bindData(this.graph.getCount());
+    });
+  }
+  // Force 的功能实现
+  addForceListeners() {
+    this.eventProxy.on('render', () => {
+      // 绑定右键
+      this.graph.bindRightClick(d => {
+        let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
+        this.eventProxy.emit('menu.' + type, d);
+      });
+      this.graph.bindLineWith(() => {
+        // TODO: 连线时缓存
+        // this.eventProxy.emit('store');
+      });
+      // 右键菜单的隐藏
+      this.graph.drag.on('start.else', (...arg) => {
+        this.eventProxy.emit('menu.hide');
+      });
+      this.graph.zoom.on('start', () => {
+        this.eventProxy.emit('menu.hide');
+      });
+      this.graph.zoom.on('end', () => {
+        let scale = d3.event.transform.k;
+        this.refreshZoomToolbar(scale);
+      });
     });
   }
 
@@ -274,6 +303,8 @@ class GraphEditor {
   bindEvents() {
     this.bindToolbarEvent();
     this.bindSearchEvent();
+
+    this.eventProxy.emit('render');
   }
   bindToolbarEvent() {
     this.toolbar.bindClickEvents((el, operation) => {
@@ -285,6 +316,7 @@ class GraphEditor {
       this.eventProxy.emit(type, data);
     });
   }
+  bindMenuEvent() {}
 
   /* 辅助方法 */
   refreshZoomToolbar(scale) {
