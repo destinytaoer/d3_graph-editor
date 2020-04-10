@@ -70,8 +70,8 @@ import { deepCopy, getUUId } from '../utils';
  *    updateEdge(data, cb)
  *    removeVertex(id, cb)
  *    removeEdge(id, cb)
- *    filterVertex(filter): 过滤顶点，需要调用 update 才能更新
- *    filterEdge(filter): 过滤边，需要调用  update 才能更新
+ *    filterVertex(filter, isInit): 过滤顶点，需要调用 update 才能更新, filter 表示过滤函数, isInit 表示是否在初始数据下进行过滤
+ *    filterEdge(filter, isInit): 过滤边，需要调用  update 才能更新, filter 表示过滤函数, isInit 表示是否在初始数据下进行过滤
  *    resetData(): 使用 rawData 重置 data 绘图数据
  *   @event
  *    bindEvents(): 绑定事件, 需要在实例 render 前调用, 每次更新也会执行
@@ -95,7 +95,7 @@ import { deepCopy, getUUId } from '../utils';
  *    relationVertex(d): 获取当前顶点所有直接关联的边和顶点
  *
  * create by destiny on 2019-03-25
- * update by destiny on 2020-03-28
+ * update by destiny on 2020-04-10
  */
 class Force extends BaseGraph {
   constructor(el, data, options) {
@@ -1194,14 +1194,14 @@ class Force extends BaseGraph {
     return this;
   }
   // 过滤与重置
-  filterVertex(filter) {
+  filterVertex(filter, isInit) {
     if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
     let vertexIds = [];
     let filterIds = [];
 
-    let vertexes = deepCopy(this.rawData.vertexes);
-    let edges = deepCopy(this.rawData.edges);
+    let vertexes = isInit ? deepCopy(this.rawData.vertexes) : deepCopy(this.data.vertexes);
+    let edges = isInit ? deepCopy(this.rawData.edges) : deepCopy(this.data.edges);
 
     // 筛选掉 filter 返回为 false 的顶点
     vertexes.forEach((d, i, g) => {
@@ -1223,7 +1223,6 @@ class Force extends BaseGraph {
 
     // 去重
     vertexIds = Array.from(new Set(vertexIds));
-
     // 筛选掉没有边连接的顶点
     this.data.vertexes = this.vertexes = vertexes.filter(d => {
       if (vertexIds.includes(d._id)) {
@@ -1234,13 +1233,13 @@ class Force extends BaseGraph {
 
     return this;
   }
-  filterEdge(filter) {
+  filterEdge(filter, isInit) {
     if (typeof filter !== 'function') throw new Error('filters need a function as first parameter');
 
     let vertexIds = [];
 
-    let vertexes = deepCopy(this.rawData.vertexes);
-    let edges = deepCopy(this.rawData.edges);
+    let vertexes = isInit ? deepCopy(this.rawData.vertexes) : deepCopy(this.data.vertexes);
+    let edges = isInit ? deepCopy(this.rawData.edges) : deepCopy(this.data.edges);
 
     // 筛选掉 filter 返回为 false 的边
     this.data.edges = this.edges = edges.filter((d, i, g) => {
