@@ -1100,9 +1100,6 @@ class Force extends BaseGraph {
       }
     }
 
-    this.data.vertexes = this.vertexes = deepCopy(rawData.vertexes);
-    this.data.edges = this.edges = deepCopy(rawData.edges);
-
     return this;
   }
   changeData(type, rawData, updateData) {
@@ -1165,6 +1162,7 @@ class Force extends BaseGraph {
     let newData = Object.assign({}, defaultData, data);
 
     this.changeRawData('add-edges', this.rawData, newData);
+    this.changeRawData('add-edges', this.data, newData);
     this.update();
 
     cb && cb();
