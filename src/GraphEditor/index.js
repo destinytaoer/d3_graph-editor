@@ -63,17 +63,35 @@ class GraphEditor {
     this.toolbar = new Toolbar(this.el, this.type, this.toolbarOptions);
     this.info = new Info(this.el, this.infoOptions);
     this.search = new Search(this.el, this.searchOptions);
-    this.modal = new Modal(this.el, this.modalOptions);
     this.menu = new Menu(this.el, this.menuOptions);
   }
   /* 初始化 */
   init() {
     this.cache.init(this.data);
+    let _this = this;
+    this.graph.bindEvents = function() {
+      this.bindRightClick(d => {
+        let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
+        let { offsetX, offsetY } = d3.event;
+        _this.eventProxy.emit('menu.' + type, {
+          top: offsetY,
+          left: offsetX
+        });
+      });
+      this.bindLineWith(
+        () => {
+          _this.eventProxy.emit('menu.hide');
+        },
+        () => {
+          // TODO: 连线时缓存
+          // this.eventProxy.emit('store');
+        }
+      );
+    };
     this.graph.render();
     this.toolbar.init();
     this.info.init(this.graph.getCount());
     this.search.init();
-    this.modal.init();
     this.menu.init();
     this.createModal();
 
@@ -194,6 +212,7 @@ class GraphEditor {
     if (this.type === 'force') {
       this.addForceListeners();
     }
+    this.addMenuListeners();
   }
   // Toolbar 的功能实现
   addToolbarListeners() {
@@ -275,36 +294,41 @@ class GraphEditor {
   }
   // Force 的功能实现
   addForceListeners() {
-    this.eventProxy.on('render', () => {
-      // 绑定右键
-      this.graph.bindRightClick(d => {
-        let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
-        this.eventProxy.emit('menu.' + type, d);
-      });
-      this.graph.bindLineWith(() => {
-        // TODO: 连线时缓存
-        // this.eventProxy.emit('store');
-      });
-      // 右键菜单的隐藏
-      this.graph.drag.on('start.else', (...arg) => {
-        this.eventProxy.emit('menu.hide');
-      });
-      this.graph.zoom.on('start', () => {
-        this.eventProxy.emit('menu.hide');
-      });
-      this.graph.zoom.on('end', () => {
-        let scale = d3.event.transform.k;
-        this.refreshZoomToolbar(scale);
-      });
+    // 右键菜单的隐藏
+    this.graph.drag.on('start.else', (...arg) => {
+      this.eventProxy.emit('menu.hide');
     });
+    this.graph.zoom.on('start', () => {
+      this.eventProxy.emit('menu.hide');
+    });
+    this.graph.zoom.on('end', () => {
+      let scale = d3.event.transform.k;
+      this.refreshZoomToolbar(scale);
+    });
+  }
+  // Menu 的功能实现
+  addMenuListeners() {
+    // 菜单的显示隐藏
+    this.eventProxy.on('menu.vertex', position => {
+      this.menu.show('vertex', position);
+    });
+    this.eventProxy.on('menu.edge', position => {
+      this.menu.show('edge', position);
+    });
+    this.eventProxy.on('menu.default', position => {
+      this.menu.show('default', position);
+    });
+    this.eventProxy.on('menu.hide', () => {
+      this.menu.hide();
+    });
+
+    // 菜单点击功能
   }
 
   /* 事件派发 */
   bindEvents() {
     this.bindToolbarEvent();
     this.bindSearchEvent();
-
-    this.eventProxy.emit('render');
   }
   bindToolbarEvent() {
     this.toolbar.bindClickEvents((el, operation) => {
@@ -316,24 +340,28 @@ class GraphEditor {
       this.eventProxy.emit(type, data);
     });
   }
-  bindMenuEvent() {}
+  bindMenuEvent() {
+    this.menu.bindClickEvents(el => {
+      this.eventProxy.emit(el.dataset.operation, el);
+    });
+  }
 
   /* 辅助方法 */
   refreshZoomToolbar(scale) {
     let scaleExtent = this.graph.zoom.scaleExtent();
+    let zoom_out = document.querySelector('[data-operation="zoom_out"]');
+    let zoom_in = document.querySelector('[data-operation="zoom_in"]');
 
     if (scale <= scaleExtent[0]) {
       // 达到最小
-      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
       zoom_out.classList.add('not-allow');
+      zoom_in.classList.remove('not-allow');
     } else if (scale >= scaleExtent[1]) {
       // 达到最大
-      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
       zoom_in.classList.add('not-allow');
+      zoom_out.classList.remove('not-allow');
     } else {
       // 其他情况
-      let zoom_out = document.querySelector('[data-operation="zoom_out"]');
-      let zoom_in = document.querySelector('[data-operation="zoom_in"]');
       zoom_out.classList.remove('not-allow');
       zoom_in.classList.remove('not-allow');
     }
