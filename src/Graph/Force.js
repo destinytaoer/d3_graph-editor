@@ -249,7 +249,26 @@ class Force extends BaseGraph {
     this.chartGroup.append('g').classed('edges', true);
     this.chartGroup.append('g').classed('vertexes', true);
     this.chartGroup.append('defs').classed('reverse-paths', true);
-    this.drawArrow();
+    this.chartGroup
+      .append('defs')
+      .classed('arrows', true)
+      .append('marker')
+      .datum({
+        _id: '',
+        type: '',
+        state: 'normal'
+      })
+      .classed('arrow-default', true)
+      .attr('id', 'arrow_default')
+      .attr('refX', 10)
+      .attr('refY', 5)
+      .attr('markerUnits', 'userSpaceOnUse')
+      .attr('markerWidth', 10)
+      .attr('markerHeight', 10)
+      .attr('orient', 'auto')
+      .append('path')
+      .classed('arrow-path', true)
+      .attr('d', 'M0,0 L10,5 L0,10 z');
 
     return this;
   }
@@ -257,6 +276,7 @@ class Force extends BaseGraph {
     this.drawVertexes();
     this.drawEdges();
     this.drawReversePath();
+    this.drawArrow();
     this.setBgColor();
     return this;
   }
@@ -635,12 +655,14 @@ class Force extends BaseGraph {
   }
   drawArrow() {
     // 箭头
-    this.chartGroup.append('defs').classed('arrows', true);
-    this.chartGroup
+    const update = this.chartGroup
       .select('.arrows')
       .selectAll('.arrow-marker')
-      .data(this.edges)
-      .enter()
+      .data(this.edges);
+    const enter = update.enter();
+    const exit = update.exit();
+
+    enter
       .append('marker')
       .classed('arrow-marker', true)
       .attr('id', d => 'arrow_' + d._id)
@@ -653,6 +675,10 @@ class Force extends BaseGraph {
       .append('path')
       .classed('arrow-path', true)
       .attr('d', 'M0,0 L10,5 L0,10 z');
+
+    this.setArrowStyle();
+
+    exit.remove();
   }
   setArrowStyle() {
     this.chartGroup.selectAll('.arrow-path').attr('fill', d => this.getArrowColor(d));
@@ -721,7 +747,7 @@ class Force extends BaseGraph {
         cb && cb(...args);
       }
     });
-    this.linkEnter.on('mouseup.menu', (...args) => {
+    this.linkEnter.selectAll('.edge').on('mouseup.menu', (...args) => {
       d3.event.stopPropagation();
       if (d3.event.button === 2) {
         cb && cb(...args);
@@ -779,7 +805,7 @@ class Force extends BaseGraph {
           .remove();
       });
 
-    this.linkEnter.on('mouseup.line', () => {
+    this.linkEnter.selectAll('.edge').on('mouseup.line', () => {
       if (this.newLink) {
         this.removeNewLink();
       }
@@ -825,9 +851,8 @@ class Force extends BaseGraph {
   appendNewLink(d, cb) {
     let to = d._id;
     let from = this.newLink.datum()._from;
-    this.addEdge(from, to, {});
+    this.addEdge(from, to, {}, cb);
     this.removeNewLink();
-    cb && cb();
   }
   addNewLink(d) {
     // 增加新的连线
@@ -1064,7 +1089,7 @@ class Force extends BaseGraph {
   // 改变原始数据
   changeRawData(type, rawData, updateData) {
     let [newType, dataType] = type.split('-');
-    this.changeData(newType, rawData[dataType], udpate);
+    this.changeData(newType, rawData[dataType], updateData);
     if (dataType === 'vertexes') {
       for (let i = 0; i < rawData.edges.length; i++) {
         let item = rawData.edges[i];
@@ -1074,6 +1099,9 @@ class Force extends BaseGraph {
         }
       }
     }
+
+    this.data.vertexes = this.vertexes = deepCopy(rawData.vertexes);
+    this.data.edges = this.edges = deepCopy(rawData.edges);
 
     return this;
   }
@@ -1134,10 +1162,9 @@ class Force extends BaseGraph {
       _from: from,
       _to: to
     };
-    let edge = Object.assign({}, defaultData, data);
+    let newData = Object.assign({}, defaultData, data);
 
-    this.changeRawData('add-edges', this.rawData, data);
-    this.changeRawData('add-edges', this.data, data);
+    this.changeRawData('add-edges', this.rawData, newData);
     this.update();
 
     cb && cb();
