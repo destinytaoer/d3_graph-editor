@@ -325,7 +325,7 @@ class GraphEditor {
   filterData(data, d) {
     for (let key in data) {
       let value = data[key];
-      if (value != undefined) {
+      if (value) {
         if (Array.isArray(value)) {
           return value.includes(d[key]);
         } else {
