@@ -190,6 +190,7 @@ class GraphEditor {
   subscribeListeners() {
     this.addToolbarListeners();
     this.addSearchListeners();
+    this.addInfoListeners();
   }
   // Toolbar 的功能实现
   addToolbarListeners() {
@@ -261,6 +262,11 @@ class GraphEditor {
     this.eventProxy.on('reset', () => {
       this.graph.resetData();
       this.eventProxy.emit('reset.info');
+    });
+  }
+  addInfoListeners() {
+    this.eventProxy.on('reset.info', () => {
+      this.info.bindData(this.graph.getCount());
     });
   }
 
