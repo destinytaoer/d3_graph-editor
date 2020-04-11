@@ -56,14 +56,14 @@ export function checkEl(el) {
   return el;
 }
 
-// TODO: 需要增加 checkbox/radio 等其他表单控件的创建方法
+// 根据类型创建不同表单元素
 function createSelect({ name, content, options }, type) {
   let select = `
       <div class="form-item">
         <label for="${type}_${name}" class="label">${content}</label>
         <select id="${type}_${name}" class="input" name="${name}">
       `;
-  options.forEach(option => {
+  options.forEach((option) => {
     select += `<option value="${option.value}">${option.content}</option>`;
   });
   select += '</select></div>';
@@ -89,7 +89,7 @@ function createRadio({ name, content, options }, type) {
   let radio = `<div class="form-item">
         <label class="label">${content}</label>
         <div class="radio-wrapper">`;
-  options.forEach(option => {
+  options.forEach((option) => {
     let { value, content, checked } = option;
     radio += `
       <div class="radio-item">
@@ -107,7 +107,7 @@ function createCheckbox({ name, content, options }, type) {
   let checkbox = `<div class="form-item">
         <label class="label">${content}</label>
         <div class="checkbox-wrapper">`;
-  options.forEach(option => {
+  options.forEach((option) => {
     let { value, content, checked } = option;
     checkbox += `
       <div class="checkbox-item">
@@ -127,7 +127,7 @@ let formItemMap = {
   number: createNumber,
   text: createText,
   radio: createRadio,
-  checkbox: createCheckbox
+  checkbox: createCheckbox,
 };
 
 /**
@@ -146,7 +146,7 @@ let formItemMap = {
 export function createFormHTML(id, type, config) {
   let form = `<form class="form" id="${id}">`;
 
-  config.forEach(c => {
+  config.forEach((c) => {
     let formItem = formItemMap[c.type](c, type);
     form += formItem;
   });
@@ -172,7 +172,7 @@ export function getFormData(id) {
   let formArr = Array.prototype.slice.call(form);
   let data = {};
 
-  formArr.forEach(item => {
+  formArr.forEach((item) => {
     let { name, value, type } = item;
     switch (type) {
       case 'checkbox':
@@ -201,8 +201,40 @@ export function getFormData(id) {
   return data;
 }
 
+export function setFormData(id, data) {
+  let form = document.getElementById(id);
+  if (!form) {
+    return;
+  }
+  let formArr = Array.prototype.slice.call(form);
+  formArr.forEach((item) => {
+    let { tagName, type, name } = item;
+    if (data[name] == undefined) return;
+    let value = data[name];
+    if (tagName === 'INPUT') {
+      if (type === 'radio') {
+        if (value === item.value) {
+          item.setAttribute('checked', 'checked');
+        } else {
+          item.removeAttribute('checked');
+        }
+      } else if (type === 'checkbox') {
+        if (value.includes(item.value)) {
+          item.setAttribute('checked', 'checked');
+        } else {
+          item.removeAttribute('checked');
+        }
+      } else {
+        item.value = value;
+      }
+    } else if (tagName == 'SELECT' || tagName == 'TEXTAREA') {
+      item.value = value;
+    }
+  });
+}
+
 export function getUUId() {
-  return 'xxxxxxxxxxxxxxxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxxxxxxxxxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c == 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);

@@ -36,7 +36,7 @@ import Info from './Info';
 import Search from './Search';
 import Menu from './Menu';
 import Modal from './Modal';
-import { checkEl, createFormHTML, getFormData } from '../utils';
+import { checkEl, createFormHTML, setFormData } from '../utils';
 
 class GraphEditor {
   constructor(el, data, options = {}) {
@@ -64,20 +64,16 @@ class GraphEditor {
     this.info = new Info(this.el, this.infoOptions);
     this.search = new Search(this.el, this.searchOptions);
     this.menu = new Menu(this.el, this.menuOptions);
+
+    // 标识当前 menu 选中的 ID
+    this.curId = null;
   }
   /* 初始化 */
   init() {
     this.cache.init(this.data);
     let _this = this;
-    this.graph.bindEvents = function() {
-      this.bindRightClick(d => {
-        let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
-        let { offsetX, offsetY } = d3.event;
-        _this.eventProxy.emit('menu.' + type, {
-          top: offsetY,
-          left: offsetX
-        });
-      });
+    this.graph.bindEvents = function () {
+      this.bindRightClick(_this.rightClickHandler.bind(_this));
       this.bindLineWith(
         () => {
           _this.eventProxy.emit('menu.hide');
@@ -110,7 +106,7 @@ class GraphEditor {
       {
         name: 'name',
         content: '名称',
-        type: 'text'
+        type: 'text',
       },
       {
         name: 'type',
@@ -119,20 +115,20 @@ class GraphEditor {
         options: [
           {
             value: 'person',
-            content: '人'
+            content: '人',
           },
           {
             value: 'company',
-            content: '企业'
-          }
-        ]
+            content: '企业',
+          },
+        ],
       },
       {
         name: 'level',
         content: '层级',
         type: 'number',
-        extent: [1, 5]
-      }
+        extent: [1, 5],
+      },
     ];
   }
   createVertexModal() {
@@ -153,7 +149,7 @@ class GraphEditor {
       {
         name: 'label',
         content: '内容',
-        type: 'text'
+        type: 'text',
       },
       {
         name: 'type',
@@ -162,18 +158,18 @@ class GraphEditor {
         options: [
           {
             value: 'invest',
-            content: '投资'
+            content: '投资',
           },
           {
             value: 'self',
-            content: '内部调整'
+            content: '内部调整',
           },
           {
             value: 'member',
-            content: '成员'
-          }
-        ]
-      }
+            content: '成员',
+          },
+        ],
+      },
     ];
   }
   createEdgeModal() {
@@ -217,64 +213,61 @@ class GraphEditor {
   // Toolbar 的功能实现
   addToolbarListeners() {
     // 缓存和撤销重做
-    this.eventProxy.on('undo', el => {
+    this.eventProxy.on('undo', (el) => {
       let data = this.cache.prev();
       if (data) {
         // TODO: 撤销数据操作
         this.refreshCacheToolbar();
       }
     });
-    this.eventProxy.on('redo', el => {
+    this.eventProxy.on('redo', (el) => {
       let data = this.cache.next();
       if (data) {
         // TODO: 重做数据操作
         this.refreshCacheToolbar();
       }
     });
-    this.eventProxy.on('store', cache => {
+    this.eventProxy.on('store', (cache) => {
       this.cache.store(cache);
       this.refreshCacheToolbar();
     });
 
     // 缩放
-    this.eventProxy.on('zoom_in', el => {
+    this.eventProxy.on('zoom_in', (el) => {
       const step = 0.3;
       let curk = step + this.graph.getTransform().k;
       this.graph.zoomTo(curk);
-      this.refreshZoomToolbar(curk);
     });
-    this.eventProxy.on('zoom_out', el => {
+    this.eventProxy.on('zoom_out', (el) => {
       const step = -0.3;
       let curk = step + this.graph.getTransform().k;
       this.graph.zoomTo(curk);
-      this.refreshZoomToolbar(curk);
     });
     this.eventProxy.on('actual_size', () => {
       // 通过计算使得最终缩放值为 1
       this.graph.zoomTo(1);
-      this.refreshZoomToolbar(1);
     });
     // 信息和数据过滤
-    this.eventProxy.on('info', el => {
+    this.eventProxy.on('info', (el) => {
       el.classList.toggle('active');
       this.info.toggle();
     });
-    this.eventProxy.on('filter', el => {
+    this.eventProxy.on('filter', (el) => {
       el.classList.toggle('active');
       this.search.toggle();
     });
   }
   // Search 的功能实现
   addSearchListeners() {
-    this.eventProxy.on('search', data => {
+    this.eventProxy.on('search', (data) => {
       let { vertex, edge } = data;
       if (vertex) {
-        this.graph.filterVertex(d => {
+        this.graph.filterVertex((d) => {
           return this.filterData(vertex, d);
         }, true);
       }
       if (edge) {
-        this.graph.filterEdge(d => {
+        this.graph.filterEdge((d) => {
           return this.filterData(edge, d);
         });
       }
@@ -309,13 +302,13 @@ class GraphEditor {
   // Menu 的功能实现
   addMenuListeners() {
     // 菜单的显示隐藏
-    this.eventProxy.on('menu.vertex', position => {
+    this.eventProxy.on('menu.vertex', (position) => {
       this.menu.show('vertex', position);
     });
-    this.eventProxy.on('menu.edge', position => {
+    this.eventProxy.on('menu.edge', (position) => {
       this.menu.show('edge', position);
     });
-    this.eventProxy.on('menu.default', position => {
+    this.eventProxy.on('menu.default', (position) => {
       this.menu.show('default', position);
     });
     this.eventProxy.on('menu.hide', () => {
@@ -323,12 +316,54 @@ class GraphEditor {
     });
 
     // 菜单点击功能
+    // 新增 / 编辑 / 删除功能
+    this.eventProxy.on('create.vertex', (data, e) => {
+      this.eventProxy.emit('menu.hide');
+      let x = e.pageX;
+      let y = e.pageY;
+      this.graph.addVertex(x, y, {});
+      // TODO:缓存
+      // this.eventProxy.emit('store');
+    });
+    this.eventProxy.on('edit.vertex', (data) => {
+      this.eventProxy.emit('menu.hide');
+      setFormData('vertex_form', data);
+      this.vertexModal.show();
+      // TODO: 缓存
+      // this.eventProxy.emit('store');
+    });
+    this.eventProxy.on('edit.edge', (data) => {
+      this.eventProxy.emit('menu.hide');
+      setFormData('edge_form', data);
+      this.edgeModal.show();
+      // TODO: 缓存
+      // this.eventProxy.emit('store');
+    });
+    this.eventProxy.on('remove.vertex', (data) => {
+      this.eventProxy.emit('menu.hide');
+      this.graph.removeVertex(data._id);
+      // TODO: 缓存
+      // this.eventProxy.emit('store');
+    });
+    this.eventProxy.on('remove.edge', (data) => {
+      this.eventProxy.emit('menu.hide');
+      this.graph.removeEdge(data._id);
+      // TODO: 缓存
+      // this.eventProxy.emit('store');
+    });
+    this.eventProxy.on('check.vertex', (data) => {
+      // TODO: 查看
+    });
+    this.eventProxy.on('check.edge', (data) => {
+      // TODO: 查看
+    });
   }
 
   /* 事件派发 */
   bindEvents() {
     this.bindToolbarEvent();
     this.bindSearchEvent();
+    this.bindMenuEvent();
   }
   bindToolbarEvent() {
     this.toolbar.bindClickEvents((el, operation) => {
@@ -341,8 +376,23 @@ class GraphEditor {
     });
   }
   bindMenuEvent() {
-    this.menu.bindClickEvents(el => {
-      this.eventProxy.emit(el.dataset.operation, el);
+    this.menu.bindClickEvents((e, operation) => {
+      let isVertex = operation.includes('vertex');
+      let data = this.curId
+        ? isVertex
+          ? this.graph.getVertexById(this.curId)
+          : this.graph.getEdgeById(this.curId)
+        : null;
+      this.eventProxy.emit(operation, data, e);
+    });
+  }
+  rightClickHandler(d) {
+    let type = d ? (d._to ? 'edge' : 'vertex') : 'default';
+    this.curId = type === 'default' ? null : d._id;
+    let { offsetX, offsetY } = d3.event;
+    this.eventProxy.emit('menu.' + type, {
+      top: offsetY,
+      left: offsetX,
     });
   }
 

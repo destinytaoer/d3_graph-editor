@@ -27,65 +27,65 @@ class Menu {
       default: [
         {
           name: 'create.vertex',
-          content: '新增节点'
+          content: '新增节点',
         },
         {
           name: 'undo',
-          content: '撤销'
+          content: '撤销',
         },
         {
           name: 'redo',
-          content: '重做'
+          content: '重做',
         },
-        {
-          name: 'paste',
-          content: '粘贴'
-        },
+        // {
+        //   name: 'paste',
+        //   content: '粘贴'
+        // },
         {
           name: 'import',
-          content: '导入 json 数据'
+          content: '导入 json 数据',
         },
         {
-          name: 'export_json',
-          content: '导出 - 存为 json 数据'
+          name: 'export.json',
+          content: '导出 - 存为 json 数据',
         },
         {
-          name: 'export_png',
-          content: '导出 - 存为 png 图片'
-        }
+          name: 'export.png',
+          content: '导出 - 存为 png 图片',
+        },
       ],
       vertex: [
         {
           name: 'edit',
-          content: '编辑'
+          content: '编辑',
         },
         {
           name: 'check',
-          content: '查看'
+          content: '查看',
         },
-        {
-          name: 'copy',
-          content: '复制'
-        },
+        // {
+        //   name: 'copy',
+        //   content: '复制'
+        // },
         {
           name: 'remove',
-          content: '删除'
-        }
+          content: '删除',
+        },
       ],
       edge: [
         {
           name: 'edit',
-          content: '编辑'
+          content: '编辑',
         },
         {
           name: 'check',
-          content: '查看'
+          content: '查看',
         },
         {
           name: 'remove',
-          content: '删除'
-        }
-      ]
+          content: '删除',
+        },
+      ],
     };
 
     this.options = Object.assign({}, defalutOptions, options);
@@ -129,7 +129,7 @@ class Menu {
     let menuConfig = this.options[type] ? this.options[type] : this.options.default;
 
     let fr = document.createDocumentFragment();
-    menuConfig.forEach(item => {
+    menuConfig.forEach((item) => {
       let oDiv = document.createElement('div');
       oDiv.classList.add('command');
       oDiv.innerHTML = item.content;
@@ -141,15 +141,15 @@ class Menu {
   }
 
   bindClickEvents(cb) {
-    this.el.addEventListener('click', e => {
+    this.el.addEventListener('click', (e) => {
       e.stopPropagation();
       let el = e.target;
       if (el.classList.contains('command')) {
         let operation = el.dataset.operation;
-        cb && cb(el, operation);
+        cb && cb(e, operation);
       }
     });
-    this.container.addEventListener('click', e => {
+    this.container.addEventListener('click', (e) => {
       this.hide();
     });
   }
