@@ -497,7 +497,8 @@ class Force extends BaseGraph {
       .attr('width', r * 2)
       .attr('height', r * 2)
       .attr('x', -r)
-      .attr('y', -r);
+      .attr('y', -r)
+      .attr('xlink:href', (d) => this.getIcon(d));
   }
   setVertexNameAttr(node) {
     if (this.getTransform().k < 0.8) {
@@ -595,7 +596,7 @@ class Force extends BaseGraph {
   setEdgeLabelAttr(node) {
     node
       .attr('xlink:href', (d) => {
-        return '#' + d._id;
+        return '#path_' + d._id;
       })
       .text((d) => {
         return d.label || '';
