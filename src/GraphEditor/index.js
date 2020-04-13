@@ -36,7 +36,7 @@ import Info from './Info';
 import Search from './Search';
 import Menu from './Menu';
 import Modal from './Modal';
-import { checkEl, createFormHTML, setFormData } from '../utils';
+import { checkEl, createFormHTML, setFormData, getFormData } from '../utils';
 
 class GraphEditor {
   constructor(el, data, options = {}) {
@@ -209,6 +209,7 @@ class GraphEditor {
       this.addForceListeners();
     }
     this.addMenuListeners();
+    this.addModalListeners();
   }
   // Toolbar 的功能实现
   addToolbarListeners() {
@@ -329,15 +330,11 @@ class GraphEditor {
       this.eventProxy.emit('menu.hide');
       setFormData('vertex_form', data);
       this.vertexModal.show();
-      // TODO: 缓存
-      // this.eventProxy.emit('store');
     });
     this.eventProxy.on('edit.edge', (data) => {
       this.eventProxy.emit('menu.hide');
       setFormData('edge_form', data);
       this.edgeModal.show();
-      // TODO: 缓存
-      // this.eventProxy.emit('store');
     });
     this.eventProxy.on('remove.vertex', (data) => {
       this.eventProxy.emit('menu.hide');
@@ -358,12 +355,28 @@ class GraphEditor {
       // TODO: 查看
     });
   }
+  addModalListeners() {
+    this.eventProxy.on('save.vertex', (data) => {
+      this.graph.updateVertex(data);
+      this.vertexModal.hide();
+      // TODO: 缓存
+      // this.eventProxy.emit('store');
+    });
+    this.eventProxy.on('save.edge', (data) => {
+      this.graph.updateEdge(data);
+      console.log(data);
+      this.edgeModal.hide();
+      // TODO: 缓存
+      // this.eventProxy.emit('store');
+    });
+  }
 
   /* 事件派发 */
   bindEvents() {
     this.bindToolbarEvent();
     this.bindSearchEvent();
     this.bindMenuEvent();
+    this.bindModalEvent();
   }
   bindToolbarEvent() {
     this.toolbar.bindClickEvents((el, operation) => {
@@ -393,6 +406,45 @@ class GraphEditor {
     this.eventProxy.emit('menu.' + type, {
       top: offsetY,
       left: offsetX,
+    });
+  }
+  bindModalEvent() {
+    let vertexCancle = document.getElementById('vertexCancle');
+    let vertexSave = document.getElementById('vertexSave');
+    let edgeCancle = document.getElementById('edgeCancle');
+    let edgeSave = document.getElementById('edgeSave');
+    let outCancle = document.getElementById('outCancle');
+    let outNotSave = document.getElementById('outNotSave');
+    let outSave = document.getElementById('outSave');
+
+    vertexCancle.addEventListener('click', () => {
+      this.vertexModal.hide();
+    });
+    vertexSave.addEventListener('click', () => {
+      let data = getFormData('vertex_form');
+      data._id = this.curId;
+      this.eventProxy.emit('save.vertex', data);
+      this.vertexModal.hide();
+    });
+    edgeCancle.addEventListener('click', () => {
+      this.edgeModal.hide();
+    });
+    edgeSave.addEventListener('click', () => {
+      let data = getFormData('edge_form');
+      data._id = this.curId;
+      this.eventProxy.emit('save.edge', data);
+      this.edgeModal.hide();
+    });
+    outCancle.addEventListener('click', () => {
+      this.outModal.hide();
+    });
+    outNotSave.addEventListener('click', () => {
+      this.outModal.hide();
+      // TODO: 关闭整个窗口
+    });
+    outSave.addEventListener('click', () => {
+      this.outModal.hide();
+      // TODO: 关闭整个窗口并保存
     });
   }
 
