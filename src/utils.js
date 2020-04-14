@@ -16,6 +16,30 @@ export function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 /**
+ * diiAssign: 根据第一个对象的 key 来进行合并, 合并后的对象只允许有第一个对象中的 key
+ *
+ * @parameter
+ *   defaultData [Object] 默认对象
+ *   data [Object] 需要进行合并对象
+ *
+ * @return
+ *   [Object]: 合并后的对象
+ *
+ * by destiny on  2020-04-14
+ */
+export function diffAssign(defaultData, data) {
+  let newData = {};
+  Object.keys(defaultData).forEach((key) => {
+    if (data[key] != undefined) {
+      newData[key] = data[key];
+    } else {
+      newData[key] = defaultData[key];
+    }
+  });
+  return newData;
+}
+
+/**
  * isPlainObject: 判断是否是普通对象
  *
  * @parameter
@@ -42,6 +66,18 @@ export function isPlainObject(obj) {
       Object.prototype.hasOwnProperty.toString.call(Object)
   );
 }
+
+/**
+ * checkEl: 检查传入 el 参数是否正确,并返回一个元素
+ *
+ * @parameter
+ *   el [String || Object]  id 字符串 或者一个 HTMLElement
+ *
+ * @return
+ *   [Object]]: HTMLElement
+ *
+ * by destiny on 2020-03-10
+ */
 export function checkEl(el) {
   if (!(el instanceof HTMLElement) && typeof el !== 'string') {
     throw new Error('BaseGraph need HTMLElement or ID as first parameter');
@@ -200,7 +236,15 @@ export function getFormData(id) {
 
   return data;
 }
-
+/**
+ * setFormData: 设置某个表单的数据
+ *
+ * @parameter
+ *   id [String] 表单的 id
+ *   data [Object] 需要设置的数据
+ *
+ * by destiny on  2020-04-10
+ */
 export function setFormData(id, data) {
   let form = document.getElementById(id);
   if (!form) {
@@ -233,6 +277,14 @@ export function setFormData(id, data) {
   });
 }
 
+/**
+ * getUUId: 获取一个 32 位的 id 值
+ *
+ * @return
+ *   [String]:  唯一 Id 值
+ *
+ * by destiny on  2019-03-25
+ */
 export function getUUId() {
   return 'xxxxxxxxxxxxxxxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
