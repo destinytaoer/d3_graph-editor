@@ -27,7 +27,7 @@ class Cache {
       get() {
         return this.caches.length;
       },
-      set() {}
+      set() {},
     });
   }
 
@@ -67,14 +67,12 @@ class Cache {
 
   next() {
     if (this.point >= this.caches.length) return;
-    this.point++;
-    return this.caches[this.point - 1];
+    return this.caches[this.point++];
   }
 
   prev() {
     if (this.point <= 0) return;
-    this.point--;
-    return this.caches[this.point - 1];
+    return this.caches[--this.point];
   }
 
   clear() {
