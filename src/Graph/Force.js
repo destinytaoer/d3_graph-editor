@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import BaseGraph from './BaseGraph';
-import { deepCopy, getUUId } from '../utils';
+import { deepCopy, getUUId, diffAssign } from '../utils';
 /**
  * Force: 力导向图类
  *
@@ -125,6 +125,20 @@ class Force extends BaseGraph {
     // 顶点和边的数据
     this.vertexes = this.data.vertexes;
     this.edges = this.data.edges;
+
+    // 默认的单个节点和边数据
+    this.defaultVertex = {
+      _id: '',
+      type: '',
+      name: '',
+    };
+    this.defaultEdge = {
+      _id: '',
+      type: '',
+      label: '',
+      _from: '',
+      _to: '',
+    };
 
     // 记录当前所有节点的 ID
     this.idMap = this.vertexes.map((v) => v._id).concat(this.edges.map((e) => e._id));
@@ -354,7 +368,6 @@ class Force extends BaseGraph {
     if (d.directionFlag) {
       [sx, sy, tx, ty] = [tx, ty, sx, sy];
     }
-
     const xFlag = sx > tx;
     const yFlag = sy > ty;
     const xSign = xFlag ? 1 : -1; // 加减符号标记
@@ -846,7 +859,7 @@ class Force extends BaseGraph {
   appendNewLink(d, cb) {
     let to = d._id;
     let from = this.newLink.datum()._from;
-    this.addEdge(from, to, {}, cb);
+    this.addEdge({ _from: from, _to: to }, cb);
     this.removeNewLink();
   }
   addNewLink(d) {
@@ -1073,13 +1086,13 @@ class Force extends BaseGraph {
     let vertexArr = this.vertexes.filter((v) => {
       return v._id === id;
     });
-    return vertexArr[0];
+    return vertexArr[0] ? deepCopy(vertexArr[0]) : null;
   }
   getEdgeById(id) {
     let edgeArr = this.edges.filter((e) => {
       return e._id === id;
     });
-    return edgeArr[0];
+    return edgeArr[0] ? deepCopy(edgeArr[0]) : null;
   }
   // 改变原始数据
   changeRawData(type, rawData, updateData) {
@@ -1109,19 +1122,37 @@ class Force extends BaseGraph {
   updateItem(item, data) {
     if (item._id === data._id) {
       Object.keys(data).forEach((key) => {
+        if (item[key] === undefined) return; // 如果本身不存在这个属性, 那么就不进行添加
         item[key] = data[key];
       });
     }
   }
   // 增加节点和边数据
+  reAddVertex(data) {
+    let { vertex, edges } = data;
+    let rawVertex = diffAssign(this.defaultVertex, vertex);
+    this.changeRawData('add-vertexes', this.rawData, rawVertex);
+    this.changeRawData('add-vertexes', this.data, vertex);
+
+    if (edges) {
+      edges.forEach((edge) => {
+        let rawEdge = diffAssign(this.defaultEdge, edge);
+        this.changeRawData('add-edges', this.rawData, rawEdge);
+        this.changeRawData('add-edges', this.data, edge);
+      });
+    }
+    console.log(data);
+    debugger;
+    this.update();
+  }
   addVertex(x, y, data, cb) {
-    let defaultData = {
-      _id: this.newId(),
-      type: '',
-      name: '',
-    };
+    let id = this.newId();
+    let defaultData = deepCopy(this.defaultVertex);
+    defaultData._id = id;
+    let rawVertex = diffAssign(defaultData, data);
     let vertex = Object.assign({}, defaultData, data);
 
+    this.changeRawData('add-vertexes', this.rawData, rawVertex);
     // 抵消偏移和缩放的影响
     let { x: curX, y: curY, k: curK } = this.getTransform();
     x = (x - curX) / curK;
@@ -1130,28 +1161,35 @@ class Force extends BaseGraph {
     vertex.x = x;
     vertex.y = y;
 
-    this.changeRawData('add-vertexes', this.rawData, vertex);
     this.changeRawData('add-vertexes', this.data, vertex);
 
     this.update();
 
-    cb && cb();
-  }
-  addEdge(from, to, data, cb) {
-    let defaultData = {
-      _id: this.newId(),
-      type: '',
-      label: '',
-      _from: from,
-      _to: to,
+    let addData = {
+      type: 'add',
+      target: 'vertex',
+      data: this.getVertexById(id),
     };
-    let newData = Object.assign({}, defaultData, data);
-
-    this.changeRawData('add-edges', this.rawData, newData);
-    this.changeRawData('add-edges', this.data, newData);
+    cb && cb(addData);
+  }
+  addEdge(data, cb) {
+    let id = this.newId();
+    let defaultData = deepCopy(this.defaultEdge);
+    defaultData._id = id;
+    let rawEdge = diffAssign(defaultData, data);
+    let edge = Object.assign({}, defaultData, data);
+    console.log(edge);
+    console.log(rawEdge);
+    this.changeRawData('add-edges', this.rawData, rawEdge);
+    this.changeRawData('add-edges', this.data, edge);
     this.update();
 
-    cb && cb();
+    let addData = {
+      type: 'add',
+      target: 'edge',
+      data: rawEdge,
+    };
+    cb && cb(addData);
   }
   // 创建新的无重复 ID
   newId() {
@@ -1164,37 +1202,48 @@ class Force extends BaseGraph {
   }
   // 改变节点和边的数据
   updateVertex(data, cb) {
-    let defaultData = {
-      type: '',
-      name: '',
-    };
-    data = Object.assign({}, defaultData, data);
+    let oldVertex = this.getVertexById(data._id);
+    let rawVertex = diffAssign(this.defaultVertex, oldVertex);
     this.changeRawData('update-vertexes', this.rawData, data);
     this.changeRawData('update-vertexes', this.data, data);
-
     this.setVertexAttr();
-    cb && cb();
+
+    let updateData = {
+      type: 'update',
+      target: 'vertex',
+      data: {
+        new: data,
+        old: rawVertex,
+      },
+    };
+    cb && cb(updateData);
   }
   updateEdge(data, cb) {
-    let defaultData = {
-      type: '',
-      label: '',
-    };
-    data = Object.assign({}, defaultData, data);
+    let oldEdge = this.getEdgeById(data._id);
+    let rawEdge = diffAssign(this.defaultVertex, oldEdge);
     this.changeRawData('update-edges', this.rawData, data);
     this.changeRawData('update-edges', this.data, data);
     this.setEdgeAttr();
-    cb && cb();
+    let updateData = {
+      type: 'update',
+      target: 'edge',
+      data: {
+        new: data,
+        old: rawEdge,
+      },
+    };
+    cb && cb(updateData);
   }
   // 删除节点和边数据
   removeVertex(id, cb) {
     let vertex = this.getVertexById(id);
+
     if (!vertex) return;
     this.changeRawData('remove-vertexes', this.rawData, id);
     this.changeRawData('remove-vertexes', this.data, id);
 
     // 相关的边也需要删除
-    let edges = this.edges.filter((e) => {
+    let edges = this.rawData.edges.filter((e) => {
       return e._from === id || e._to === id;
     });
     edges.forEach((e) => {
@@ -1203,8 +1252,12 @@ class Force extends BaseGraph {
     });
     this.update();
     let removeData = {
-      vertex: vertex,
-      edges: edges,
+      type: 'remove',
+      target: 'vertex',
+      data: {
+        vertex: vertex,
+        edges: edges,
+      },
     };
     cb && cb(removeData);
 
@@ -1212,11 +1265,18 @@ class Force extends BaseGraph {
   }
   removeEdge(id, cb) {
     let edge = this.getEdgeById(id);
+    let rawEdge = diffAssign(this.defaultEdge, edge);
     if (!edge) return;
     this.changeRawData('remove-edges', this.rawData, id);
     this.changeRawData('remove-edges', this.data, id);
     this.update();
-    cb && cb(edge);
+
+    let removeData = {
+      type: 'remove',
+      target: 'edge',
+      data: rawEdge,
+    };
+    cb && cb(removeData);
 
     return this;
   }

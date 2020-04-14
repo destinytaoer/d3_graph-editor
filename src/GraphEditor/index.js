@@ -78,9 +78,8 @@ class GraphEditor {
         () => {
           _this.eventProxy.emit('menu.hide');
         },
-        () => {
-          // TODO: 连线时缓存
-          // this.eventProxy.emit('store');
+        (cache) => {
+          _this.eventProxy.emit('store', cache);
         }
       );
     };
@@ -215,16 +214,16 @@ class GraphEditor {
   addToolbarListeners() {
     // 缓存和撤销重做
     this.eventProxy.on('undo', (el) => {
-      let data = this.cache.prev();
-      if (data) {
-        // TODO: 撤销数据操作
+      let cache = this.cache.prev();
+      if (cache) {
+        this.processCache('undo', cache);
         this.refreshCacheToolbar();
       }
     });
     this.eventProxy.on('redo', (el) => {
-      let data = this.cache.next();
-      if (data) {
-        // TODO: 重做数据操作
+      let cache = this.cache.next();
+      if (cache) {
+        this.processCache('redo', cache);
         this.refreshCacheToolbar();
       }
     });
@@ -322,9 +321,9 @@ class GraphEditor {
       this.eventProxy.emit('menu.hide');
       let x = e.pageX;
       let y = e.pageY;
-      this.graph.addVertex(x, y, {});
-      // TODO:缓存
-      // this.eventProxy.emit('store');
+      this.graph.addVertex(x, y, {}, (cache) => {
+        this.eventProxy.emit('store', cache);
+      });
     });
     this.eventProxy.on('edit.vertex', (data) => {
       this.eventProxy.emit('menu.hide');
@@ -338,15 +337,15 @@ class GraphEditor {
     });
     this.eventProxy.on('remove.vertex', (data) => {
       this.eventProxy.emit('menu.hide');
-      this.graph.removeVertex(data._id);
-      // TODO: 缓存
-      // this.eventProxy.emit('store');
+      this.graph.removeVertex(data._id, (cache) => {
+        this.eventProxy.emit('store', cache);
+      });
     });
     this.eventProxy.on('remove.edge', (data) => {
       this.eventProxy.emit('menu.hide');
-      this.graph.removeEdge(data._id);
-      // TODO: 缓存
-      // this.eventProxy.emit('store');
+      this.graph.removeEdge(data._id, (cache) => {
+        this.eventProxy.emit('store', cache);
+      });
     });
     this.eventProxy.on('check.vertex', (data) => {
       // TODO: 查看
@@ -357,17 +356,16 @@ class GraphEditor {
   }
   addModalListeners() {
     this.eventProxy.on('save.vertex', (data) => {
-      this.graph.updateVertex(data);
+      this.graph.updateVertex(data, (cache) => {
+        this.eventProxy.emit('store', cache);
+      });
       this.vertexModal.hide();
-      // TODO: 缓存
-      // this.eventProxy.emit('store');
     });
     this.eventProxy.on('save.edge', (data) => {
-      this.graph.updateEdge(data);
-      console.log(data);
+      this.graph.updateEdge(data, (cache) => {
+        this.eventProxy.emit('store', cache);
+      });
       this.edgeModal.hide();
-      // TODO: 缓存
-      // this.eventProxy.emit('store');
     });
   }
 
@@ -479,6 +477,9 @@ class GraphEditor {
     } else if (point === len) {
       undo.classList.remove('not-allow');
       redo.classList.add('not-allow');
+    } else if (len > 0 && point === 0) {
+      undo.classList.add('not-allow');
+      redo.classList.remove('not-allow');
     } else {
       undo.classList.remove('not-allow');
       redo.classList.remove('not-allow');
@@ -496,6 +497,54 @@ class GraphEditor {
       }
     }
     return true;
+  }
+  processCache(operation, cache) {
+    let { type, target, data } = cache;
+    switch (`${operation}-${type}`) {
+      case 'redo-add':
+      case 'undo-remove':
+        this.addData(target, data);
+        break;
+      case 'undo-update':
+        this.updateData(target, data.old);
+        break;
+      case 'redo-update':
+        this.updateData(target, data.new);
+        break;
+      case 'redo-remove':
+      case 'undo-add':
+        this.removeData(target, data);
+    }
+  }
+  updateData(target, data) {
+    if (target === 'vertex') {
+      this.graph.updateVertex(data);
+    } else {
+      this.graph.updateEdge(data);
+    }
+  }
+  addData(target, data) {
+    if (target === 'vertex') {
+      if (data.vertex) {
+        // {vertex, edges} 需要增加 一个顶点和多条边
+        this.graph.reAddVertex(data);
+      } else {
+        this.graph.reAddVertex({ vertex: data });
+      }
+    } else {
+      this.graph.addEdge(data);
+    }
+  }
+  removeData(target, data) {
+    if (target === 'vertex') {
+      if (data.vertex) {
+        this.graph.removeVertex(data.vertex._id);
+      } else {
+        this.graph.removeVertex(data._id);
+      }
+    } else {
+      this.graph.removeEdge(data._id);
+    }
   }
 }
 
