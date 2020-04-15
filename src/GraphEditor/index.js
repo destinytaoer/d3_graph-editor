@@ -36,7 +36,7 @@ import Info from './Info';
 import Search from './Search';
 import Menu from './Menu';
 import Modal from './Modal';
-import { checkEl, createFormHTML, setFormData, getFormData } from '../utils';
+import { checkEl, createFormHTML, setFormData, getFormData, deepCopy } from '../utils';
 
 class GraphEditor {
   constructor(el, data, options = {}) {
@@ -70,8 +70,15 @@ class GraphEditor {
   }
   /* 初始化 */
   init() {
-    this.cache.init(this.data);
     let _this = this;
+    this.graph.renderEnd = function () {
+      if (_this.cache.length === 0) {
+        _this.cache.init({
+          rawData: deepCopy(this.rawData),
+          chartData: deepCopy(this.data),
+        });
+      }
+    };
     this.graph.bindEvents = function () {
       this.bindRightClick(_this.rightClickHandler.bind(_this));
       this.bindLineWith(
@@ -84,6 +91,7 @@ class GraphEditor {
       );
     };
     this.graph.render();
+
     this.toolbar.init();
     this.info.init(this.graph.getCount());
     this.search.init();
@@ -216,14 +224,14 @@ class GraphEditor {
     this.eventProxy.on('undo', (el) => {
       let cache = this.cache.prev();
       if (cache) {
-        this.processCache('undo', cache);
+        this.lodaCache(cache);
         this.refreshCacheToolbar();
       }
     });
     this.eventProxy.on('redo', (el) => {
       let cache = this.cache.next();
       if (cache) {
-        this.processCache('redo', cache);
+        this.lodaCache(cache);
         this.refreshCacheToolbar();
       }
     });
@@ -471,15 +479,15 @@ class GraphEditor {
     let redo = document.querySelector('[data-operation="redo"]');
     let len = this.cache.length;
     let point = this.cache.point;
-    if (len === 0) {
+    if (len === 1) {
       undo.classList.add('not-allow');
       redo.classList.add('not-allow');
+    } else if (point === 1) {
+      undo.classList.add('not-allow');
+      redo.classList.remove('not-allow');
     } else if (point === len) {
       undo.classList.remove('not-allow');
       redo.classList.add('not-allow');
-    } else if (len > 0 && point === 0) {
-      undo.classList.add('not-allow');
-      redo.classList.remove('not-allow');
     } else {
       undo.classList.remove('not-allow');
       redo.classList.remove('not-allow');
@@ -497,6 +505,10 @@ class GraphEditor {
       }
     }
     return true;
+  }
+  lodaCache(cache) {
+    let { rawData, chartData } = cache;
+    this.graph.useCache(rawData, chartData);
   }
   processCache(operation, cache) {
     let { type, target, data } = cache;

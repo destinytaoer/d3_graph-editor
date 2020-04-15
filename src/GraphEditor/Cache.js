@@ -4,8 +4,6 @@
  * @constructor
  *   caches: 缓存空间 [ ... ]
  *   point: 当前位置指针表示第 n 个缓存，这里的 point 是索引 +1
- *   length: 长度, 只读属性
- *   _source: 原始数据
  *
  * @function
  *   store(cache): 保存一个缓存
@@ -15,7 +13,6 @@
  *   clear(): 清空缓存
  *
  * create by destiny on 2019-03-21
- * update by destiny on 2020-03-29
  */
 class Cache {
   constructor() {
@@ -31,10 +28,11 @@ class Cache {
     });
   }
 
-  init(data) {
+  init(cache) {
     // 初始化 cache，清空 cache 并重置 source
-    this._source = data;
+    this._source = cache;
     this.clear();
+    this.store(cache);
 
     return this;
   }
@@ -62,17 +60,20 @@ class Cache {
 
   // 一般不会存在删除某个缓存的问题
   delete(index) {
-    return this.caches.splice(index, 1);
+    // 从 1 开始
+    delete this.caches.splice(index - 1, 1);
   }
 
   next() {
     if (this.point >= this.caches.length) return;
-    return this.caches[this.point++];
+    this.point++;
+    return this.caches[this.point - 1];
   }
 
   prev() {
-    if (this.point <= 0) return;
-    return this.caches[--this.point];
+    if (this.point <= 1) return;
+    this.point--;
+    return this.caches[this.point - 1];
   }
 
   clear() {

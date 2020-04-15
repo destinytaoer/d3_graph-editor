@@ -59,23 +59,18 @@ class BaseGraph {
       height: elInfo.height,
       scalable: true,
       scaleExtent: [0.5, 2],
-      draggable: true
+      draggable: true,
     };
 
     this.$el = d3.select(this.el);
     this.options = Object.assign({}, defaultOptions, options || {});
   }
   render() {
-    this.init()
-      .draw()
-      .bindScale()
-      .bindEvents();
+    this.init().draw().bindScale().bindEvents();
     this.el.appendChild(this.svg.node());
   }
   update() {
-    this.preprocessData()
-      .draw()
-      .bindEvents();
+    this.preprocessData().draw().bindEvents();
   }
   init() {
     this.$el.selectAll('svg').remove();

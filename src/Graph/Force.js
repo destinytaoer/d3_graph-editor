@@ -140,15 +140,6 @@ class Force extends BaseGraph {
       _to: '',
     };
 
-    // 记录当前所有节点的 ID
-    this.idMap = this.vertexes.map((v) => v._id).concat(this.edges.map((e) => e._id));
-
-    // 用于最短路径查找
-    this.adjList = [];
-    this.vertexesMap = [];
-    this.edgeTo = [];
-    this.marker = [];
-
     // 顶点形状
     this.symbol = d3.symbol();
     // 主题
@@ -171,6 +162,15 @@ class Force extends BaseGraph {
     });
   }
   preprocessData() {
+    // 用于最短路径查找
+    this.adjList = [];
+    this.vertexesMap = [];
+    this.edgeTo = [];
+    this.marker = [];
+
+    // 记录当前所有节点的 ID
+    this.idMap = this.vertexes.map((v) => v._id).concat(this.edges.map((e) => e._id));
+
     // 初始化数据以及图的最短路径算法
     this.vertexes.forEach((v) => {
       v.state = 'normal';
@@ -216,7 +216,8 @@ class Force extends BaseGraph {
       .force('charge_force', d3.forceManyBody().strength(chargeStrength))
       // 中心力
       .force('center_force', d3.forceCenter(width / 2, height / 2))
-      .on('tick', this.onTick.bind(this));
+      .on('tick', this.onTick.bind(this))
+      .on('end', this.renderEnd.bind(this));
 
     return this;
   }
@@ -708,6 +709,9 @@ class Force extends BaseGraph {
       this.chartGroup.selectAll('.edge-label').style('opacity', '1');
     }
   }
+  renderEnd() {
+    // 复写, 每次 tick 结束之后出发
+  }
   // 拖拽事件
   bindDrag() {
     this.drag = d3
@@ -1095,6 +1099,17 @@ class Force extends BaseGraph {
     return edgeArr[0] ? deepCopy(edgeArr[0]) : null;
   }
   // 改变原始数据
+  useCache(rawData, chartData) {
+    this.rawData = deepCopy(rawData);
+    this.data = deepCopy(chartData);
+    this.vertexes = this.data.vertexes;
+    this.edges = this.data.edges;
+
+    // 完全重新渲染整个 SVG
+    this.chartGroup.selectAll('g').remove();
+    this.preprocessChart();
+    this.update();
+  }
   changeRawData(type, rawData, updateData) {
     let [newType, dataType] = type.split('-');
     this.changeData(newType, rawData[dataType], updateData);
@@ -1105,10 +1120,12 @@ class Force extends BaseGraph {
     switch (type) {
       case 'add':
         rawData.push(deepCopy(updateData));
+        break;
       case 'update':
         rawData.forEach((item) => {
           this.updateItem(item, updateData);
         });
+        break;
       case 'remove':
         for (let i = 0; i < rawData.length; i++) {
           let item = rawData[i];
@@ -1128,27 +1145,27 @@ class Force extends BaseGraph {
     }
   }
   // 增加节点和边数据
-  reAddVertex(data) {
-    let { vertex, edges } = data;
-    let rawVertex = diffAssign(this.defaultVertex, vertex);
-    this.changeRawData('add-vertexes', this.rawData, rawVertex);
-    this.changeRawData('add-vertexes', this.data, vertex);
+  // reAddVertex(data) {
+  //   let { vertex, edges } = data;
+  //   let rawVertex = diffAssign(this.defaultVertex, vertex);
+  //   this.changeRawData('add-vertexes', this.rawData, rawVertex);
+  //   this.changeRawData('add-vertexes', this.data, vertex);
 
-    if (edges) {
-      edges.forEach((edge) => {
-        let rawEdge = diffAssign(this.defaultEdge, edge);
-        this.changeRawData('add-edges', this.rawData, rawEdge);
-        this.changeRawData('add-edges', this.data, edge);
-      });
-    }
-    console.log(data);
-    debugger;
-    this.update();
-  }
+  //   if (edges) {
+  //     edges.forEach((edge) => {
+  //       let rawEdge = diffAssign(this.defaultEdge, edge);
+  //       this.changeRawData('add-edges', this.rawData, rawEdge);
+  //       this.changeRawData('add-edges', this.data, edge);
+  //     });
+  //   }
+  //   this.update();
+  // }
   addVertex(x, y, data, cb) {
-    let id = this.newId();
     let defaultData = deepCopy(this.defaultVertex);
-    defaultData._id = id;
+    if (!data._id) {
+      let id = this.newId();
+      defaultData._id = id;
+    }
     let rawVertex = diffAssign(defaultData, data);
     let vertex = Object.assign({}, defaultData, data);
 
@@ -1165,31 +1182,30 @@ class Force extends BaseGraph {
 
     this.update();
 
-    let addData = {
-      type: 'add',
-      target: 'vertex',
-      data: this.getVertexById(id),
+    let cache = {
+      rawData: deepCopy(this.rawData),
+      chartData: deepCopy(this.data),
     };
-    cb && cb(addData);
+    cb && cb(cache);
   }
   addEdge(data, cb) {
-    let id = this.newId();
     let defaultData = deepCopy(this.defaultEdge);
-    defaultData._id = id;
+    if (!data._id) {
+      let id = this.newId();
+      defaultData._id = id;
+    }
+
     let rawEdge = diffAssign(defaultData, data);
     let edge = Object.assign({}, defaultData, data);
-    console.log(edge);
-    console.log(rawEdge);
     this.changeRawData('add-edges', this.rawData, rawEdge);
     this.changeRawData('add-edges', this.data, edge);
     this.update();
 
-    let addData = {
-      type: 'add',
-      target: 'edge',
-      data: rawEdge,
+    let cache = {
+      rawData: deepCopy(this.rawData),
+      chartData: deepCopy(this.data),
     };
-    cb && cb(addData);
+    cb && cb(cache);
   }
   // 创建新的无重复 ID
   newId() {
@@ -1202,43 +1218,32 @@ class Force extends BaseGraph {
   }
   // 改变节点和边的数据
   updateVertex(data, cb) {
-    let oldVertex = this.getVertexById(data._id);
-    let rawVertex = diffAssign(this.defaultVertex, oldVertex);
     this.changeRawData('update-vertexes', this.rawData, data);
     this.changeRawData('update-vertexes', this.data, data);
     this.setVertexAttr();
 
-    let updateData = {
-      type: 'update',
-      target: 'vertex',
-      data: {
-        new: data,
-        old: rawVertex,
-      },
+    let cache = {
+      rawData: deepCopy(this.rawData),
+      chartData: deepCopy(this.data),
     };
-    cb && cb(updateData);
+    cb && cb(cache);
   }
   updateEdge(data, cb) {
-    let oldEdge = this.getEdgeById(data._id);
-    let rawEdge = diffAssign(this.defaultVertex, oldEdge);
     this.changeRawData('update-edges', this.rawData, data);
     this.changeRawData('update-edges', this.data, data);
     this.setEdgeAttr();
-    let updateData = {
-      type: 'update',
-      target: 'edge',
-      data: {
-        new: data,
-        old: rawEdge,
-      },
+
+    let cache = {
+      rawData: deepCopy(this.rawData),
+      chartData: deepCopy(this.data),
     };
-    cb && cb(updateData);
+    cb && cb(cache);
   }
   // 删除节点和边数据
   removeVertex(id, cb) {
     let vertex = this.getVertexById(id);
-
     if (!vertex) return;
+
     this.changeRawData('remove-vertexes', this.rawData, id);
     this.changeRawData('remove-vertexes', this.data, id);
 
@@ -1251,34 +1256,25 @@ class Force extends BaseGraph {
       this.changeRawData('remove-edges', this.data, e._id);
     });
     this.update();
-    let removeData = {
-      type: 'remove',
-      target: 'vertex',
-      data: {
-        vertex: vertex,
-        edges: edges,
-      },
-    };
-    cb && cb(removeData);
 
-    return this;
+    let cache = {
+      rawData: deepCopy(this.rawData),
+      chartData: deepCopy(this.data),
+    };
+    cb && cb(cache);
   }
   removeEdge(id, cb) {
     let edge = this.getEdgeById(id);
-    let rawEdge = diffAssign(this.defaultEdge, edge);
     if (!edge) return;
     this.changeRawData('remove-edges', this.rawData, id);
     this.changeRawData('remove-edges', this.data, id);
     this.update();
 
-    let removeData = {
-      type: 'remove',
-      target: 'edge',
-      data: rawEdge,
+    let cache = {
+      rawData: deepCopy(this.rawData),
+      chartData: deepCopy(this.data),
     };
-    cb && cb(removeData);
-
-    return this;
+    cb && cb(cache);
   }
   // 过滤与重置
   filterVertex(filter, isInit) {
