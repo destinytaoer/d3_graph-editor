@@ -507,12 +507,26 @@ class Force extends BaseGraph {
   setIconAttr(node) {
     let data = node.datum();
     let r = this.getRadius(data);
+    let imgMap = {};
     node
       .attr('width', r * 2)
       .attr('height', r * 2)
       .attr('x', -r)
       .attr('y', -r)
-      .attr('xlink:href', (d) => this.getIcon(d));
+      .each((d) => {
+        let imgHref = this.getIcon(d);
+        if (imgMap[imgHref]) {
+          node.attr('href', dataUrl);
+        } else {
+          fetch(imgHref)
+            .then((res) => res.text())
+            .then((res) => {
+              let dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(res);
+              node.attr('href', dataUrl);
+              imgMap[imgHref] = dataUrl;
+            });
+        }
+      });
   }
   setVertexNameAttr(node) {
     if (this.getTransform().k < 0.8) {

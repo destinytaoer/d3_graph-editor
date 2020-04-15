@@ -98,7 +98,7 @@ class GraphEditor {
     this.menu.init();
     this.createModal();
 
-    this.refreshCacheToolbar();
+    this.initCacheBar();
     this.subscribeListeners();
     this.bindEvents();
   }
@@ -361,6 +361,35 @@ class GraphEditor {
     this.eventProxy.on('check.edge', (data) => {
       // TODO: 查看
     });
+
+    // 导出
+    this.eventProxy.on('export.json', (el) => {
+      let blob = new Blob([JSON.stringify(this.graph.rawData)], {
+        type: 'application/json;chart=utf-8',
+      });
+      let alink = document.createElement('a');
+      alink.id = 'download';
+      alink.href = URL.createObjectURL(blob);
+      alink.setAttribute('download', 'data.json');
+      alink.click();
+      alink = null;
+      this.eventProxy.emit('menu.hide');
+    });
+    this.eventProxy.on('export.png', (el) => {
+      this.saveAsPng(this.graph.svg.node());
+      this.eventProxy.emit('menu.hide');
+    });
+    // 导入
+    this.eventProxy.on('import', (el) => {
+      this.importJson((result) => {
+        let data = JSON.parse(result);
+        data = Object.assign({ vertexes: [], edges: [] }, data);
+        this.cache.clear();
+        this.initCacheBar();
+        this.graph.useCache(data, data);
+        this.eventProxy.emit('menu.hide');
+      });
+    });
   }
   addModalListeners() {
     this.eventProxy.on('save.vertex', (data) => {
@@ -474,12 +503,19 @@ class GraphEditor {
       zoom_in.classList.remove('not-allow');
     }
   }
+  initCacheBar() {
+    let undo = document.querySelector('[data-operation="undo"]');
+    let redo = document.querySelector('[data-operation="redo"]');
+    undo.classList.add('not-allow');
+    redo.classList.add('not-allow');
+  }
   refreshCacheToolbar() {
     let undo = document.querySelector('[data-operation="undo"]');
     let redo = document.querySelector('[data-operation="redo"]');
     let len = this.cache.length;
     let point = this.cache.point;
     if (len === 1) {
+      console.log('1');
       undo.classList.add('not-allow');
       redo.classList.add('not-allow');
     } else if (point === 1) {
@@ -557,6 +593,43 @@ class GraphEditor {
     } else {
       this.graph.removeEdge(data._id);
     }
+  }
+  saveAsPng(svg) {
+    let serializer = new XMLSerializer();
+    let source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svg);
+    let image = new Image();
+    image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+    let canvas = document.createElement('canvas');
+    canvas.width = svg.getAttribute('width');
+    canvas.height = svg.getAttribute('height');
+    let context = canvas.getContext('2d');
+    context.fillStyle = '#fff'; //#fff设置保存后的PNG 是白色的
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    image.onload = () => {
+      context.drawImage(image, 0, 0);
+      document.body.appendChild(canvas);
+      let alink = document.createElement('a');
+      alink.download = 'name.png';
+      alink.href = canvas.toDataURL('image/png');
+      alink.click();
+      alink = null;
+    };
+  }
+  importJson(cb) {
+    let input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', '.json');
+    input.click();
+    input.addEventListener('change', () => {
+      let reader = new FileReader();
+      reader.readAsText(input.files[0], 'UTF-8');
+      reader.onload = (e) => {
+        input = null;
+        reader = null;
+        let result = e.target.result || '{}';
+        cb && cb(result);
+      };
+    });
   }
 }
 
