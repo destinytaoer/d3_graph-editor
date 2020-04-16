@@ -37,7 +37,7 @@
  * update by destiny on 2020-03-28
  */
 import * as d3 from 'd3';
-import { checkEl } from '../utils';
+import { checkEl, deepCopy } from '../utils';
 
 class BaseGraph {
   constructor(el, data, options) {
@@ -50,6 +50,8 @@ class BaseGraph {
     }
     this.checkData(data);
 
+    // 原始数据，完全克隆对象，并且不再是同一个引用地址，消除副作用
+    this.rawData = deepCopy(data);
     this.data = data;
 
     let elInfo = this.el.getBoundingClientRect();

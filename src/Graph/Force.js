@@ -119,9 +119,6 @@ class Force extends BaseGraph {
     options = Object.assign({}, defaultOptions, options);
     super(el, data, options);
 
-    // 原始数据，完全克隆对象，并且不再是同一个引用地址，消除副作用
-    this.rawData = deepCopy(data);
-
     // 顶点和边的数据
     this.vertexes = this.data.vertexes;
     this.edges = this.data.edges;
