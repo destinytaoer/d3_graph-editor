@@ -1125,7 +1125,7 @@ class Force extends BaseGraph {
     this.edges = this.data.edges;
 
     // 完全重新渲染整个 SVG
-    this.chartGroup.selectAll('g').remove();
+    this.chartGroup.selectAll('*').remove();
     this.preprocessChart();
     this.update();
   }
