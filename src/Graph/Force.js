@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import BaseGraph from './BaseGraph';
-import { deepCopy, getUUId, diffAssign } from '../utils';
+import { deepCopy, getUUId, diffAssign, ajaxGet } from '../utils';
 /**
  * Force: 力导向图类
  *
@@ -518,13 +518,18 @@ class Force extends BaseGraph {
         if (imgMap[imgHref]) {
           node.attr('href', dataUrl);
         } else {
-          fetch(imgHref)
-            .then((res) => res.text())
-            .then((res) => {
-              let dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(res);
-              node.attr('href', dataUrl);
-              imgMap[imgHref] = dataUrl;
-            });
+          // fetch(imgHref)
+          //   .then((res) => res.text())
+          //   .then((res) => {
+          //     let dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(res);
+          //     node.attr('href', dataUrl);
+          //     imgMap[imgHref] = dataUrl;
+          //   });
+          ajaxGet(imgHref, function (res) {
+            let dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(res);
+            node.attr('href', dataUrl);
+            imgMap[imgHref] = dataUrl;
+          });
         }
       });
   }

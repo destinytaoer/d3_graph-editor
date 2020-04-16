@@ -292,3 +292,18 @@ export function getUUId() {
     return v.toString(16);
   });
 }
+
+export function ajaxGet(url, cb) {
+  let xhr = new XMLHttpRequest();
+  xhr.open('get', url);
+
+  xhr.onreadystatechange = function () {
+    if (!/^(2|3)\d{2}$/.test(xhr.status)) return;
+    if (xhr.readyState === 4) {
+      //=> 响应主体已经能够获取到
+      cb(xhr.responseText);
+    }
+  };
+
+  xhr.send();
+}
