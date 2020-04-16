@@ -142,8 +142,6 @@ class Force extends BaseGraph {
 
     // 顶点形状
     this.symbol = d3.symbol();
-    // 主题
-    this.theme = 'light';
   }
   /* 数据处理 */
   checkData(data) {
@@ -1450,12 +1448,6 @@ class Force extends BaseGraph {
       }
     });
     return result;
-  }
-  // 改变主题
-  changeTheme(theme) {
-    this.theme = theme;
-    this.resetStyle();
-    return this;
   }
   resetStyle() {
     this.setVertexStyle().setEdgeStyle().setBgColor();

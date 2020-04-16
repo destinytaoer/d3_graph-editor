@@ -64,6 +64,9 @@ class BaseGraph {
 
     this.$el = d3.select(this.el);
     this.options = Object.assign({}, defaultOptions, options || {});
+
+    // 主题
+    this.theme = options.theme || 'light';
   }
   render() {
     this.init().draw().bindScale().bindEvents();
@@ -133,6 +136,16 @@ class BaseGraph {
   }
   zooming() {
     // 可复写方法, 表示在缩放过程中需要做的事情
+  }
+
+  /* 主题变更 */
+  changeTheme(theme) {
+    this.theme = theme;
+    this.resetStyle();
+    return this;
+  }
+  resetStyle() {
+    // 复写方法
   }
 }
 
