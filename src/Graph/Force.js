@@ -648,7 +648,9 @@ class Force extends BaseGraph {
     this.setArrowStyle();
 
     // 边文字
-    this.chartGroup.selectAll('.edge-label').style('fill', (d) => this.getEdgeLableColor(d));
+    this.chartGroup
+      .selectAll('.edge-label textPath')
+      .style('fill', (d) => this.getEdgeLableColor(d));
 
     return this;
   }
