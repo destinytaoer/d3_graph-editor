@@ -889,8 +889,8 @@ class Force extends BaseGraph {
         source: d,
         state: 'normal',
       })
-      .attr('stroke', this.getEdgeColor(d))
-      .attr('stroke-width', this.getEdgeWidth(d))
+      .attr('stroke', (d) => this.getEdgeColor(d))
+      .attr('stroke-width', (d) => this.getEdgeWidth(d))
       .attr('marker-end', 'url("#arrow_default")');
   }
 
@@ -1455,7 +1455,7 @@ class Force extends BaseGraph {
   }
   // 高亮顶点和边
   highlightVertex(ids) {
-    this.nodeEnter.selectAll('.vertex .circle').each((d, i, g) => {
+    this.chartGroup.selectAll('.vertex-group').each((d, i, g) => {
       if (ids.includes(d._id)) {
         d.state = 'highlight';
       } else {
@@ -1468,7 +1468,7 @@ class Force extends BaseGraph {
     return this;
   }
   highlightEdge(ids) {
-    this.linkEnter.selectAll('.edge-path').each((d, i, g) => {
+    this.chartGroup.selectAll('.edge').each((d, i, g) => {
       if (ids.includes(d._id)) {
         d.state = 'highlight';
       } else {
