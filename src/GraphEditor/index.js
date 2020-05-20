@@ -67,6 +67,10 @@ class GraphEditor {
 
     // 标识当前 menu 选中的 ID
     this.curId = null;
+
+    // 标识当前选中高亮的节点
+    this.curVertex = null;
+    this.isHighlight = false;
   }
   /* 初始化 */
   init() {
@@ -89,6 +93,38 @@ class GraphEditor {
           _this.eventProxy.emit('store', cache);
         }
       );
+      this.addClick(
+        (d) => {
+          let id = d._id;
+          _this.isHighlight = true;
+          if (_this.curVertex) {
+            if (_this.curVertex._id !== id) {
+              let { vertexIds, edgeIds } = this.shortestPath(_this.curVertex, d);
+              this.highlightVertex(vertexIds);
+              this.highlightEdge(edgeIds);
+              _this.curVertex = null;
+            }
+          } else {
+            this.highlightVertex(id);
+            this.highlightEdge();
+            _this.curVertex = d;
+          }
+        },
+        (d) => {}
+      );
+      this.el.addEventListener('click', () => {
+        if (_this.isHighlight) {
+          this.chartGroup.selectAll('.vertex-group').each((d) => {
+            d.state = 'normal';
+          });
+          this.chartGroup.selectAll('.edge').each((d) => {
+            d.state = 'normal';
+          });
+          this.resetStyle();
+          _this.isHighlight = false;
+          _this.curVertex = null;
+        }
+      });
     };
     this.graph.render();
 

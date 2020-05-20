@@ -754,10 +754,16 @@ class Force extends BaseGraph {
     d.fy = null;
   }
   // 绑定点击事件
-  // addClick(onVertexClick, onEdgeClick) {
-  //   this.nodeEnter.selectAll('.vertex').on('click', onVertexClick);
-  //   this.linkEnter.on('click', onEdgeClick);
-  // }
+  addClick(onVertexClick, onEdgeClick) {
+    this.nodeEnter.selectAll('.vertex').on('click', (...args) => {
+      d3.event.stopPropagation();
+      onVertexClick(...args);
+    });
+    this.linkEnter.selectAll('.edge').on('click', (...args) => {
+      d3.event.stopPropagation();
+      onEdgeClick(...args);
+    });
+  }
   // 绑定 hover 事件
   // addHover(onVertexHover, onVertexHoverout, onEdgeHover, onEdgeHoverout) {
   //   this.nodeEnter.selectAll('.vertex').on('mouseenter', onVertexHover);
@@ -1459,7 +1465,7 @@ class Force extends BaseGraph {
   // 高亮顶点和边
   highlightVertex(ids) {
     this.chartGroup.selectAll('.vertex-group').each((d, i, g) => {
-      if (ids.includes(d._id)) {
+      if (ids && ids.includes(d._id)) {
         d.state = 'highlight';
       } else {
         d.state = 'grey';
@@ -1472,7 +1478,7 @@ class Force extends BaseGraph {
   }
   highlightEdge(ids) {
     this.chartGroup.selectAll('.edge').each((d, i, g) => {
-      if (ids.includes(d._id)) {
+      if (ids && ids.includes(d._id)) {
         d.state = 'highlight';
       } else {
         d.state = 'grey';
