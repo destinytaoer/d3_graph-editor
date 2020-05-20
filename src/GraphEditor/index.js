@@ -224,14 +224,14 @@ class GraphEditor {
     this.eventProxy.on('undo', (el) => {
       let cache = this.cache.prev();
       if (cache) {
-        this.lodaCache(cache);
+        this.loadCache(cache);
         this.refreshCacheToolbar();
       }
     });
     this.eventProxy.on('redo', (el) => {
       let cache = this.cache.next();
       if (cache) {
-        this.lodaCache(cache);
+        this.loadCache(cache);
         this.refreshCacheToolbar();
       }
     });
@@ -542,7 +542,7 @@ class GraphEditor {
     }
     return true;
   }
-  lodaCache(cache) {
+  loadCache(cache) {
     let { rawData, chartData } = cache;
     this.graph.useCache(rawData, chartData);
   }
