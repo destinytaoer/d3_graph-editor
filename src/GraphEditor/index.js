@@ -264,6 +264,12 @@ class GraphEditor {
       el.classList.toggle('active');
       this.search.toggle();
     });
+
+    // 关闭
+    this.eventProxy.on('close', (el) => {
+      console.log('close');
+      this.outModal.show();
+    });
   }
   // Search 的功能实现
   addSearchListeners() {
