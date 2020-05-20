@@ -217,8 +217,7 @@ input[type='checkbox']:checked::after {
   padding: 10px;
 }
 .graph-search .btns .btn {
-  margin: 0 10px;
-  width: 50px;
+  margin: 0 1em;
   height: 30px;
   outline: none;
   border: 1px solid;
@@ -371,8 +370,7 @@ input[type='checkbox']:checked::after {
   text-align: right;
 }
 .graph-modal .btns .btn {
-  margin: 0 10px;
-  width: 50px;
+  margin: 0 1em;
   height: 30px;
   outline: none;
   border: 1px solid;
