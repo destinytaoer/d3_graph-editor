@@ -113,6 +113,7 @@ body {
   text-align: center;
   color: #fff;
   cursor: pointer;
+  user-select: none;
 }
 .graph-toolbar > .close > .operation:hover {
   background: #2c4fc0;
