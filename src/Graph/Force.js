@@ -510,6 +510,7 @@ class Force extends BaseGraph {
       .attr('y', -r)
       .each((d) => {
         let imgHref = this.getIcon(d);
+        if (!imgHref) return;
         if (imgMap[imgHref]) {
           node.attr('href', dataUrl);
         } else {
