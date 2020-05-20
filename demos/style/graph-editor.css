@@ -96,13 +96,34 @@ body {
 .graph-toolbar .operations .operation.not-allow:hover {
   background: #3967fa;
 }
+.graph-toolbar > .close {
+  float: right;
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  text-align: center;
+}
+.graph-toolbar > .close > .operation {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  line-height: 40px;
+  font-style: normal;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+}
+.graph-toolbar > .close > .operation:hover {
+  background: #2c4fc0;
+}
 
 /* 过滤面板 */
 .graph-editor .graph-search {
   position: absolute;
   top: 61px;
   left: 0;
-  width: 250px;
+  /* width: 250px; */
   border: 1px solid #3967fa;
   background: #f7f9fb;
   transition: all 0.5s ease-out;
@@ -124,24 +145,27 @@ body {
 .graph-search .search-section {
   box-sizing: border-box;
   width: 100%;
+  /* padding: 20px; */
+}
+.graph-search .search-section .form {
   padding: 20px;
 }
-.graph-search .search-section .search-input-box {
+.graph-search .search-section .form-item {
   line-height: 30px;
 }
-.search-section .search-input-box .search-input {
+.search-section .form-item .input {
+  display: inline-block;
   height: 40px;
-  width: 180px;
+  /* width: 180px; */
   font-size: 14px;
   background: #fff;
 }
-.search-section .search-input-box .input {
-  cursor: pointer;
-}
-.search-section .search-input-box .label {
+.search-section .form-item .label {
+  display: inline-block;
   vertical-align: middle;
   cursor: pointer;
   user-select: none;
+  width: 60px;
   font-size: 14px;
 }
 input[type='text'],
