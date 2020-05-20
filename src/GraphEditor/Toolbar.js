@@ -31,12 +31,12 @@ class Toolbar {
       cache: [
         {
           name: 'undo',
-          content: '撤销'
+          content: '撤销',
         },
         {
           name: 'redo',
-          content: '重做'
-        }
+          content: '重做',
+        },
       ],
       // select: [
       //   {
@@ -61,27 +61,27 @@ class Toolbar {
       zoom: [
         {
           name: 'zoom_in',
-          content: '放大'
+          content: '放大',
         },
         {
           name: 'zoom_out',
-          content: '缩小'
+          content: '缩小',
         },
         {
           name: 'actual_size',
-          content: '原始大小'
-        }
+          content: '原始大小',
+        },
       ],
       info: [
         {
           name: 'info',
-          content: '信息统计面板'
+          content: '信息统计面板',
         },
         {
           name: 'filter',
-          content: '数据过滤面板'
-        }
-      ]
+          content: '数据过滤面板',
+        },
+      ],
     };
     this.type = type;
     this.options = Object.assign({}, defalutOptions, options);
@@ -91,7 +91,7 @@ class Toolbar {
   }
 
   bindClickEvents(cb) {
-    this.el.addEventListener('click', e => {
+    this.el.addEventListener('click', (e) => {
       let el = e.target;
       if (!el.classList.contains('not-allow') && el.classList.contains('operation')) {
         let operation = el.dataset.operation;
@@ -104,16 +104,20 @@ class Toolbar {
     var toolbar = document.createElement('div');
     toolbar.classList.add('graph-toolbar');
     this.el = toolbar;
+
+    // 标题 ICON
     let oTitle = document.createElement('div');
     oTitle.classList.add('title');
     let icon = document.createElement('i');
     icon.classList.add('iconfont', 'icon-' + this.type);
     oTitle.appendChild(icon);
     toolbar.appendChild(oTitle);
-    Object.keys(this.options).forEach(key => {
+
+    // 可点击操作
+    Object.keys(this.options).forEach((key) => {
       let oLi = document.createElement('div');
       oLi.classList.add('operations');
-      this.options[key].forEach(item => {
+      this.options[key].forEach((item) => {
         let operation = item.name;
         let name = item.content;
         let icon = document.createElement('i');
@@ -124,6 +128,17 @@ class Toolbar {
       });
       toolbar.appendChild(oLi);
     });
+    // 关闭按钮
+    let oClose = document.createElement('div');
+    oClose.classList.add('close');
+    oClose.setAttribute('title', '关闭');
+    let i = document.createElement('i');
+    i.classList.add('operation');
+    i.setAttribute('title', name);
+    i.dataset.operation = 'close';
+    i.innerHTML = '&times;';
+    oClose.appendChild(i);
+    toolbar.appendChild(oClose);
 
     this.container.insertBefore(toolbar, this.container.firstChild);
 
